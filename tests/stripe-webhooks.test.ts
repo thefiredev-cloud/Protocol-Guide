@@ -133,6 +133,7 @@ describe("Stripe Webhook Handler - Idempotency", () => {
           id: "sub_test_123",
           customer: "cus_test_123",
           status: "active",
+          current_period_end: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
         },
       },
     };
@@ -147,6 +148,11 @@ describe("Stripe Webhook Handler - Idempotency", () => {
       },
       insert: vi.fn().mockReturnValue({
         values: vi.fn().mockResolvedValue(undefined),
+      }),
+      update: vi.fn().mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue(undefined),
+        }),
       }),
     };
 
