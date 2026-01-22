@@ -648,7 +648,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   chartCard: {
-    backgroundColor: "COLORS.bgSurface",
+    backgroundColor: COLORS.bgSurface,
     borderRadius: 12,
     padding: 24,
     borderWidth: 1,
