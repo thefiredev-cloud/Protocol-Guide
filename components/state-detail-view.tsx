@@ -93,18 +93,18 @@ export function StateDetailView({
 
   const renderAgencyItem = ({ item, index }: { item: Agency; index: number }) => {
     const isTopAgency = index < 3;
-    
+
     return (
       <TouchableOpacity
         onPress={() => navigateToSearch(item.id)}
         activeOpacity={0.7}
         style={{
-          backgroundColor: isTopAgency ? "#F0F9FF" : "#FFFFFF",
+          backgroundColor: isTopAgency ? `${colors.primary}15` : colors.surface,
           borderRadius: 12,
           padding: 14,
           marginBottom: 10,
           borderWidth: 1,
-          borderColor: isTopAgency ? "#BAE6FD" : "#E5E7EB",
+          borderColor: isTopAgency ? `${colors.primary}40` : colors.border,
         }}
       >
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
@@ -113,7 +113,7 @@ export function StateDetailView({
               style={{
                 fontSize: 15,
                 fontWeight: "600",
-                color: "#1F2937",
+                color: colors.foreground,
                 marginBottom: 4,
               }}
               numberOfLines={2}
@@ -121,15 +121,15 @@ export function StateDetailView({
               {item.name}
             </Text>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <IconSymbol name="paperplane.fill" size={12} color="#6B7280" />
-              <Text style={{ fontSize: 13, color: "#6B7280", marginLeft: 4 }}>
+              <IconSymbol name="paperplane.fill" size={12} color={colors.muted} />
+              <Text style={{ fontSize: 13, color: colors.muted, marginLeft: 4 }}>
                 {item.protocol_count.toLocaleString()} protocols
               </Text>
             </View>
           </View>
           <View
             style={{
-              backgroundColor: "#6366F1",
+              backgroundColor: colors.primary,
               borderRadius: 8,
               paddingHorizontal: 10,
               paddingVertical: 6,

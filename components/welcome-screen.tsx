@@ -47,18 +47,21 @@ export function WelcomeScreen() {
             title="Instant Search"
             description="Find any protocol in seconds with AI-powered semantic search"
             color={colors.primary}
+            styles={styles}
           />
           <FeatureCard
             icon="doc.text.fill"
             title="Citation-Backed"
             description="Every response includes direct protocol references"
             color={colors.primary}
+            styles={styles}
           />
           <FeatureCard
             icon="mic.fill"
             title="Voice Input"
             description="Hands-free queries designed for field use"
             color={colors.primary}
+            styles={styles}
           />
         </View>
 
@@ -106,15 +109,17 @@ function FeatureCard({
   title,
   description,
   color,
+  styles,
 }: {
   icon: string;
   title: string;
   description: string;
   color: string;
+  styles: ReturnType<typeof createStyles>;
 }) {
   return (
     <View style={styles.featureCard}>
-      <View style={[styles.iconContainer, { backgroundColor: `${color}10` }]}>
+      <View style={[styles.iconContainer, { backgroundColor: `${color}20` }]}>
         <IconSymbol name={icon as any} size={22} color={color} />
       </View>
       <View className="flex-1 ml-4">
