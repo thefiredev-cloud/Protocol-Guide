@@ -159,7 +159,7 @@ function WebEmailInput({
         fontSize: 16,
         borderRadius: 8,
         border: `2px solid ${getBorderColor()}`,
-        backgroundColor: validationState === "invalid" && !isFocused ? COLORS.errorBg : COLORS.bgWhite,
+        backgroundColor: validationState === "invalid" && !isFocused ? COLORS.errorBg : COLORS.bgSurface,
         outline: "none",
         transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
         boxShadow: getBoxShadow(),
@@ -239,7 +239,7 @@ function NativeEmailInput({
           borderRadius: 8,
           borderWidth: 2,
           borderColor: getBorderColor(),
-          backgroundColor: validationState === "invalid" && !isFocused ? COLORS.errorBg : COLORS.bgWhite,
+          backgroundColor: validationState === "invalid" && !isFocused ? COLORS.errorBg : COLORS.bgSurface,
           color: COLORS.textBlack,
           opacity: isLoading ? 0.7 : 1,
         }}
