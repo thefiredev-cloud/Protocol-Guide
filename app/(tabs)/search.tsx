@@ -13,6 +13,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { trpc } from "@/lib/trpc";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { VoiceInput } from "@/components/voice-input";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { useLocalSearchParams } from "expo-router";
 
