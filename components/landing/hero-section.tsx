@@ -296,7 +296,7 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
             backgroundColor: COLORS.bgSurface,
             paddingHorizontal: 16,
             borderBottomWidth: menuOpen ? 1 : 0,
-            borderBottomColor: "#E2E8F0",
+            borderBottomColor: COLORS.border,
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: menuOpen ? 0.1 : 0,
