@@ -8,6 +8,7 @@ import { IconSymbol } from "./ui/icon-symbol";
 export function WelcomeScreen() {
   const colors = useColors();
   const router = useRouter();
+  const styles = createStyles(colors);
 
   const handleLogin = async () => {
     // Use Supabase OAuth - redirects to Google sign-in
