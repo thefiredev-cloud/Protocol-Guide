@@ -8,8 +8,8 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Protocol Search", () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to search page
-    await page.goto("/");
+    // Navigate to main app (tabs) not landing page
+    await page.goto("/(tabs)/");
     // Wait for React Native Web to fully render
     await page.waitForTimeout(2000);
   });
