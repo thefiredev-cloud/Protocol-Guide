@@ -92,7 +92,7 @@ export default function MedicalDisclaimerScreen() {
           <BulletPoint>Do not delay patient care to consult this application</BulletPoint>
           <BulletPoint>Rely on your training and established protocols</BulletPoint>
           <BulletPoint>Contact medical control for guidance when appropriate</BulletPoint>
-          <BulletPoint>Document all care provided according to your agency's requirements</BulletPoint>
+          <BulletPoint>Document all care provided according to your agency{"'"}s requirements</BulletPoint>
         </Section>
 
         <Section title="No Warranty">
