@@ -412,8 +412,6 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
         <Animated.View style={{ opacity: ctaOpacity, transform: [{ scale: ctaScale }] }}>
           <AnimatedPressable
             onPress={() => scrollToSection("simulation-section")}
-            // @ts-expect-error - web className prop for hover glow
-            className={Platform.OS === "web" ? "cta-glow" : undefined}
             style={{
               backgroundColor: COLORS.primaryRed,
               paddingHorizontal: isMobile ? 32 : 40,
