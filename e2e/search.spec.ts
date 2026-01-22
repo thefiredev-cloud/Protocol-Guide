@@ -111,7 +111,7 @@ test.describe("State Filter", () => {
 
   test("filters by California (CA)", async ({ page }) => {
     // Navigate to coverage or search with state filter
-    await page.goto("/coverage");
+    await page.goto("/(tabs)/coverage");
     await page.waitForLoadState("networkidle");
 
     // Look for California in the list
