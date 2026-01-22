@@ -264,7 +264,6 @@ export function FooterSection() {
               isMobile && styles.linksSectionMobile,
               isTablet && styles.linksSectionTablet,
             ]}
-            accessibilityRole="navigation"
             accessibilityLabel="Footer navigation"
           >
             <FooterLink
