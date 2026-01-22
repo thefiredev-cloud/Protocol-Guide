@@ -3,9 +3,16 @@
  *
  * Tests the ID mapping layer and county filter functionality
  * Verifies MySQL county IDs properly map to Supabase agency_ids
+ *
+ * Note: These are integration tests that require actual database connections
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
+
+// Ensure we use actual modules, not mocks from other test files
+vi.unmock('../server/db');
+vi.unmock('../server/db-agency-mapping');
+
 import {
   mapCountyIdToAgencyId,
   mapAgencyIdToCountyId,
