@@ -314,13 +314,13 @@ function SubmitButton({ onPress, isLoading, disabled }: { onPress: () => void; i
   if (Platform.OS === "web") {
     return (
       <View
-        // @ts-expect-error - Web-specific mouse events
+        // @ts-expect-error - Web-specific mouse events and cursor style
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => {
           setIsHovered(false);
           setIsPressed(false);
         }}
-        style={{ cursor: disabled || isLoading ? "not-allowed" : "pointer" }}
+        style={{ cursor: disabled || isLoading ? "not-allowed" : "pointer" } as any}
       >
         <Pressable onPress={onPress} onPressIn={handlePressIn} onPressOut={handlePressOut} disabled={disabled || isLoading}>
           {buttonContent}
