@@ -199,7 +199,7 @@ export function FooterSection() {
   }, []);
 
   return (
-    <View style={styles.container} accessibilityRole="contentinfo" nativeID="footer-section">
+    <View style={styles.container} nativeID="footer-section">
       {/* Enhanced gradient border at top */}
       <View style={styles.gradientBorderWrapper} accessibilityElementsHidden>
         <View style={styles.gradientBorder} />
