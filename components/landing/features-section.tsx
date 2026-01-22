@@ -306,7 +306,7 @@ function FeatureCard({ feature, index, isVisible, isMobile }: FeatureCardProps) 
       <Animated.View
         style={[
           {
-            backgroundColor: COLORS.bgWhite,
+            backgroundColor: COLORS.bgSurface,
             borderRadius: 20,
             padding: isMobile ? 20 : 28,
             shadowColor: COLORS.shadowColor,
