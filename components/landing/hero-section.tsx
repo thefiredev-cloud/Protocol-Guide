@@ -229,13 +229,10 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
         {!isMobile && (
           <View
             style={{ flexDirection: "row", alignItems: "center", gap: 32 }}
-            accessibilityRole="navigation"
             accessibilityLabel="Main navigation"
           >
             <AnimatedNavLink
               onPress={() => scrollToSection("simulation-section")}
-              // @ts-expect-error - web className prop for hover underline
-              className={Platform.OS === "web" ? "nav-link" : undefined}
               accessibilityRole="link"
               accessibilityLabel="Speed Test section"
             >
@@ -245,8 +242,6 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
             </AnimatedNavLink>
             <AnimatedNavLink
               onPress={() => scrollToSection("impact-section")}
-              // @ts-expect-error - web className prop for hover underline
-              className={Platform.OS === "web" ? "nav-link" : undefined}
               accessibilityRole="link"
               accessibilityLabel="Impact section"
             >
