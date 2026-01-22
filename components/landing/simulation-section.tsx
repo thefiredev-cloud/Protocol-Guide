@@ -792,7 +792,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   buttonTextPrimary: {
-    color: "COLORS.bgSurface",
+    color: "#FFFFFF",
   },
   buttonTextDisabled: {
     color: COLORS.textMuted,
