@@ -826,7 +826,7 @@ const styles = StyleSheet.create({
   // ComparisonCard styles
   card: {
     flex: 1,
-    backgroundColor: "COLORS.bgSurface",
+    backgroundColor: COLORS.bgSurface,
     borderRadius: 12,
     padding: 20,
     borderWidth: 1,
