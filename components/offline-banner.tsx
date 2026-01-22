@@ -31,7 +31,7 @@ export function OfflineBanner() {
       exiting={FadeOut.duration(200)}
       style={[styles.container, { backgroundColor: colors.warning }]}
     >
-      <IconSymbol name="wifi.slash" size={16} color="#000000" />
+      <IconSymbol name="wifi.slash" size={16} color="#1F2937" />
       <Text style={styles.text}>You are offline - showing cached results</Text>
     </Animated.View>
   );
