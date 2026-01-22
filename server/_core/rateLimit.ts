@@ -79,7 +79,9 @@ export function createRateLimiter(config: RateLimitConfig = {}) {
   // Cleanup expired entries every minute
   const cleanupInterval = setInterval(() => {
     const now = Date.now();
-    for (const [key, entry] of store.entries()) {
+    const entries = Array.from(store.entries());
+    for (let i = 0; i < entries.length; i++) {
+      const [key, entry] = entries[i];
       if (now > entry.resetTime) {
         store.delete(key);
       }
