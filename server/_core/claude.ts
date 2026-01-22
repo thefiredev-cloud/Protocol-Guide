@@ -214,6 +214,7 @@ Based ONLY on the protocols above, provide a concise, actionable response. Cite 
 /**
  * Main RAG invocation function
  * Routes to Haiku or Sonnet based on tier and query complexity
+ * Includes exponential backoff retry logic for transient failures
  */
 export async function invokeClaudeRAG(params: {
   query: string;
@@ -229,7 +230,7 @@ export async function invokeClaudeRAG(params: {
 
   const userPrompt = buildPrompt(query, protocols, agencyName);
 
-  try {
+  return withRetry(async () => {
     const response = await anthropic.messages.create({
       model,
       max_tokens: 1024,
@@ -253,10 +254,7 @@ export async function invokeClaudeRAG(params: {
       outputTokens: response.usage.output_tokens,
       stopReason: response.stop_reason,
     };
-  } catch (error) {
-    console.error('Claude API error:', error);
-    throw new Error(`Claude invocation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
+  }, 'invokeClaudeRAG');
 }
 
 
