@@ -42,11 +42,11 @@ function injectGradientStyles() {
       50% { background-position: 100% 50%; }
     }
     @keyframes ctaPulse {
-      0%, 100% { box-shadow: 0 6px 20px rgba(155, 35, 53, 0.35), 0 0 0 0 rgba(155, 35, 53, 0); }
-      50% { box-shadow: 0 8px 28px rgba(155, 35, 53, 0.45), 0 0 0 8px rgba(155, 35, 53, 0.1); }
+      0%, 100% { box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35), 0 0 0 0 rgba(239, 68, 68, 0); }
+      50% { box-shadow: 0 8px 28px rgba(239, 68, 68, 0.45), 0 0 0 8px rgba(239, 68, 68, 0.1); }
     }
     .hero-gradient-bg {
-      background: linear-gradient(135deg, #FFFFFF 0%, #FEF2F2 20%, #FCE7E7 40%, #FEF2F2 60%, #FDF4F4 80%, #FFFFFF 100%);
+      background: linear-gradient(135deg, #0F172A 0%, #1E293B 25%, #0F172A 50%, #1E293B 75%, #0F172A 100%);
       background-size: 400% 400%;
       animation: gradientShift 20s ease-in-out infinite;
     }
@@ -54,7 +54,7 @@ function injectGradientStyles() {
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .cta-glow:hover {
-      box-shadow: 0 12px 32px rgba(155, 35, 53, 0.5), 0 0 0 1px rgba(155, 35, 53, 0.1) !important;
+      box-shadow: 0 12px 32px rgba(239, 68, 68, 0.5), 0 0 0 1px rgba(239, 68, 68, 0.1) !important;
       transform: translateY(-2px) scale(1.02) !important;
       animation: ctaPulse 2s ease-in-out infinite;
     }
@@ -69,11 +69,11 @@ function injectGradientStyles() {
       left: 0;
       width: 0;
       height: 2px;
-      background-color: #9B2335;
+      background-color: #EF4444;
       transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .nav-link:hover {
-      color: #0F172A !important;
+      color: #F1F5F9 !important;
     }
     .nav-link:hover::after {
       width: 100%;
