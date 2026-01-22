@@ -70,3 +70,44 @@ Thumbs.db
 
 # Netlify local state
 .netlify/
+
+# Internal planning docs - keep out of production repo
+ACCESSIBILITY-IMPROVEMENTS.md
+ACCESSIBILITY-SUMMARY.md
+CLEANUP-REQUIRED.md
+FIXES.md
+FRONTEND-FIXES-SUMMARY.md
+LANDING-PAGE-FIX-PLAN.md
+LA_COUNTY_PROTOCOL_IMPROVEMENT_PLAN.md
+MIGRATION-PLAN.md
+MIGRATION-TODO.md
+MOBILE_RESPONSIVENESS_AUDIT.md
+PROJECT-ORGANIZATION.md
+STATUS_REPORT.md
+WHITEBOARD-DIAGRAM.md
+CLAUDE_CODE_HANDOFF.md
+audit-notes.md
+design.md
+todo.md
+unknown-agencies-findings.md
+
+# Sensitive business docs
+ImageTrend_Partnership_Analysis.xlsx
+ImageTrend_Partnership_Dashboard.jsx
+ImageTrend_Partnership_Financial_Model.py
+
+# Development artifacts
+diagrams/
+research/
+file.svg
+
+# Scripts artifacts - PDFs, extracted text, protocol folders
+scripts/*.pdf
+scripts/*.txt
+scripts/riverside_protocols/
+scripts/san_diego_protocols/
+scripts/orange_county_protocols.md
+scripts/san_joaquin_protocols.md
+
+# Abandoned implementations
+rust-server/
