@@ -98,10 +98,10 @@ async function startServer() {
 
   registerOAuthRoutes(app);
 
-  // Public endpoint - rate limited
-  app.get("/api/health", publicLimiter, (_req, res) => {
-    res.json({ ok: true, timestamp: Date.now() });
-  });
+  // Health check endpoints - comprehensive monitoring
+  app.get("/api/health", publicLimiter, healthHandler);
+  app.get("/api/ready", readyHandler);  // Kubernetes readiness probe
+  app.get("/api/live", liveHandler);    // Kubernetes liveness probe
 
   // AI endpoint - stricter rate limiting (10 req/min)
   app.post("/api/summarize", aiLimiter, summarizeHandler);
