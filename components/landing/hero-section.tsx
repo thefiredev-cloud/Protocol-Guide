@@ -205,7 +205,7 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
     <View
       // @ts-expect-error - web className prop for gradient animation
       className={Platform.OS === "web" ? "hero-gradient-bg" : undefined}
-      style={{ backgroundColor: Platform.OS !== "web" ? COLORS.bgLightPink : undefined, minHeight: isMobile ? 520 : 640 }}
+      style={{ backgroundColor: Platform.OS !== "web" ? COLORS.bgDark : undefined, minHeight: isMobile ? 520 : 640 }}
     >
       {/* Navigation Bar with fade-in */}
       <Animated.View
