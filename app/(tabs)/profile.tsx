@@ -496,6 +496,20 @@ export default function ProfileScreen() {
           </View>
         )}
 
+        {/* Appearance Section */}
+        <Text style={[styles.sectionTitle, { color: colors.muted }]}>Appearance</Text>
+        <View style={[styles.card, { backgroundColor: '#FFFFFF', borderColor: colors.border }]}>
+          <View style={styles.cardHeader}>
+            <View style={[styles.iconCircle, { backgroundColor: `${colors.primary}15` }]}>
+              <IconSymbol name="paintbrush.fill" size={18} color={colors.primary} />
+            </View>
+            <Text style={[styles.cardTitle, { color: colors.foreground }]}>Theme</Text>
+          </View>
+          <View style={styles.themeToggleContainer}>
+            <ThemeToggle showLabels />
+          </View>
+        </View>
+
         {/* Support Section */}
         <Text style={[styles.sectionTitle, { color: colors.muted }]}>Support</Text>
         <View style={[styles.menuCard, { backgroundColor: '#FFFFFF', borderColor: colors.border }]}>
