@@ -367,22 +367,16 @@ export function ComparisonCard({ label, value, description, variant }: Compariso
     outputRange: [0.1, 0.25],
   });
 
-  return (
+  // For web hover, we wrap in a Pressable
+  const cardContent = (
     <Animated.View
       style={[
         styles.card,
         variant === "protocol" && styles.cardProtocol,
         {
           transform: [{ scale: scaleAnim }],
-          ...(Platform.OS === "web"
-            ? {
-                boxShadow: `0 10px 25px -5px rgba(0, 0, 0, ${shadowOpacity.__getValue()})`,
-              }
-            : {}),
         },
       ]}
-      onMouseEnter={handleHoverIn}
-      onMouseLeave={handleHoverOut}
     >
       <Text style={styles.cardLabel}>{label}</Text>
       <Text style={[styles.cardValue, variant === "protocol" && styles.cardValueProtocol]}>
