@@ -117,7 +117,9 @@ class EmbeddingCache {
    */
   private cleanup(): void {
     const now = Date.now();
-    for (const [key, entry] of this.cache.entries()) {
+    const entries = Array.from(this.cache.entries());
+    for (let i = 0; i < entries.length; i++) {
+      const [key, entry] = entries[i];
       if (now - entry.timestamp > CACHE_CONFIG.ttlMs) {
         this.cache.delete(key);
       }
