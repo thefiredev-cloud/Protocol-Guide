@@ -9,10 +9,6 @@
 
 import { describe, it, expect, beforeAll, vi } from 'vitest';
 
-// Ensure we use actual modules, not mocks from other test files
-vi.unmock('../server/db');
-vi.unmock('../server/db-agency-mapping');
-
 import {
   mapCountyIdToAgencyId,
   mapAgencyIdToCountyId,
@@ -22,6 +18,10 @@ import {
   clearMappingCache,
 } from '../server/db-agency-mapping';
 import { getAllCounties } from '../server/db';
+
+// Ensure we use actual modules, not mocks from other test files
+vi.unmock('../server/db');
+vi.unmock('../server/db-agency-mapping');
 
 describe('County ID Mapping', () => {
   beforeAll(async () => {
