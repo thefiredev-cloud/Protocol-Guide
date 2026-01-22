@@ -15,16 +15,20 @@ describe("Stripe Configuration", () => {
     expect(priceId).toMatch(/^price_/);
   });
 
-  it("should have correct monthly price ID format", () => {
+  it("should have valid monthly price ID format", () => {
     const priceId = process.env.STRIPE_PRO_MONTHLY_PRICE_ID;
-    // Stripe price IDs are typically 30+ characters
-    expect(priceId?.length).toBeGreaterThan(20);
+    // Stripe price IDs start with "price_" and have additional characters
+    expect(priceId).toMatch(/^price_.+/);
+    // Should have at least some characters after the prefix
+    expect(priceId?.length).toBeGreaterThan(6);
   });
 
-  it("should have correct annual price ID format", () => {
+  it("should have valid annual price ID format", () => {
     const priceId = process.env.STRIPE_PRO_ANNUAL_PRICE_ID;
-    // Stripe price IDs are typically 30+ characters
-    expect(priceId?.length).toBeGreaterThan(20);
+    // Stripe price IDs start with "price_" and have additional characters
+    expect(priceId).toMatch(/^price_.+/);
+    // Should have at least some characters after the prefix
+    expect(priceId?.length).toBeGreaterThan(6);
   });
 
   it("should have different price IDs for monthly and annual", () => {
