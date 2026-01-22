@@ -455,7 +455,6 @@ const styles = StyleSheet.create({
     height: 8,
     backgroundColor: COLORS.primaryRed,
     borderRadius: 4,
-    transition: Platform.OS === "web" ? "width 0.15s ease-out" : undefined,
   },
   thumb: {
     position: "absolute",
