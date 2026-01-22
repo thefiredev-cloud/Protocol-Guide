@@ -83,7 +83,7 @@ export default function PrivacyPolicyScreen() {
         </Section>
 
         <Section title="9. Changes to This Policy">
-          We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.
+          We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the {'"Last updated"'} date.
         </Section>
 
         <Section title="10. Contact Us">
