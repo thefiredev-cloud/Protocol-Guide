@@ -184,15 +184,25 @@ interface VoyageEmbeddingResponse {
 
 /**
  * Generate embedding for a single text
+ * Uses LRU cache to avoid redundant API calls for identical queries
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
   const apiKey = process.env.VOYAGE_API_KEY;
   if (!apiKey) {
-    throw new Error('VOYAGE_API_KEY is required for embedding generation');
+    throw new VoyageApiError('VOYAGE_API_KEY is required for embedding generation', 500);
   }
 
   // Truncate text to avoid token limits (roughly 8000 chars for safety)
   const truncatedText = text.slice(0, 8000);
+
+  // Check cache first
+  const cachedEmbedding = embeddingCache.get(truncatedText);
+  if (cachedEmbedding) {
+    console.log('[Embeddings] Cache hit for query');
+    return cachedEmbedding;
+  }
+
+  console.log('[Embeddings] Cache miss, calling Voyage API');
 
   const response = await fetch(VOYAGE_API_URL, {
     method: 'POST',
@@ -207,12 +217,18 @@ export async function generateEmbedding(text: string): Promise<number[]> {
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Voyage AI error: ${response.status} - ${error}`);
+    const errorText = await response.text();
+    console.error(`[Embeddings] Voyage API error: ${response.status} - ${errorText}`);
+    throw parseVoyageError(response.status, errorText);
   }
 
   const data = (await response.json()) as VoyageEmbeddingResponse;
-  return data.data[0].embedding;
+  const embedding = data.data[0].embedding;
+
+  // Store in cache for future requests
+  embeddingCache.set(truncatedText, embedding);
+
+  return embedding;
 }
 
 /**
