@@ -27,7 +27,9 @@ test.describe("Protocol Search", () => {
 
   test("searches for cardiac arrest and returns results", async ({ page }) => {
     // Find and fill search input - React Native Web uses testID
-    const searchInput = page.getByTestId("search-input");
+    const searchInput = page.locator('[data-testid="search-input"]').or(
+      page.locator('input[placeholder*="protocol"]')
+    ).first();
     await searchInput.fill("cardiac arrest");
 
     // Submit search (may be auto-submit or button click)
