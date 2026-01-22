@@ -9,6 +9,7 @@ import { test, expect } from "@playwright/test";
 test.describe("Authentication UI", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await page.waitForTimeout(2000);
   });
 
   test("displays login button for unauthenticated users", async ({ page }) => {
