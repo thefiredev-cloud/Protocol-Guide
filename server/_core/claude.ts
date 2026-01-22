@@ -261,18 +261,19 @@ export async function invokeClaudeRAG(params: {
 /**
  * Simple query helper (no RAG, direct question)
  * Useful for medication lookups or general questions
+ * Includes exponential backoff retry logic for transient failures
  */
 export async function invokeClaudeSimple(params: {
   query: string;
   userTier: UserTier;
   systemPrompt?: string;
 }): Promise<ClaudeResponse> {
-  const { query, userTier, systemPrompt } = params;
+  const { query, systemPrompt } = params;
 
   // Always use Haiku for simple queries
   const model = MODELS.HAIKU;
 
-  try {
+  return withRetry(async () => {
     const response = await anthropic.messages.create({
       model,
       max_tokens: 512,
@@ -295,10 +296,7 @@ export async function invokeClaudeSimple(params: {
       outputTokens: response.usage.output_tokens,
       stopReason: response.stop_reason,
     };
-  } catch (error) {
-    console.error('Claude API error:', error);
-    throw new Error(`Claude invocation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
+  }, 'invokeClaudeSimple');
 }
 
 
