@@ -5,6 +5,7 @@ import { useColors } from "@/hooks/use-colors";
 import { useOfflineCache } from "@/hooks/use-offline-cache";
 import { trpc } from "@/lib/trpc";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useRouter } from "expo-router";
 import * as Haptics from "@/lib/haptics";
 import { useState } from "react";
