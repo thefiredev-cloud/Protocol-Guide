@@ -12,8 +12,8 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // FORCE LIGHT THEME ONLY - no system preference detection
-  const [colorScheme, setColorSchemeState] = useState<ColorScheme>("light");
+  // FORCE DARK THEME ONLY - Deep Slate dark theme
+  const [colorScheme, setColorSchemeState] = useState<ColorScheme>("dark");
 
   const applyScheme = useCallback((scheme: ColorScheme) => {
     nativewindColorScheme.set(scheme);
