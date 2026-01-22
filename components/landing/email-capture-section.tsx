@@ -223,7 +223,7 @@ function NativeEmailInput({
       )}
       <TextInput
         placeholder="Enter your work email"
-        placeholderTextColor={COLORS.textGray}
+        placeholderTextColor={COLORS.textMuted}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -466,7 +466,7 @@ export function EmailCaptureSection() {
           Ready to upgrade your response?
         </Text>
 
-        <Text style={{ color: COLORS.textGray, fontSize: 16, textAlign: "center", marginBottom: 32, lineHeight: 24 }}>
+        <Text style={{ color: COLORS.textMuted, fontSize: 16, textAlign: "center", marginBottom: 32, lineHeight: 24 }}>
           Join the medics and departments already switching{"\n"}to the new standard of care.
         </Text>
 
@@ -503,7 +503,7 @@ export function EmailCaptureSection() {
               <SubmitButton onPress={handleSubmit} isLoading={isLoading} disabled={!email} />
             </View>
 
-            <Text style={{ color: COLORS.textGray, fontSize: 12, textAlign: "center", marginTop: 16, opacity: 0.8 }}>
+            <Text style={{ color: COLORS.textMuted, fontSize: 12, textAlign: "center", marginTop: 16, opacity: 0.8 }}>
               No spam, ever. Unsubscribe anytime.
             </Text>
           </View>
