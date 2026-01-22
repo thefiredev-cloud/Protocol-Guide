@@ -3,9 +3,45 @@
  *
  * In-memory rate limiting for Express routes.
  * Uses sliding window algorithm for accurate rate limiting.
+ *
+ * Features:
+ * - IP-based rate limiting (default)
+ * - Per-user subscription tier limits
+ * - Daily query limits by tier (Free: 10, Pro: 100, Unlimited: no limit)
  */
 
 import { Request, Response, NextFunction } from "express";
+
+// ============================================================================
+// SUBSCRIPTION TIER CONFIGURATION
+// ============================================================================
+
+/**
+ * Subscription tier types
+ */
+export type SubscriptionTier = 'free' | 'pro' | 'unlimited';
+
+/**
+ * Daily query limits by subscription tier
+ */
+export const TIER_DAILY_LIMITS: Record<SubscriptionTier, number> = {
+  free: 10,       // Free tier: 10 queries/day
+  pro: 100,       // Pro tier: 100 queries/day
+  unlimited: -1,  // Unlimited tier: no limit (-1 = unlimited)
+} as const;
+
+/**
+ * Per-minute rate limits by subscription tier (for burst protection)
+ */
+export const TIER_MINUTE_LIMITS: Record<SubscriptionTier, number> = {
+  free: 5,        // Free tier: 5 queries/minute
+  pro: 20,        // Pro tier: 20 queries/minute
+  unlimited: 60,  // Unlimited tier: 60 queries/minute
+} as const;
+
+// ============================================================================
+// INTERFACES
+// ============================================================================
 
 export interface RateLimitConfig {
   /** Time window in milliseconds (default: 60000 = 1 minute) */
