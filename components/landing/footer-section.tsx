@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
   mobileDivider: {
     width: 60,
     height: 1,
-    backgroundColor: COLORS.borderGray,
+    backgroundColor: COLORS.border,
     marginVertical: SPACING.xs,
   },
   linksSection: {
@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xl,
     paddingTop: SPACING.lg,
     borderTopWidth: 1,
-    borderTopColor: COLORS.borderGray,
+    borderTopColor: COLORS.border,
     alignItems: "center",
     maxWidth: 1200,
     alignSelf: "center",
