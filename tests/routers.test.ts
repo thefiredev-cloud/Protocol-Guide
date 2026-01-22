@@ -79,6 +79,8 @@ vi.mock("../server/db", () => ({
     email: "test@example.com",
     tier: "free",
     selectedCountyId: 1,
+    subscriptionStatus: null,
+    subscriptionEndDate: null,
   }),
   createQuery: vi.fn().mockResolvedValue({ id: 1 }),
   incrementUserQueryCount: vi.fn().mockResolvedValue(undefined),
