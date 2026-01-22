@@ -8,8 +8,8 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Protocol Search", () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to main app (tabs) not landing page
-    await page.goto("/(tabs)/");
+    // Navigate to main app (tabs) with E2E bypass parameter
+    await page.goto("/(tabs)/?e2e=true");
     // Wait for React Native Web to fully render
     await page.waitForTimeout(2000);
   });
