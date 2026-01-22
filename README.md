@@ -36,9 +36,10 @@ Protocol Guide is a Progressive Web App (PWA) that revolutionizes how EMS person
 | **EMS Agencies Covered** | 2,738 |
 | **States & Territories** | 53 |
 | **Average Response Time** | <2 seconds |
-| **Offline Capable** | ✅ Yes |
+| **Lines of Code** | 29,700+ |
+| **API Endpoints** | 26 |
+| **Components** | 35 |
 | **AI Models** | Claude Haiku 4.5 & Sonnet 4.5 |
-| **Embedding Model** | Voyage AI (1536 dimensions) |
 
 ---
 
