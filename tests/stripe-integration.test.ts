@@ -128,7 +128,7 @@ describe("Stripe Checkout Sessions", () => {
       expect.objectContaining({
         line_items: [
           {
-            price: "price_annual_123",
+            price: expect.any(String), // Price ID from env
             quantity: 1,
           },
         ],
