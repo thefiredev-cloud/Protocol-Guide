@@ -1,0 +1,136 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e15]:
+  - generic [ref=e16]:
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - img "Protocol Guide logo" [ref=e19]:
+          - generic "Protocol Guide logo" [ref=e20]:
+            - img "Protocol Guide logo" [ref=e22]
+        - generic [ref=e23]: Protocol Guide
+      - generic "Main navigation" [ref=e24]:
+        - link "Speed Test section" [ref=e25] [cursor=pointer]:
+          - generic [ref=e27]: Speed Test
+        - link "Impact section" [ref=e28] [cursor=pointer]:
+          - generic [ref=e30]: Impact
+        - button "Request Access" [ref=e31] [cursor=pointer]:
+          - generic [ref=e33]: Request Access
+    - generic [ref=e34]:
+      - heading "Seconds Save Lives." [level=1] [ref=e35]
+      - generic [ref=e36]:
+        - generic [ref=e37]: Why waste 90 of them searching?
+        - generic [ref=e38]: The modern protocol retrieval tool for EMS. 2 seconds to find what you need. Not 2 minutes.
+      - button "See the Difference" [ref=e40] [cursor=pointer]:
+        - generic [ref=e41]:
+          - generic [ref=e42]: See the Difference
+          - generic [ref=e43]: →
+  - generic [ref=e47]:
+    - generic [ref=e48]: Live Simulation
+    - generic [ref=e49]: The Cognitive Load Gap
+    - generic [ref=e50]: Click "Simulate Call" to visualize the time difference in a cardiac arrest scenario.
+    - generic [ref=e51]:
+      - generic [ref=e52]:
+        - generic [ref=e53]: Protocol Retrieval Time
+        - button "Simulate Call" [ref=e54] [cursor=pointer]:
+          - generic [ref=e58]: Simulate Call
+      - generic [ref=e60]: "Status: Waiting to start..."
+      - generic [ref=e61]:
+        - generic [ref=e62]: Manual Search
+        - generic [ref=e64]: ~90s average
+      - generic [ref=e65]:
+        - generic [ref=e66]: Protocol Guide
+        - generic [ref=e68]: ~2.3s average
+      - generic [ref=e69]:
+        - generic [ref=e70]: "0"
+        - generic [ref=e71]: "10"
+        - generic [ref=e72]: "20"
+        - generic [ref=e73]: "30"
+        - generic [ref=e74]: "40"
+        - generic [ref=e75]: "50"
+        - generic [ref=e76]: "60"
+        - generic [ref=e77]: "70"
+        - generic [ref=e78]: "80"
+        - generic [ref=e79]: "95"
+      - generic [ref=e80]: Seconds Elapsed
+    - generic [ref=e81]:
+      - generic [ref=e82] [cursor=pointer]:
+        - generic [ref=e83]: Current Standard
+        - generic [ref=e84]: ~90s
+        - generic [ref=e85]: PDF Scrolling / App Fumbling
+      - generic [ref=e86] [cursor=pointer]:
+        - generic [ref=e87]: Protocol Guide
+        - generic [ref=e88]: 2.3s
+        - generic [ref=e89]: Natural Language AI
+        - generic [ref=e91]: AI Powered
+  - generic [ref=e93]:
+    - heading "What is your time worth?" [level=1] [ref=e94]
+    - generic [ref=e95]: Every second spent looking at a screen is a second not looking at your patient. Calculate the impact of switching to Protocol Guide for your department.
+    - generic [ref=e96]:
+      - generic [ref=e97]: Calls per Shift (Avg)
+      - slider "Number of calls per shift" [ref=e101] [cursor=pointer]: "10"
+      - generic [ref=e102]:
+        - generic [ref=e103]: "1"
+        - generic [ref=e104]: "5"
+        - generic [ref=e105]: "10"
+        - generic [ref=e106]: "15"
+        - generic [ref=e107]: "20"
+      - generic [ref=e109]: 10 Calls
+    - 'region "Time calculator results: 15.0 minutes wasted per shift with current methods, 14.6 minutes reclaimed with Protocol Guide" [ref=e110]':
+      - generic [ref=e111]:
+        - generic [ref=e112]: Time Wasted (Current)
+        - generic [ref=e113]: 15.0 min
+        - generic [ref=e114]: per shift staring at PDFs
+      - generic [ref=e116]:
+        - generic [ref=e117]: Time Reclaimed (Protocol Guide)
+        - generic [ref=e118]: 14.6 min
+        - generic [ref=e119]: per shift returned to patient care
+      - generic [ref=e120]:
+        - generic [ref=e121]: Per Year (260 shifts)
+        - generic [ref=e122]: 63 hours saved
+  - generic [ref=e124]:
+    - generic [ref=e127]: Key Features
+    - heading "Engineered for the Field" [level=1] [ref=e128]
+    - generic [ref=e129]: We removed the bloat. You get exactly what you need when the tones drop.
+    - generic [ref=e130]:
+      - 'generic "Instant Retrieval: Don''t memorize page numbers. Type ''Pediatric seizure'' or ''Chest pain'' and get the exact protocol card instantly." [ref=e131] [cursor=pointer]':
+        - generic [ref=e132]:
+          - img [ref=e135]
+          - generic [ref=e138]: Instant Retrieval
+          - generic [ref=e139]: Don't memorize page numbers. Type 'Pediatric seizure' or 'Chest pain' and get the exact protocol card instantly.
+      - 'generic "100% Offline: Cell towers go down. Your protocols shouldn''t. The entire database lives locally on your device. Zero latency." [ref=e140] [cursor=pointer]':
+        - generic [ref=e141]:
+          - img [ref=e144]
+          - generic [ref=e149]: 100% Offline
+          - generic [ref=e150]: Cell towers go down. Your protocols shouldn't. The entire database lives locally on your device. Zero latency.
+      - 'generic "Always Current: No more outdated binders. When your Medical Director updates a protocol, it pushes to every device instantly." [ref=e151] [cursor=pointer]':
+        - generic [ref=e152]:
+          - img [ref=e155]
+          - generic [ref=e161]: Always Current
+          - generic [ref=e162]: No more outdated binders. When your Medical Director updates a protocol, it pushes to every device instantly.
+  - generic [ref=e164]:
+    - generic [ref=e165]: Ready to upgrade your response?
+    - generic [ref=e166]: Join the medics and departments already switching to the new standard of care.
+    - generic [ref=e167]:
+      - generic [ref=e168]:
+        - textbox "Enter your work email" [ref=e170]
+        - generic [ref=e173]: Get Early Access
+      - generic [ref=e174]: No spam, ever. Unsubscribe anytime.
+  - generic [ref=e179]:
+    - generic [ref=e180]:
+      - generic [ref=e181]:
+        - generic [ref=e182]:
+          - img "Protocol Guide logo" [ref=e183]:
+            - generic "Protocol Guide logo" [ref=e184]:
+              - img "Protocol Guide logo" [ref=e186]
+          - generic [ref=e187]: Protocol Guide
+        - generic [ref=e188]: © 2026 Protocol Guide. All rights reserved.
+      - generic "Footer navigation" [ref=e189]:
+        - link "Privacy Policy" [ref=e191] [cursor=pointer]:
+          - generic [ref=e192]: Privacy Policy
+        - link "Terms of Service" [ref=e194] [cursor=pointer]:
+          - generic [ref=e195]: Terms of Service
+        - link "Contact Us" [ref=e197] [cursor=pointer]:
+          - generic [ref=e198]: Contact Us
+    - generic [ref=e201]: Built for EMS professionals. Seconds save lives.
+```

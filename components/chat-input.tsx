@@ -120,6 +120,8 @@ export function ChatInput({
               onSubmitEditing={handleSend}
               className="flex-1 text-base py-3 max-h-24"
               style={{ color: colors.foreground }}
+              testID="search-input"
+              accessibilityLabel="Protocol search input"
             />
             
             {/* Clear Button */}
