@@ -2,7 +2,7 @@
  * Protocol Guide Logo - Medical Caduceus
  *
  * Winged staff with serpents in square frame.
- * Brand color: #9B2335 (deep medical red)
+ * Brand color: #EF4444 (Signal Red for dark theme)
  *
  * Features:
  * - Optional pulse/breathing animation
