@@ -79,7 +79,10 @@ test.describe("Protected Routes", () => {
   test("shows sign in prompt for protected profile page", async ({ page }) => {
     // Try to access profile without being logged in
     await page.goto("/profile");
-    await page.waitForLoadState("networkidle");
+
+    // Wait for either sign-in content or profile content to load
+    // React Native Web can be slow, so give it more time
+    await page.waitForTimeout(2000);
 
     // React Native app shows inline sign-in prompts, not redirects
     const pageContent = await page.textContent("body");
@@ -95,7 +98,9 @@ test.describe("Protected Routes", () => {
 
   test("shows sign in prompt for protected history page", async ({ page }) => {
     await page.goto("/history");
-    await page.waitForLoadState("networkidle");
+
+    // Wait for content to load (React Native Web needs more time)
+    await page.waitForTimeout(2000);
 
     // React Native app shows inline message, not redirect
     const pageContent = await page.textContent("body");
