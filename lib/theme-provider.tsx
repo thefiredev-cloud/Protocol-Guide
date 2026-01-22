@@ -79,8 +79,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       root.dataset.theme = scheme;
       root.classList.toggle("dark", scheme === "dark");
       const palette = SchemeColors[scheme];
-      Object.entries(palette).forEach(([token, value]) => {
-        root.style.setProperty(`--color-${token}`, value);
+      Object.entries(palette).forEach(([token, colorValue]) => {
+        root.style.setProperty(`--color-${token}`, colorValue as string);
       });
     }
   }, []);

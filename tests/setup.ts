@@ -51,7 +51,7 @@ export function createMockRequest(overrides: Record<string, unknown> = {}) {
 }
 
 export function createMockResponse() {
-  const cookies: Array<{ name: string; value?: string; options: Record<string, unknown> }> = [];
+  const cookies: { name: string; value?: string; options: Record<string, unknown> }[] = [];
 
   return {
     cookies,
