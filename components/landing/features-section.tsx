@@ -389,7 +389,7 @@ function FeatureCard({ feature, index, isVisible, isMobile }: FeatureCardProps) 
         {/* Description */}
         <Text
           style={{
-            color: COLORS.textGray,
+            color: COLORS.textMuted,
             fontSize: isMobile ? 14 : 15,
             lineHeight: isMobile ? 22 : 24,
             letterSpacing: 0.1,
@@ -528,7 +528,7 @@ export function FeaturesSection() {
         <Animated.Text
           style={[
             {
-              color: COLORS.textGray,
+              color: COLORS.textMuted,
               fontSize: isMobile ? 16 : 18,
               textAlign: "center",
               marginBottom: isMobile ? 32 : 56,
