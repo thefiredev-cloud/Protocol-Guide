@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
     } as any),
   },
   linkText: {
-    color: COLORS.textGray,
+    color: COLORS.textMuted,
     fontSize: 14,
     fontWeight: "600",
     letterSpacing: -0.2,
