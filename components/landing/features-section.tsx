@@ -160,33 +160,33 @@ const features: Feature[] = [
     title: "Instant Retrieval",
     description:
       "Don't memorize page numbers. Type 'Pediatric seizure' or 'Chest pain' and get the exact protocol card instantly.",
-    iconBg: "#FEE2E2",
+    iconBg: COLORS.bgAccentRed,
     iconColor: COLORS.primaryRed,
     accentColor: COLORS.primaryRed,
-    gradientStart: "#FEE2E2",
-    gradientEnd: "#FEF2F2",
+    gradientStart: COLORS.bgAccentRed,
+    gradientEnd: COLORS.bgSurface,
   },
   {
     icon: "signal",
     title: "100% Offline",
     description:
       "Cell towers go down. Your protocols shouldn't. The entire database lives locally on your device. Zero latency.",
-    iconBg: "#DBEAFE",
+    iconBg: COLORS.bgAccentBlue,
     iconColor: COLORS.primaryBlue,
     accentColor: COLORS.primaryBlue,
-    gradientStart: "#DBEAFE",
-    gradientEnd: "#EFF6FF",
+    gradientStart: COLORS.bgAccentBlue,
+    gradientEnd: COLORS.bgSurface,
   },
   {
     icon: "refresh",
     title: "Always Current",
     description:
       "No more outdated binders. When your Medical Director updates a protocol, it pushes to every device instantly.",
-    iconBg: "#DBEAFE",
+    iconBg: COLORS.bgAccentBlue,
     iconColor: COLORS.primaryBlue,
     accentColor: COLORS.primaryBlue,
-    gradientStart: "#DBEAFE",
-    gradientEnd: "#EFF6FF",
+    gradientStart: COLORS.bgAccentBlue,
+    gradientEnd: COLORS.bgSurface,
   },
 ];
 
