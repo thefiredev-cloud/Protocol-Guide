@@ -136,9 +136,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo(
     () => ({
       colorScheme,
-      setColorScheme,
+      themePreference,
+      setThemePreference,
+      toggleTheme,
     }),
-    [colorScheme, setColorScheme],
+    [colorScheme, themePreference, setThemePreference, toggleTheme],
   );
 
   return (
