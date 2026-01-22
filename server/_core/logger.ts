@@ -37,7 +37,7 @@ export const httpLogger = pinoHttp({
   // Generate unique request ID for tracing
   genReqId: (req) => {
     const existingId = req.headers["x-request-id"];
-    return (existingId as string) || uuidv4();
+    return (existingId as string) || randomUUID();
   },
   // Custom request ID header
   requestIdHeader: "x-request-id",
