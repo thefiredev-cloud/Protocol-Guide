@@ -16,14 +16,15 @@ import {
   Pressable,
 } from "react-native";
 
-// Color Palette
+// Color Palette - Dark Theme
 const COLORS = {
-  primaryRed: "#C41E3A",
-  textBlack: "#1A1A1A",
-  textGray: "#666666",
-  textMuted: "#999999",
-  bgLightGray: "#F9FAFB",
-  borderGray: "#E5E7EB",
+  primaryRed: "#EF4444",
+  textWhite: "#F1F5F9",
+  textMuted: "#94A3B8",
+  textMutedLight: "#CBD5E1",
+  bgDark: "#0F172A",
+  bgSurface: "#1E293B",
+  border: "#334155",
   chartYellow: "#F59E0B",
   celebrationGreen: "#10B981",
 };
