@@ -407,9 +407,9 @@ export default function HomeScreen() {
               3-5 words → instant answer
             </Text>
             <View className="mt-4 gap-1">
-              <Text className="text-xs text-muted text-center italic">"cardiac arrest adult"</Text>
-              <Text className="text-xs text-muted text-center italic">"pediatric seizure"</Text>
-              <Text className="text-xs text-muted text-center italic">"chest pain stemi"</Text>
+              <Text className="text-xs text-muted text-center italic">{'"cardiac arrest adult"'}</Text>
+              <Text className="text-xs text-muted text-center italic">{'"pediatric seizure"'}</Text>
+              <Text className="text-xs text-muted text-center italic">{'"chest pain stemi"'}</Text>
             </View>
           </View>
           <RecentSearches onSelectSearch={handleSendMessage} />
