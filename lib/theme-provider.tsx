@@ -4,16 +4,72 @@ import { colorScheme as nativewindColorScheme, vars } from "nativewind";
 
 import { SchemeColors, type ColorScheme } from "@/constants/theme";
 
+const THEME_STORAGE_KEY = "protocol-guide-theme";
+
+type ThemePreference = ColorScheme | "system";
+
 type ThemeContextValue = {
   colorScheme: ColorScheme;
-  setColorScheme: (scheme: ColorScheme) => void;
+  themePreference: ThemePreference;
+  setThemePreference: (preference: ThemePreference) => void;
+  toggleTheme: () => void;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
+// Get stored theme preference from localStorage (web only)
+function getStoredTheme(): ThemePreference | null {
+  if (typeof window === "undefined" || typeof localStorage === "undefined") {
+    return null;
+  }
+  try {
+    const stored = localStorage.getItem(THEME_STORAGE_KEY);
+    if (stored === "light" || stored === "dark" || stored === "system") {
+      return stored;
+    }
+  } catch {
+    // localStorage not available
+  }
+  return null;
+}
+
+// Store theme preference in localStorage (web only)
+function storeTheme(preference: ThemePreference): void {
+  if (typeof window === "undefined" || typeof localStorage === "undefined") {
+    return;
+  }
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, preference);
+  } catch {
+    // localStorage not available
+  }
+}
+
+// Get system color scheme preference
+function getSystemScheme(): ColorScheme {
+  if (typeof window !== "undefined" && window.matchMedia) {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  return Appearance.getColorScheme() || "dark";
+}
+
+// Resolve theme preference to actual color scheme
+function resolveScheme(preference: ThemePreference): ColorScheme {
+  if (preference === "system") {
+    return getSystemScheme();
+  }
+  return preference;
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // FORCE DARK THEME ONLY - Deep Slate dark theme
-  const [colorScheme, setColorSchemeState] = useState<ColorScheme>("dark");
+  // Initialize with stored preference or default to dark
+  const [themePreference, setThemePreferenceState] = useState<ThemePreference>(() => {
+    return getStoredTheme() || "dark";
+  });
+  const [colorScheme, setColorSchemeState] = useState<ColorScheme>(() => {
+    const stored = getStoredTheme();
+    return resolveScheme(stored || "dark");
+  });
 
   const applyScheme = useCallback((scheme: ColorScheme) => {
     nativewindColorScheme.set(scheme);
