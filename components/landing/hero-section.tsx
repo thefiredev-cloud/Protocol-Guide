@@ -293,7 +293,7 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
       {isMobile && (
         <Animated.View
           style={{
-            backgroundColor: COLORS.bgWhite,
+            backgroundColor: COLORS.bgSurface,
             paddingHorizontal: 16,
             borderBottomWidth: menuOpen ? 1 : 0,
             borderBottomColor: "#E2E8F0",
