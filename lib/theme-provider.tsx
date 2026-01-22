@@ -27,7 +27,7 @@ function getStoredTheme(): ThemePreference | null {
     if (stored === "light" || stored === "dark" || stored === "system") {
       return stored;
     }
-  } catch {
+  } catch (_e) {
     // localStorage not available
   }
   return null;
@@ -40,7 +40,7 @@ function storeTheme(preference: ThemePreference): void {
   }
   try {
     localStorage.setItem(THEME_STORAGE_KEY, preference);
-  } catch {
+  } catch (_e) {
     // localStorage not available
   }
 }
