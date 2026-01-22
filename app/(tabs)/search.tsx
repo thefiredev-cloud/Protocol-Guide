@@ -652,10 +652,10 @@ export default function SearchScreen() {
               Search Tips
             </Text>
             <Text className="text-xs text-muted leading-5">
-              • Use natural language: "how to treat pediatric asthma"{"\n"}
-              • Include condition names: "STEMI", "anaphylaxis", "seizure"{"\n"}
-              • Specify patient type: "pediatric", "geriatric", "pregnant"{"\n"}
-              • Search by medication: "epinephrine", "naloxone", "albuterol"
+              • Use natural language: {'"how to treat pediatric asthma"'}{"\n"}
+              • Include condition names: {'"STEMI"'}, {'"anaphylaxis"'}, {'"seizure"'}{"\n"}
+              • Specify patient type: {'"pediatric"'}, {'"geriatric"'}, {'"pregnant"'}{"\n"}
+              • Search by medication: {'"epinephrine"'}, {'"naloxone"'}, {'"albuterol"'}
             </Text>
           </View>
         </View>
