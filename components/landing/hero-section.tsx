@@ -19,13 +19,14 @@ import { AnimatedPressable, AnimatedNavLink } from "./animated-pressable";
 import { injectSmoothScrollCSS, scrollToElement } from "./animation-utils";
 
 const COLORS = {
-  primaryRed: "#9B2335",
-  primaryRedLight: "#C73E52",
-  bgWhite: "#FFFFFF",
-  bgLightPink: "#FEF2F2",
-  textBlack: "#0F172A",
-  textGray: "#475569",
-  focusRing: "#2563EB",
+  primaryRed: "#EF4444",
+  primaryRedLight: "#F87171",
+  bgDark: "#0F172A",
+  bgSurface: "#1E293B",
+  textWhite: "#F1F5F9",
+  textMuted: "#94A3B8",
+  focusRing: "#3B82F6",
+  border: "#334155",
 };
 
 /** Inject CSS keyframes for subtle gradient animation (web only) */
