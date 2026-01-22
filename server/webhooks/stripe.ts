@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import Stripe from "stripe";
 import { constructWebhookEvent } from "../stripe";
 import * as db from "../db";
-import { users } from "../../drizzle/schema";
+import { users, stripeWebhookEvents } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 
 /**
