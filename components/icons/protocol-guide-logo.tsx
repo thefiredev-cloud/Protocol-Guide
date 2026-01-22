@@ -275,10 +275,6 @@ function LoadingPlaceholder({
       accessibilityState={{ busy: true }}
       accessibilityHint="Please wait while the logo loads"
       testID={testID}
-      // @ts-expect-error - Web-only ARIA attribute (boolean value)
-      aria-busy={true}
-      // @ts-expect-error - Web-only ARIA attribute
-      aria-label="Loading Protocol Guide logo"
     />
   );
 }
