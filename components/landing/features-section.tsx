@@ -300,7 +300,6 @@ function FeatureCard({ feature, index, isVisible, isMobile }: FeatureCardProps) 
       onHoverIn={handleHoverIn}
       onHoverOut={handleHoverOut}
       style={isMobile ? { width: "100%" } : { flex: 1, minWidth: 280, maxWidth: 320 }}
-      accessibilityRole="article"
       accessibilityLabel={`${feature.title}: ${feature.description}`}
     >
       <Animated.View
