@@ -48,10 +48,10 @@ export default function LandingPage() {
           flex: 1,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "#FFFFFF",
+          backgroundColor: "#0F172A",
         }}
       >
-        <ActivityIndicator size="large" color="#DC2626" />
+        <ActivityIndicator size="large" color="#EF4444" />
       </View>
     );
   }
@@ -64,10 +64,10 @@ export default function LandingPage() {
           flex: 1,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "#FFFFFF",
+          backgroundColor: "#0F172A",
         }}
       >
-        <ActivityIndicator size="large" color="#DC2626" />
+        <ActivityIndicator size="large" color="#EF4444" />
       </View>
     );
   }
