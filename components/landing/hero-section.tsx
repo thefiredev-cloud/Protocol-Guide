@@ -361,7 +361,6 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
             transform: [{ translateY: headlineTranslateY }],
           }}
           accessibilityRole="header"
-          accessibilityLevel={1}
         >
           <Text style={{ color: COLORS.textWhite }}>Seconds Save </Text>
           <Text
