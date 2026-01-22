@@ -641,7 +641,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   subtitle: {
-    color: COLORS.textGray,
+    color: COLORS.textMuted,
     fontSize: 16,
     textAlign: "center",
     marginBottom: 32,
@@ -686,7 +686,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   statusText: {
-    color: COLORS.textGray,
+    color: COLORS.textMuted,
     fontSize: 13,
   },
   completeBadge: {
@@ -869,7 +869,7 @@ const styles = StyleSheet.create({
     color: COLORS.primaryRed,
   },
   cardDescription: {
-    color: COLORS.textGray,
+    color: COLORS.textMuted,
     fontSize: 13,
     lineHeight: 18,
   },
