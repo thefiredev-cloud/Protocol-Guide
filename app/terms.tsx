@@ -33,7 +33,7 @@ export default function TermsOfServiceScreen() {
         <Text className="text-sm text-muted mb-6">Last updated: January 10, 2026</Text>
 
         <Section title="1. Acceptance of Terms">
-          By accessing or using Protocol Guide ("Service"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, do not use the Service.
+          By accessing or using Protocol Guide ({'"Service"'}), you agree to be bound by these Terms of Service ({'"Terms"'}). If you do not agree to these Terms, do not use the Service.
         </Section>
 
         <Section title="2. Description of Service">
