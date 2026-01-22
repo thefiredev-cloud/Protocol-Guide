@@ -634,7 +634,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   title: {
-    color: COLORS.textBlack,
+    color: COLORS.textWhite,
     fontSize: 28,
     fontWeight: "700",
     textAlign: "center",
@@ -675,7 +675,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   chartTitle: {
-    color: COLORS.textBlack,
+    color: COLORS.textWhite,
     fontSize: 14,
     fontWeight: "600",
   },
@@ -704,7 +704,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   barLabel: {
-    color: COLORS.textBlack,
+    color: COLORS.textWhite,
     fontSize: 13,
     marginBottom: 6,
   },
@@ -787,7 +787,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   buttonText: {
-    color: COLORS.textBlack,
+    color: COLORS.textWhite,
     fontSize: 13,
     fontWeight: "600",
   },
@@ -860,7 +860,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   cardValue: {
-    color: COLORS.textBlack,
+    color: COLORS.textWhite,
     fontSize: 32,
     fontWeight: "700",
     marginBottom: 4,
