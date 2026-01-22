@@ -10,9 +10,19 @@
  * - Free: ~$0.0003-0.0005/query
  * - Pro simple: ~$0.0003-0.0005/query
  * - Pro complex: ~$0.002-0.004/query
+ *
+ * Features:
+ * - Exponential backoff retry logic (3 retries, 1s-10s delay)
+ * - Custom error types for better error handling
  */
 
 import Anthropic from '@anthropic-ai/sdk';
+import {
+  parseClaudeError,
+  isRetryableError,
+  ClaudeApiError,
+  ProtocolGuideError,
+} from './errors';
 
 // Initialize Anthropic client
 const anthropic = new Anthropic({
