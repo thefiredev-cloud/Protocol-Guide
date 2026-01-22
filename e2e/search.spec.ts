@@ -187,7 +187,7 @@ test.describe("State Filter", () => {
 
 test.describe("Search Results Display", () => {
   test("displays protocol title in results", async ({ page }) => {
-    await page.goto("/(tabs)/");
+    await page.goto("/(tabs)/?e2e=true");
     await page.waitForTimeout(2000);
 
     const searchInput = page.locator('[data-testid="search-input"]').or(
@@ -204,7 +204,7 @@ test.describe("Search Results Display", () => {
   });
 
   test("displays relevance score or ranking", async ({ page }) => {
-    await page.goto("/(tabs)/");
+    await page.goto("/(tabs)/?e2e=true");
     await page.waitForTimeout(2000);
 
     const searchInput = page.locator('[data-testid="search-input"]').or(
@@ -221,7 +221,7 @@ test.describe("Search Results Display", () => {
   });
 
   test("allows clicking on result for details", async ({ page }) => {
-    await page.goto("/(tabs)/");
+    await page.goto("/(tabs)/?e2e=true");
     await page.waitForTimeout(2000);
 
     const searchInput = page.locator('[data-testid="search-input"]').or(
