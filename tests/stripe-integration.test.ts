@@ -5,6 +5,15 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import type Stripe from "stripe";
 
+// Import functions to test AFTER mocks are set up
+import {
+  createCheckoutSession,
+  createCustomerPortalSession,
+  constructWebhookEvent,
+  getSubscription,
+  cancelSubscription,
+} from "../server/stripe";
+
 // Mock Stripe SDK - define mocks BEFORE any imports
 const mockCheckoutSessionsCreate = vi.fn();
 const mockBillingPortalSessionsCreate = vi.fn();
@@ -43,15 +52,6 @@ vi.mock("../server/db", () => ({
     annual: 99.99,
   },
 }));
-
-// Import functions to test AFTER mocks are set up
-import {
-  createCheckoutSession,
-  createCustomerPortalSession,
-  constructWebhookEvent,
-  getSubscription,
-  cancelSubscription,
-} from "../server/stripe";
 
 describe("Stripe Checkout Sessions", () => {
   beforeEach(() => {
