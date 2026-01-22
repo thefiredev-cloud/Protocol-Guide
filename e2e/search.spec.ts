@@ -19,8 +19,8 @@ test.describe("Protocol Search", () => {
   });
 
   test("searches for cardiac arrest and returns results", async ({ page }) => {
-    // Find and fill search input
-    const searchInput = page.getByPlaceholder(/search/i);
+    // Find and fill search input - React Native Web uses testID
+    const searchInput = page.getByTestId("search-input");
     await searchInput.fill("cardiac arrest");
 
     // Submit search (may be auto-submit or button click)
@@ -31,9 +31,6 @@ test.describe("Protocol Search", () => {
 
     // Verify results are displayed
     // Results should contain cardiac-related content
-    const resultsContainer = page.locator("[data-testid=search-results]");
-
-    // If test ID not available, look for result text
     const pageContent = await page.textContent("body");
     expect(
       pageContent?.toLowerCase().includes("cardiac") ||
