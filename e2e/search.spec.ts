@@ -131,7 +131,7 @@ test.describe("State Filter", () => {
   });
 
   test("filters by Texas (TX)", async ({ page }) => {
-    await page.goto("/coverage");
+    await page.goto("/(tabs)/coverage");
     await page.waitForLoadState("networkidle");
 
     const texasOption = page.getByText(/Texas/i).or(
