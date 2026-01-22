@@ -367,29 +367,34 @@ export function ComparisonCard({ label, value, description, variant }: Compariso
     outputRange: [0.1, 0.25],
   });
 
-  // For web hover, we wrap in a Pressable
-  const cardContent = (
-    <Animated.View
-      style={[
-        styles.card,
-        variant === "protocol" && styles.cardProtocol,
-        {
-          transform: [{ scale: scaleAnim }],
-        },
-      ]}
+  return (
+    <Pressable
+      onHoverIn={handleHoverIn}
+      onHoverOut={handleHoverOut}
+      style={{ flex: 1 }}
     >
-      <Text style={styles.cardLabel}>{label}</Text>
-      <Text style={[styles.cardValue, variant === "protocol" && styles.cardValueProtocol]}>
-        {value}
-      </Text>
-      <Text style={styles.cardDescription}>{description}</Text>
+      <Animated.View
+        style={[
+          styles.card,
+          variant === "protocol" && styles.cardProtocol,
+          {
+            transform: [{ scale: scaleAnim }],
+          },
+        ]}
+      >
+        <Text style={styles.cardLabel}>{label}</Text>
+        <Text style={[styles.cardValue, variant === "protocol" && styles.cardValueProtocol]}>
+          {value}
+        </Text>
+        <Text style={styles.cardDescription}>{description}</Text>
 
-      {variant === "protocol" && (
-        <View style={styles.cardBadge}>
-          <Text style={styles.cardBadgeText}>AI Powered</Text>
-        </View>
-      )}
-    </Animated.View>
+        {variant === "protocol" && (
+          <View style={styles.cardBadge}>
+            <Text style={styles.cardBadgeText}>AI Powered</Text>
+          </View>
+        )}
+      </Animated.View>
+    </Pressable>
   );
 }
 
