@@ -62,7 +62,9 @@ test.describe("Protocol Search", () => {
   });
 
   test("displays helpful message for no results", async ({ page }) => {
-    const searchInput = page.getByTestId("search-input");
+    const searchInput = page.locator('[data-testid="search-input"]').or(
+      page.locator('input[placeholder*="protocol"]')
+    ).first();
 
     // Search for nonsense query
     await searchInput.fill("xyzzy12345nonsensequery");
