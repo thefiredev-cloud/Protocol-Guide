@@ -36,6 +36,8 @@
 [[headers]]
   for = "/*"
   [headers.values]
+    # HSTS - Force HTTPS for 1 year including subdomains
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
     # Prevent clickjacking
     X-Frame-Options = "DENY"
     # Prevent MIME type sniffing
@@ -44,7 +46,10 @@
     X-XSS-Protection = "1; mode=block"
     # Referrer policy
     Referrer-Policy = "strict-origin-when-cross-origin"
+    # Permissions Policy
+    Permissions-Policy = "geolocation=(), microphone=(), camera=(), payment=()"
     # Content Security Policy
+    # Note: React Native Web requires 'unsafe-inline' and 'unsafe-eval' for runtime functionality
     Content-Security-Policy = """
       default-src 'self';
       script-src 'self' 'unsafe-inline' 'unsafe-eval';
@@ -53,6 +58,9 @@
       font-src 'self' data:;
       connect-src 'self' https://*.supabase.co https://api.anthropic.com wss://*.supabase.co;
       frame-ancestors 'none';
+      base-uri 'self';
+      form-action 'self';
+      upgrade-insecure-requests;
     """
 
 # Cache static assets aggressively
