@@ -79,7 +79,7 @@ export function UpgradeScreen({
           <View style={[styles.limitBanner, { backgroundColor: colors.primary + "15" }]}>
             <IconSymbol name="exclamationmark.triangle.fill" size={24} color={colors.primary} />
             <Text style={[styles.limitText, { color: colors.foreground }]}>
-              You've used your 5 free lookups today.{"\n"}
+              You{"'"}ve used your 5 free lookups today.{"\n"}
               <Text style={{ fontWeight: "700" }}>
                 Upgrade to Pro for unlimited queries—$39/year, less than a shift meal.
               </Text>
