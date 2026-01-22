@@ -149,7 +149,7 @@ test.describe("State Filter", () => {
   });
 
   test("filters by New York (NY)", async ({ page }) => {
-    await page.goto("/coverage");
+    await page.goto("/(tabs)/coverage");
     await page.waitForLoadState("networkidle");
 
     const nyOption = page.getByText(/New York/i).or(
