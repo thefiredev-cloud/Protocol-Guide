@@ -261,7 +261,7 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
               accessibilityRole="button"
               accessibilityLabel="Request Access"
               style={{
-                backgroundColor: COLORS.textBlack,
+                backgroundColor: COLORS.textWhite,
                 paddingHorizontal: 16,
                 paddingVertical: 8,
                 borderRadius: 6,
@@ -284,7 +284,7 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
             accessibilityLabel={menuOpen ? "Close navigation menu" : "Open navigation menu"}
             accessibilityState={{ expanded: menuOpen }}
           >
-            {menuOpen ? <CloseIcon color={COLORS.textBlack} /> : <HamburgerIcon color={COLORS.textBlack} />}
+            {menuOpen ? <CloseIcon color={COLORS.textWhite} /> : <HamburgerIcon color={COLORS.textWhite} />}
           </AnimatedPressable>
         )}
       </Animated.View>
@@ -327,7 +327,7 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
             <AnimatedPressable
               onPress={handleSignIn}
               style={{
-                backgroundColor: COLORS.textBlack,
+                backgroundColor: COLORS.textWhite,
                 paddingHorizontal: 16,
                 minHeight: 48,
                 borderRadius: 6,
@@ -370,7 +370,7 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
           accessibilityRole="header"
           accessibilityLevel={1}
         >
-          <Text style={{ color: COLORS.textBlack }}>Seconds Save </Text>
+          <Text style={{ color: COLORS.textWhite }}>Seconds Save </Text>
           <Text
             style={{
               color: COLORS.primaryRed,
@@ -414,7 +414,7 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
             }}
           >
             The modern protocol retrieval tool for EMS.{"\n"}
-            <Text style={{ fontWeight: "700", color: COLORS.textBlack }}>2 seconds</Text> to find what you need. Not 2 minutes.
+            <Text style={{ fontWeight: "700", color: COLORS.textWhite }}>2 seconds</Text> to find what you need. Not 2 minutes.
           </Text>
         </Animated.View>
 
