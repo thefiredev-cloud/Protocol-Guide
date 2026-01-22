@@ -115,3 +115,19 @@ export const contactSubmissions = mysqlTable("contact_submissions", {
 
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;
 export type InsertContactSubmission = typeof contactSubmissions.$inferInsert;
+
+/**
+ * Stripe webhook events tracking for idempotency
+ * Prevents duplicate processing of webhook events
+ */
+export const stripeWebhookEvents = mysqlTable("stripe_webhook_events", {
+  id: int("id").autoincrement().primaryKey(),
+  eventId: varchar("eventId", { length: 255 }).notNull().unique(), // Stripe event ID (evt_xxx)
+  eventType: varchar("eventType", { length: 100 }).notNull(), // e.g., checkout.session.completed
+  processedAt: timestamp("processedAt").defaultNow().notNull(),
+  // Optional: Store event data for debugging
+  eventData: json("eventData"),
+});
+
+export type StripeWebhookEvent = typeof stripeWebhookEvents.$inferSelect;
+export type InsertStripeWebhookEvent = typeof stripeWebhookEvents.$inferInsert;
