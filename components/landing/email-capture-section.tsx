@@ -458,7 +458,7 @@ export function EmailCaptureSection() {
   };
 
   return (
-    <View style={{ backgroundColor: COLORS.bgLightGray, paddingVertical: isMobile ? 48 : 64 }} nativeID="email-capture-section">
+    <View style={{ backgroundColor: COLORS.bgDark, paddingVertical: isMobile ? 48 : 64 }} nativeID="email-capture-section">
       <Animated.View
         style={[{ paddingHorizontal: isMobile ? 16 : 24, maxWidth: 600, alignSelf: "center", width: "100%" }, animatedSectionStyle]}
       >
