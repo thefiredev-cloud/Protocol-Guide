@@ -456,7 +456,7 @@ export function FeaturesSection() {
       ref={sectionRef}
       nativeID="features-section"
       style={{
-        backgroundColor: COLORS.bgLightGray,
+        backgroundColor: COLORS.bgDark,
         paddingVertical: isMobile ? 48 : 80,
       }}
     >
