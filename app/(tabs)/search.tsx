@@ -572,7 +572,7 @@ export default function SearchScreen() {
             No protocols found
           </Text>
           <Text className="text-sm text-muted mt-2 text-center">
-            Try different keywords or check your spelling. Example searches: "cardiac arrest", "pediatric seizure", "anaphylaxis treatment"
+            Try different keywords or check your spelling. Example searches: {'"cardiac arrest"'}, {'"pediatric seizure"'}, {'"anaphylaxis treatment"'}
           </Text>
         </View>
       ) : searchResults.length > 0 ? (
