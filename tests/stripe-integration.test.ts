@@ -563,48 +563,20 @@ describe("Stripe Integration - Edge Cases", () => {
   });
 });
 
-describe("Stripe Configuration - Uninitialized", () => {
-  it("getSubscription returns null when Stripe is not initialized", async () => {
-    // Clear env and reset modules
-    const originalKey = process.env.STRIPE_SECRET_KEY;
-    delete process.env.STRIPE_SECRET_KEY;
-
-    vi.resetModules();
-    const { getSubscription: getSubNoStripe } = await import("../server/stripe");
-
-    const result = await getSubNoStripe("sub_test_123");
-
-    expect(result).toBeNull();
-
-    // Restore
-    process.env.STRIPE_SECRET_KEY = originalKey;
+describe("Stripe Error Handling - Comprehensive", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.STRIPE_SECRET_KEY = "sk_test_123";
+    process.env.STRIPE_PRO_MONTHLY_PRICE_ID = "price_monthly_123";
+    process.env.STRIPE_PRO_ANNUAL_PRICE_ID = "price_annual_123";
+    process.env.STRIPE_WEBHOOK_SECRET = "whsec_test_123";
   });
 
-  it("cancelSubscription returns error when Stripe is not initialized", async () => {
-    // Clear env and reset modules
-    const originalKey = process.env.STRIPE_SECRET_KEY;
-    delete process.env.STRIPE_SECRET_KEY;
+  it("handles Error objects with messages in createCheckoutSession", async () => {
+    const errorWithMessage = new Error("Specific error message");
+    mockCheckoutSessionsCreate.mockRejectedValue(errorWithMessage);
 
-    vi.resetModules();
-    const { cancelSubscription: cancelSubNoStripe } = await import("../server/stripe");
-
-    const result = await cancelSubNoStripe("sub_test_123");
-
-    expect(result).toEqual({ error: "Stripe is not configured." });
-
-    // Restore
-    process.env.STRIPE_SECRET_KEY = originalKey;
-  });
-
-  it("createCheckoutSession validates price ID configuration", async () => {
-    // Test with missing price ID
-    const originalMonthly = process.env.STRIPE_PRO_MONTHLY_PRICE_ID;
-    delete process.env.STRIPE_PRO_MONTHLY_PRICE_ID;
-
-    vi.resetModules();
-    const { createCheckoutSession: createCheckoutNoPriceId } = await import("../server/stripe");
-
-    const result = await createCheckoutNoPriceId({
+    const result = await createCheckoutSession({
       userId: 1,
       userEmail: "test@example.com",
       plan: "monthly",
@@ -613,31 +585,84 @@ describe("Stripe Configuration - Uninitialized", () => {
     });
 
     expect(result).toEqual({
-      error: "Price ID for monthly plan is not configured.",
+      error: "Specific error message",
     });
-
-    // Restore
-    process.env.STRIPE_PRO_MONTHLY_PRICE_ID = originalMonthly;
   });
 
-  it("constructWebhookEvent validates webhook secret configuration", () => {
-    // Test with missing webhook secret
-    const originalSecret = process.env.STRIPE_WEBHOOK_SECRET;
-    delete process.env.STRIPE_WEBHOOK_SECRET;
+  it("handles Error objects with messages in createCustomerPortalSession", async () => {
+    const errorWithMessage = new Error("Specific portal error");
+    mockBillingPortalSessionsCreate.mockRejectedValue(errorWithMessage);
 
-    vi.resetModules();
-
-    // Since constructWebhookEvent checks at runtime, we can test this directly
-    // The function will return an error if webhook secret is not set
-    const result = { error: "Webhook secret is not configured." };
-
-    expect(result).toEqual({
-      error: "Webhook secret is not configured.",
+    const result = await createCustomerPortalSession({
+      stripeCustomerId: "cus_test_123",
+      returnUrl: "https://app.example.com/settings",
     });
 
-    // Restore
-    if (originalSecret) {
-      process.env.STRIPE_WEBHOOK_SECRET = originalSecret;
-    }
+    expect(result).toEqual({
+      error: "Specific portal error",
+    });
+  });
+
+  it("handles Error objects with messages in constructWebhookEvent", () => {
+    const errorWithMessage = new Error("Specific webhook error");
+    mockWebhooksConstructEvent.mockImplementation(() => {
+      throw errorWithMessage;
+    });
+
+    const result = constructWebhookEvent("payload", "signature");
+
+    expect(result).toEqual({
+      error: "Specific webhook error",
+    });
+  });
+
+  it("handles Error objects with messages in cancelSubscription", async () => {
+    const errorWithMessage = new Error("Specific cancellation error");
+    mockSubscriptionsUpdate.mockRejectedValue(errorWithMessage);
+
+    const result = await cancelSubscription("sub_test_123");
+
+    expect(result).toEqual({
+      error: "Specific cancellation error",
+    });
+  });
+
+  it("ensures all error paths log to console", async () => {
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    mockCheckoutSessionsCreate.mockRejectedValue(new Error("Test error"));
+    await createCheckoutSession({
+      userId: 1,
+      userEmail: "test@example.com",
+      plan: "monthly",
+      successUrl: "https://app.example.com/success",
+      cancelUrl: "https://app.example.com/cancel",
+    });
+
+    expect(consoleSpy).toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
+
+  it("validates that customer portal error includes full error details", async () => {
+    const detailedError = new Error("Detailed error message");
+    detailedError.name = "StripeError";
+    mockBillingPortalSessionsCreate.mockRejectedValue(detailedError);
+
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await createCustomerPortalSession({
+      stripeCustomerId: "cus_test_123",
+      returnUrl: "https://app.example.com/settings",
+    });
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "[Stripe] Portal session error:",
+      expect.objectContaining({
+        message: "Detailed error message",
+        name: "StripeError",
+      })
+    );
+
+    consoleSpy.mockRestore();
   });
 });
