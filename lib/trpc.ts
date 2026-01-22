@@ -22,8 +22,6 @@ export function createTRPCClient() {
   const apiBaseUrl = getApiBaseUrl();
   const trpcUrl = `${apiBaseUrl}/api/trpc`;
 
-  console.log("[tRPC] Creating client with URL:", trpcUrl);
-
   return trpc.createClient({
     links: [
       httpBatchLink({
