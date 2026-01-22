@@ -216,8 +216,6 @@ export function AnimatedNavLink({
     <Pressable
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      // @ts-expect-error - web className for focus indicator
-      className={Platform.OS === "web" ? "focusable-nav-link" : undefined}
       {...props}
     >
       <Animated.View style={[style, { opacity: opacityAnim }]}>
