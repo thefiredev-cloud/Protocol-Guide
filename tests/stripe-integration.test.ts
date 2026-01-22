@@ -5,6 +5,10 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import type Stripe from "stripe";
 
+// Now import the modules we want to test
+import * as stripeModule from "../server/stripe";
+import * as db from "../server/db";
+
 // Mock Stripe module before importing our modules
 const mockStripe = {
   checkout: {
@@ -48,10 +52,6 @@ vi.mock("../server/db", () => ({
     }),
   }),
 }));
-
-// Now import the modules we want to test
-import * as stripeModule from "../server/stripe";
-import * as db from "../server/db";
 
 describe("Stripe Checkout Sessions", () => {
   beforeEach(() => {

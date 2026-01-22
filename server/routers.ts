@@ -77,16 +77,23 @@ export const appRouter = router({
       }))
       .query(async ({ input }) => {
         // Use Voyage AI embeddings + Supabase pgvector for true semantic search
-        // Look up county to get name/state for filtering
+        // Map MySQL county ID to Supabase agency_id
+        let agencyId: number | null = null;
         let agencyName: string | null = null;
         let stateCode: string | null = null;
 
         if (input.countyId) {
-          const county = await db.getCountyById(input.countyId);
-          if (county) {
-            agencyName = county.name;
-            stateCode = input.stateFilter || null;
+          // Map MySQL county ID -> Supabase agency_id
+          agencyId = await mapCountyIdToAgencyId(input.countyId);
+
+          // Get agency details for name/state filtering
+          const agency = await getAgencyByCountyId(input.countyId);
+          if (agency) {
+            agencyName = agency.name;
+            stateCode = agency.state_code;
           }
+
+          console.log(`[Search] Mapped MySQL county ${input.countyId} -> Supabase agency ${agencyId}`);
         } else if (input.stateFilter) {
           // State-only filter (no specific county)
           stateCode = input.stateFilter;
@@ -94,6 +101,7 @@ export const appRouter = router({
 
         const results = await semanticSearchProtocols({
           query: input.query,
+          agencyId,
           agencyName,
           stateCode,
           limit: input.limit,
