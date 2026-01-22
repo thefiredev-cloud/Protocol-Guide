@@ -6,23 +6,13 @@
  *
  * Installation (when ready to enable):
  *   pnpm add @sentry/node
- *
- * Note: This module is a placeholder. Once @sentry/node is installed,
- * uncomment the implementation and import in index.ts.
  */
 
 import { ENV } from './env';
 
-// Placeholder types until Sentry is installed
-interface SentryModule {
-  init: (options: Record<string, unknown>) => void;
-  captureException: (error: Error) => void;
-  captureMessage: (message: string) => void;
-  setUser: (user: { id?: string; email?: string } | null) => void;
-  Integrations: Record<string, new () => unknown>;
-}
-
-let Sentry: SentryModule | null = null;
+// Sentry module reference (loaded dynamically)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let SentryInstance: any = null;
 
 /**
  * Initialize Sentry error tracking
@@ -38,17 +28,18 @@ export async function initSentry(): Promise<void> {
   }
 
   try {
-    // Dynamic import to avoid bundling Sentry if not used
-     
-    const sentryModule = await import(/* webpackIgnore: true */ '@sentry/node').catch(() => null);
-    Sentry = sentryModule as SentryModule | null;
+    // Dynamic require to avoid bundling Sentry if not installed
+    // This allows the app to run without Sentry as a dependency
+    const moduleName = '@sentry/node';
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    SentryInstance = require(moduleName);
 
-    if (!Sentry) {
+    if (!SentryInstance || !SentryInstance.init) {
       console.log('[Sentry] @sentry/node not installed, run: pnpm add @sentry/node');
       return;
     }
 
-    Sentry.init({
+    SentryInstance.init({
       dsn,
       environment: ENV.isProduction ? 'production' : 'development',
       release: process.env.npm_package_version || '1.0.0',
@@ -57,8 +48,9 @@ export async function initSentry(): Promise<void> {
       tracesSampleRate: ENV.isProduction ? 0.1 : 1.0,
 
       // Filter out expected/noisy errors
-      beforeSend(event: Record<string, unknown>) {
-        const message = (event.message as string) || '';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      beforeSend(event: any) {
+        const message = event?.message || '';
 
         // Don't send rate limit errors (expected behavior)
         if (message.includes('rate limit') || message.includes('Too Many Requests')) {
@@ -76,7 +68,12 @@ export async function initSentry(): Promise<void> {
 
     console.log('[Sentry] Initialized for', ENV.isProduction ? 'production' : 'development');
   } catch (error) {
-    console.error('[Sentry] Failed to initialize:', error);
+    // Module not installed - this is expected if Sentry isn't configured
+    if ((error as NodeJS.ErrnoException).code === 'MODULE_NOT_FOUND') {
+      console.log('[Sentry] @sentry/node not installed, run: pnpm add @sentry/node');
+    } else {
+      console.error('[Sentry] Failed to initialize:', error);
+    }
   }
 }
 
@@ -84,8 +81,8 @@ export async function initSentry(): Promise<void> {
  * Capture an exception to Sentry
  */
 export function captureException(error: Error): void {
-  if (Sentry) {
-    Sentry.captureException(error);
+  if (SentryInstance?.captureException) {
+    SentryInstance.captureException(error);
   }
   // Always log to console as well
   console.error('[Error]', error.message, error.stack);
@@ -95,8 +92,8 @@ export function captureException(error: Error): void {
  * Capture a message to Sentry
  */
 export function captureMessage(message: string): void {
-  if (Sentry) {
-    Sentry.captureMessage(message);
+  if (SentryInstance?.captureMessage) {
+    SentryInstance.captureMessage(message);
   }
   console.log('[Sentry Message]', message);
 }
@@ -105,8 +102,8 @@ export function captureMessage(message: string): void {
  * Set user context for error tracking
  */
 export function setUser(user: { id?: string; email?: string } | null): void {
-  if (Sentry) {
-    Sentry.setUser(user);
+  if (SentryInstance?.setUser) {
+    SentryInstance.setUser(user);
   }
 }
 
@@ -135,4 +132,10 @@ export function sentryErrorHandler(
   }
 }
 
-export { Sentry };
+/**
+ * Get the Sentry instance (if initialized)
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getSentry(): any {
+  return SentryInstance;
+}
