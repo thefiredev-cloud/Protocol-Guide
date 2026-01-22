@@ -72,8 +72,8 @@ export default function MedicalDisclaimerScreen() {
         </Section>
 
         <Section title="Local Protocol Precedence">
-          YOUR LOCAL PROTOCOLS ALWAYS TAKE PRECEDENCE. Protocol Guide provides general reference information that may differ from your jurisdiction's approved protocols. Always follow:
-          <BulletPoint>Your agency's written protocols and policies</BulletPoint>
+          YOUR LOCAL PROTOCOLS ALWAYS TAKE PRECEDENCE. Protocol Guide provides general reference information that may differ from your jurisdiction{"'"}s approved protocols. Always follow:
+          <BulletPoint>Your agency{"'"}s written protocols and policies</BulletPoint>
           <BulletPoint>Medical director orders and standing orders</BulletPoint>
           <BulletPoint>State and regional EMS regulations</BulletPoint>
           <BulletPoint>Online medical control direction</BulletPoint>
