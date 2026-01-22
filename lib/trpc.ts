@@ -37,18 +37,9 @@ export function createTRPCClient() {
         },
         // Custom fetch to include credentials for cookie-based auth
         fetch(url, options) {
-          console.log("[tRPC] Fetching:", url);
           return fetch(url, {
             ...options,
             credentials: "include",
-          }).then(response => {
-            if (!response.ok) {
-              console.error("[tRPC] Request failed:", response.status, response.statusText);
-            }
-            return response;
-          }).catch(error => {
-            console.error("[tRPC] Network error:", error);
-            throw error;
           });
         },
       }),
