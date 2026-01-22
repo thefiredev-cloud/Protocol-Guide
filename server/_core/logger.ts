@@ -5,13 +5,13 @@
  * Includes request ID tracking, user context, and performance timing.
  */
 
-import * as pino from "pino";
-import * as pinoHttp from "pino-http";
+import pino from "pino";
+import pinoHttp from "pino-http";
 import type { Request, Response } from "express";
 import { randomUUID } from "crypto";
 
 // Base logger configuration
-export const logger = pino({
+export const logger = pino.default ? pino.default({
   level: process.env.LOG_LEVEL || (process.env.NODE_ENV === "production" ? "info" : "debug"),
   formatters: {
     level: (label) => {
