@@ -1,11 +1,31 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 
 const TRPC_BASE = "http://127.0.0.1:3000/api/trpc";
 
 // Helper to create proper tRPC input format
 const trpcInput = (data: object) => encodeURIComponent(JSON.stringify({ json: data }));
 
+// Check if server is running before tests
+let serverRunning = false;
+
+async function checkServerRunning(): Promise<boolean> {
+  try {
+    const response = await fetch(`${TRPC_BASE}/search.stats`, {
+      signal: AbortSignal.timeout(2000)
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 describe("Agency Filter Feature", () => {
+  beforeAll(async () => {
+    serverRunning = await checkServerRunning();
+    if (!serverRunning) {
+      console.log("Server not running - skipping server-dependent tests");
+    }
+  });
   describe("Agencies by State API", () => {
     it("should return agencies for California", async () => {
       const response = await fetch(`${TRPC_BASE}/search.agenciesByState?input=${trpcInput({ state: "California" })}`);
