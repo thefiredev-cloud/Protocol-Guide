@@ -243,7 +243,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 14,
-    backgroundColor: '#FAFAFA',
   },
   menuText: {
     fontSize: 14,
