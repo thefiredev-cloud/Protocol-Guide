@@ -85,14 +85,37 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const setColorScheme = useCallback((scheme: ColorScheme) => {
-    setColorSchemeState(scheme);
-    applyScheme(scheme);
+  // Set theme preference and persist to storage
+  const setThemePreference = useCallback((preference: ThemePreference) => {
+    setThemePreferenceState(preference);
+    storeTheme(preference);
+    const resolved = resolveScheme(preference);
+    setColorSchemeState(resolved);
+    applyScheme(resolved);
   }, [applyScheme]);
 
+  // Toggle between light and dark modes
+  const toggleTheme = useCallback(() => {
+    const newScheme: ColorScheme = colorScheme === "dark" ? "light" : "dark";
+    setThemePreference(newScheme);
+  }, [colorScheme, setThemePreference]);
+
+  // Apply scheme on mount and listen for system preference changes
   useEffect(() => {
     applyScheme(colorScheme);
-  }, [applyScheme, colorScheme]);
+
+    // Listen for system preference changes when using "system" mode
+    if (typeof window !== "undefined" && window.matchMedia && themePreference === "system") {
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      const handleChange = (e: MediaQueryListEvent) => {
+        const newScheme: ColorScheme = e.matches ? "dark" : "light";
+        setColorSchemeState(newScheme);
+        applyScheme(newScheme);
+      };
+      mediaQuery.addEventListener("change", handleChange);
+      return () => mediaQuery.removeEventListener("change", handleChange);
+    }
+  }, [applyScheme, colorScheme, themePreference]);
 
   const themeVariables = useMemo(
     () =>
