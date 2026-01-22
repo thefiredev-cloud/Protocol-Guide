@@ -175,7 +175,7 @@ test.describe("Search Results Display", () => {
   test("displays protocol title in results", async ({ page }) => {
     await page.goto("/");
 
-    const searchInput = page.getByPlaceholder(/search/i);
+    const searchInput = page.getByTestId("search-input");
     await searchInput.fill("chest pain");
     await searchInput.press("Enter");
 
@@ -189,7 +189,7 @@ test.describe("Search Results Display", () => {
   test("displays relevance score or ranking", async ({ page }) => {
     await page.goto("/");
 
-    const searchInput = page.getByPlaceholder(/search/i);
+    const searchInput = page.getByTestId("search-input");
     await searchInput.fill("stroke");
     await searchInput.press("Enter");
 
@@ -203,7 +203,7 @@ test.describe("Search Results Display", () => {
   test("allows clicking on result for details", async ({ page }) => {
     await page.goto("/");
 
-    const searchInput = page.getByPlaceholder(/search/i);
+    const searchInput = page.getByTestId("search-input");
     await searchInput.fill("trauma");
     await searchInput.press("Enter");
 
