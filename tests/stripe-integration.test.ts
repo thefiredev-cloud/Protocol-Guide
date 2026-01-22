@@ -86,7 +86,7 @@ describe("Stripe Checkout Sessions", () => {
       payment_method_types: ["card"],
       line_items: [
         {
-          price: "price_monthly_123",
+          price: expect.any(String), // Price ID from env
           quantity: 1,
         },
       ],
