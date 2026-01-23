@@ -303,7 +303,18 @@ export const searchRouter = router({
 
       console.log(`[Search:Agency] MySQL ${input.agencyId} -> Supabase ${supabaseAgencyId}`);
 
-      // Step 3: Execute optimized search
+      // Step 3: Determine optimization options based on query type
+      const isMedicationQuery = normalized.intent === 'medication_dosing' ||
+        normalized.intent === 'contraindication_check' ||
+        normalized.extractedMedications.length > 0;
+
+      const searchOptions: OptimizedSearchOptions = {
+        enableMultiQueryFusion: isMedicationQuery || normalized.isComplex,
+        enableAdvancedRerank: true,
+        enableContextBoost: true, // Always boost for agency-specific search
+      };
+
+      // Step 4: Execute optimized search
       const optimizedResult = await optimizedSearch(
         {
           query: normalized.normalized,
@@ -331,7 +342,8 @@ export const searchRouter = router({
             similarity: r.similarity,
             imageUrls: r.image_urls,
           }));
-        }
+        },
+        searchOptions
       );
 
       const latencyMs = Date.now() - searchStartTime;
