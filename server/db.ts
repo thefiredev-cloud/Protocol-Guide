@@ -9,6 +9,18 @@ import {
   agencyInvitations,
   Agency, InsertAgency, AgencyMember, InsertAgencyMember,
   ProtocolVersion, InsertProtocolVersion, ProtocolUpload, InsertProtocolUpload,
+  // Analytics tables
+  analyticsEvents, searchAnalytics, protocolAccessLogs, sessionAnalytics,
+  dailyMetrics, retentionCohorts, contentGaps, conversionEvents, featureUsageStats,
+  type AnalyticsEvent, type InsertAnalyticsEvent,
+  type SearchAnalytics, type InsertSearchAnalytics,
+  type ProtocolAccessLog, type InsertProtocolAccessLog,
+  type SessionAnalytics, type InsertSessionAnalytics,
+  type DailyMetric, type InsertDailyMetric,
+  type RetentionCohort, type InsertRetentionCohort,
+  type ContentGap, type InsertContentGap,
+  type ConversionEvent, type InsertConversionEvent,
+  type FeatureUsageStat, type InsertFeatureUsageStat,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 

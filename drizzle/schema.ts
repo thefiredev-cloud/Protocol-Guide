@@ -19,6 +19,7 @@ export const users = mysqlTable("users", {
   subscriptionId: varchar("subscriptionId", { length: 255 }),
   subscriptionStatus: varchar("subscriptionStatus", { length: 50 }),
   subscriptionEndDate: timestamp("subscriptionEndDate"),
+  disclaimerAcknowledgedAt: timestamp("disclaimerAcknowledgedAt"), // P0 CRITICAL: Medical disclaimer consent timestamp
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
