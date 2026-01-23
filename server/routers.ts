@@ -397,6 +397,65 @@ export const appRouter = router({
       .query(async ({ ctx, input }) => {
         return db.getUserQueries(ctx.user.id, input.limit);
       }),
+
+    // Search history for cloud sync (Pro feature)
+    searchHistory: protectedProcedure
+      .input(z.object({ limit: z.number().min(1).max(100).default(50) }))
+      .query(async ({ ctx, input }) => {
+        return dbUserCounties.getUserSearchHistory(ctx.user.id, input.limit);
+      }),
+
+    // Sync local search history to cloud (Pro feature)
+    syncHistory: protectedProcedure
+      .input(z.object({
+        localQueries: z.array(z.object({
+          queryText: z.string().min(1).max(500),
+          countyId: z.number().optional(),
+          timestamp: z.string().or(z.date()),
+          deviceId: z.string().max(64).optional(),
+        })),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Check if user is Pro/Enterprise
+        const user = await db.getUserById(ctx.user.id);
+        if (!user || user.tier === 'free') {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Search history sync requires Pro subscription",
+          });
+        }
+
+        const result = await dbUserCounties.syncSearchHistory(
+          ctx.user.id,
+          input.localQueries
+        );
+
+        return {
+          success: result.success,
+          merged: result.merged,
+          serverHistory: result.serverHistory,
+        };
+      }),
+
+    // Clear search history
+    clearHistory: protectedProcedure.mutation(async ({ ctx }) => {
+      const result = await dbUserCounties.clearSearchHistory(ctx.user.id);
+      return result;
+    }),
+
+    // Delete single history entry
+    deleteHistoryEntry: protectedProcedure
+      .input(z.object({ entryId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const result = await dbUserCounties.deleteSearchHistoryEntry(ctx.user.id, input.entryId);
+        if (!result.success) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: result.error || "Entry not found",
+          });
+        }
+        return { success: true };
+      }),
   }),
 
   // Voice transcription router
