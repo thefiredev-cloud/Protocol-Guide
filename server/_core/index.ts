@@ -9,6 +9,7 @@ import { createContext } from "./context";
 import { handleStripeWebhook } from "../webhooks/stripe";
 import { summarizeHandler } from "../api/summarize";
 import { imageTrendLaunchHandler, imageTrendHealthHandler } from "../api/imagetrend";
+import { clientErrorHandler } from "../api/client-error";
 import { validateEnv, ENV } from "./env";
 import { logger, httpLogger } from "./logger";
 import { initRedis, isRedisAvailable } from "./redis";

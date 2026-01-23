@@ -276,13 +276,13 @@ export async function setUserPrimaryCounty(
   // Unset all primaries for user
   await db
     .update(userCounties)
-    .set({ isPrimary: false })
+    .set({ isPrimary: 0 })
     .where(eq(userCounties.userId, userId));
 
   // Set the new primary
   await db
     .update(userCounties)
-    .set({ isPrimary: true })
+    .set({ isPrimary: 1 })
     .where(and(eq(userCounties.userId, userId), eq(userCounties.countyId, countyId)));
 
   return { success: true };
