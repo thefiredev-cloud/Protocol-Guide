@@ -331,7 +331,13 @@ class Analytics {
    * Track conversion events
    */
   trackConversion(eventName: string, props: ConversionEventProperties): void {
-    this.track(eventName, props);
+    this.track(eventName, {
+      fromTier: props.fromTier,
+      toTier: props.toTier,
+      plan: props.plan,
+      promptLocation: props.promptLocation,
+      triggerFeature: props.triggerFeature,
+    });
   }
 
   /**
