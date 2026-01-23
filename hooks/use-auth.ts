@@ -1,8 +1,9 @@
 /**
- * useAuth Hook - Supabase Auth integration
+ * useAuth Hook - Supabase Auth integration with token refresh
  */
 
 import { supabase, signOut as supabaseSignOut } from "@/lib/supabase";
+import { startSessionMonitor } from "@/lib/auth-refresh";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
 

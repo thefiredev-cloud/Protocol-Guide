@@ -34,11 +34,16 @@ export interface HealthCheckResult {
     supabase: ServiceHealth;
     claude: ServiceHealth;
     voyage: ServiceHealth;
+    redis: ServiceHealth;
   };
   resources: {
     memoryUsedMB: number;
     memoryTotalMB: number;
     memoryPercentage: number;
+  };
+  resilience: {
+    overallHealth: 'healthy' | 'degraded' | 'unhealthy';
+    circuitBreakers: Record<string, { state: string; available: boolean }>;
   };
 }
 
