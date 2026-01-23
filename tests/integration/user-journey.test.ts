@@ -10,8 +10,18 @@
  * Uses real database logic, mocks external services (Stripe, AI, Supabase)
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
+
 import { appRouter } from "../../server/routers";
 import type { TrpcContext } from "../../server/_core/context";
+
+// Mock environment validation before any imports
+vi.mock("../../server/_core/env", () => ({
+  ENV: {
+    isProduction: false,
+    isDevelopment: true,
+  },
+  validateEnv: vi.fn().mockReturnValue({ valid: true }),
+}));
 
 // Mock external services
 vi.mock("../../server/_core/embeddings", () => ({
