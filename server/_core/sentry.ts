@@ -2,44 +2,41 @@
  * Protocol Guide - Sentry Error Tracking Configuration
  *
  * Provides error tracking and performance monitoring via Sentry.
- * Enable by setting SENTRY_DSN environment variable.
+ * REQUIRED for production deployments - set SENTRY_DSN environment variable.
  *
- * Installation (when ready to enable):
- *   pnpm add @sentry/node
+ * Sentry is a required dependency for this application.
  */
 
+import * as Sentry from '@sentry/node';
 import { ENV } from './env';
 
-// Sentry module reference (loaded dynamically)
- 
-let SentryInstance: any = null;
+// Track if Sentry has been initialized
+let sentryInitialized = false;
 
 /**
  * Initialize Sentry error tracking
  *
  * Call this at server startup, before any routes are registered.
+ * In production, missing SENTRY_DSN will log a warning but not fail.
  */
 export async function initSentry(): Promise<void> {
   const dsn = process.env.SENTRY_DSN;
 
   if (!dsn) {
-    console.log('[Sentry] No SENTRY_DSN configured, error tracking disabled');
+    if (ENV.isProduction) {
+      console.warn(
+        '[Sentry] WARNING: SENTRY_DSN is not configured in production environment!\n' +
+        '[Sentry] Error tracking is disabled. This is strongly discouraged for production.\n' +
+        '[Sentry] Set SENTRY_DSN environment variable to enable error monitoring.'
+      );
+    } else {
+      console.log('[Sentry] No SENTRY_DSN configured, error tracking disabled (development mode)');
+    }
     return;
   }
 
   try {
-    // Dynamic require to avoid bundling Sentry if not installed
-    // This allows the app to run without Sentry as a dependency
-    const moduleName = '@sentry/node';
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    SentryInstance = require(moduleName);
-
-    if (!SentryInstance || !SentryInstance.init) {
-      console.log('[Sentry] @sentry/node not installed, run: pnpm add @sentry/node');
-      return;
-    }
-
-    SentryInstance.init({
+    Sentry.init({
       dsn,
       environment: ENV.isProduction ? 'production' : 'development',
       release: process.env.npm_package_version || '1.0.0',
@@ -48,8 +45,7 @@ export async function initSentry(): Promise<void> {
       tracesSampleRate: ENV.isProduction ? 0.1 : 1.0,
 
       // Filter out expected/noisy errors
-       
-      beforeSend(event: any) {
+      beforeSend(event) {
         const message = event?.message || '';
 
         // Don't send rate limit errors (expected behavior)
@@ -66,13 +62,12 @@ export async function initSentry(): Promise<void> {
       },
     });
 
+    sentryInitialized = true;
     console.log('[Sentry] Initialized for', ENV.isProduction ? 'production' : 'development');
   } catch (error) {
-    // Module not installed - this is expected if Sentry isn't configured
-    if ((error as NodeJS.ErrnoException).code === 'MODULE_NOT_FOUND') {
-      console.log('[Sentry] @sentry/node not installed, run: pnpm add @sentry/node');
-    } else {
-      console.error('[Sentry] Failed to initialize:', error);
+    console.error('[Sentry] Failed to initialize:', error);
+    if (ENV.isProduction) {
+      console.warn('[Sentry] WARNING: Sentry initialization failed in production!');
     }
   }
 }
@@ -81,8 +76,8 @@ export async function initSentry(): Promise<void> {
  * Capture an exception to Sentry
  */
 export function captureException(error: Error): void {
-  if (SentryInstance?.captureException) {
-    SentryInstance.captureException(error);
+  if (sentryInitialized) {
+    Sentry.captureException(error);
   }
   // Always log to console as well
   console.error('[Error]', error.message, error.stack);
@@ -91,9 +86,9 @@ export function captureException(error: Error): void {
 /**
  * Capture a message to Sentry
  */
-export function captureMessage(message: string): void {
-  if (SentryInstance?.captureMessage) {
-    SentryInstance.captureMessage(message);
+export function captureMessage(message: string, level: Sentry.SeverityLevel = 'info'): void {
+  if (sentryInitialized) {
+    Sentry.captureMessage(message, level);
   }
   console.log('[Sentry Message]', message);
 }
@@ -102,8 +97,8 @@ export function captureMessage(message: string): void {
  * Set user context for error tracking
  */
 export function setUser(user: { id?: string; email?: string } | null): void {
-  if (SentryInstance?.setUser) {
-    SentryInstance.setUser(user);
+  if (sentryInitialized) {
+    Sentry.setUser(user);
   }
 }
 
@@ -134,8 +129,15 @@ export function sentryErrorHandler(
 
 /**
  * Get the Sentry instance (if initialized)
+ * Returns the Sentry module for advanced usage
  */
- 
-export function getSentry(): any {
-  return SentryInstance;
+export function getSentry(): typeof Sentry | null {
+  return sentryInitialized ? Sentry : null;
+}
+
+/**
+ * Check if Sentry is initialized
+ */
+export function isSentryInitialized(): boolean {
+  return sentryInitialized;
 }
