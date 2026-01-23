@@ -28,25 +28,15 @@ import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/use-colors";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { touchTargets, radii, spacing, shadows } from "@/lib/design-tokens";
-
-// Types
-type WeightUnit = "kg" | "lbs";
-
-type MedicationCategory = "cardiac" | "respiratory" | "analgesia" | "pediatric" | "overdose";
-
-interface Medication {
-  id: string;
-  name: string;
-  category: MedicationCategory;
-  dosePerKg: number; // mg/kg
-  unit: string; // mg, mcg, mL, etc.
-  maxDose?: number;
-  minDose?: number;
-  route: string;
-  notes?: string;
-  pediatricOnly?: boolean;
-  concentration?: string; // e.g., "1 mg/mL"
-}
+import {
+  type WeightUnit,
+  type MedicationCategory,
+  type Medication,
+  MEDICATIONS,
+  CATEGORY_LABELS,
+  CATEGORY_ICONS,
+  CATEGORY_COLORS,
+} from "./dose-calculator";
 
 // Common EMS medications with weight-based dosing
 const MEDICATIONS: Medication[] = [
