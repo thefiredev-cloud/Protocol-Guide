@@ -797,6 +797,9 @@ export const appRouter = router({
         return db.getAuditLogs({ limit, offset });
       }),
   }),
+
+  // Agency Admin router for B2B agency management
+  agencyAdmin: agencyAdminRouter,
 });
 
 export type AppRouter = typeof appRouter;
