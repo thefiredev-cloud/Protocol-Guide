@@ -576,8 +576,8 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
               borderWidth: 1,
               borderColor: COLORS.border,
             }}
-            accessibilityRole="region"
-            accessibilityLabel="Trust statistics"
+            accessible
+            accessibilityLabel="Trust statistics: 50,000 plus EMS Professionals, 55,000 plus Protocols, 50 States Covered"
           >
             <View style={{ alignItems: "center", minWidth: isMobile ? "auto" : isTablet ? 120 : 140 }}>
               <Text

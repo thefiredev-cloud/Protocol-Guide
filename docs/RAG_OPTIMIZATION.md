@@ -204,26 +204,47 @@ const chunks = chunkProtocol(protocolText, "502", "Cardiac Arrest");
 
 ## Integration Guide
 
-### Step 1: Update Search Router
+### Current Integration (Completed)
 
-In `server/routers.ts`, integrate the query normalizer:
+The RAG optimizer is now fully integrated into both search routers:
 
+**Search Router** (`server/routers/search.ts`):
 ```typescript
-import { normalizeEmsQuery } from './_core/ems-query-normalizer';
-import { optimizedSearch, selectModel } from './_core/rag-optimizer';
+import {
+  optimizedSearch,
+  highAccuracySearch,
+  latencyMonitor,
+  type OptimizedSearchOptions,
+} from "../_core/rag-optimizer";
 
-// In the search.semantic procedure:
-const normalized = normalizeEmsQuery(input.query);
+// Determine optimization options based on query type
+const isMedicationQuery = normalized.intent === 'medication_dosing' ||
+  normalized.intent === 'contraindication_check' ||
+  normalized.extractedMedications.length > 0;
 
-// Use normalized query for search
-const searchResults = await semanticSearchProtocols({
-  query: normalized.normalized,
-  threshold: selectSimilarityThreshold(normalized),
-  // ...
-});
+const searchOptions: OptimizedSearchOptions = {
+  // Multi-query fusion for medication queries (safety-critical)
+  enableMultiQueryFusion: isMedicationQuery || normalized.isComplex,
+  // Always use advanced re-ranking
+  enableAdvancedRerank: true,
+  // Enable context boost when agency/state is specified
+  enableContextBoost: !!(agencyId || stateCode),
+};
 
-// Route to optimal model
-const model = selectModel(normalized, userTier);
+const optimizedResult = await optimizedSearch(params, searchFn, searchOptions);
+```
+
+**Query Router** (`server/routers/query.ts`):
+```typescript
+// Pro users get enhanced accuracy for all queries
+// Free users get enhanced accuracy only for medication/safety queries
+const useEnhancedAccuracy = userTier !== 'free' || isMedicationQuery || normalized.isEmergent;
+
+const searchOptions: OptimizedSearchOptions = {
+  enableMultiQueryFusion: useEnhancedAccuracy || normalized.isComplex,
+  enableAdvancedRerank: true,
+  enableContextBoost: agencyName !== 'Unknown Agency',
+};
 ```
 
 ### Step 2: Update Protocol Processor
