@@ -464,6 +464,53 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
           paddingVertical: isMobile ? 48 : isTablet ? 64 : 80,
         }}
       >
+        {/* Social Proof Badge - Trusted by badge with star rating */}
+        <Animated.View
+          style={{
+            opacity: socialProofOpacity,
+            transform: [{ translateY: socialProofTranslateY }],
+            marginBottom: isMobile ? 20 : isTablet ? 24 : 28,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: isMobile ? "column" : "row",
+              alignItems: "center",
+              gap: isMobile ? 8 : 12,
+              backgroundColor: "rgba(30, 41, 59, 0.6)",
+              paddingVertical: isMobile ? 10 : 12,
+              paddingHorizontal: isMobile ? 16 : 20,
+              borderRadius: 100,
+              borderWidth: 1,
+              borderColor: COLORS.border,
+            }}
+            accessibilityRole="text"
+            accessibilityLabel="Trusted by 12,000 plus EMS professionals, rated 4.9 out of 5 stars"
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <View
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: "#22C55E",
+                }}
+              />
+              <Text
+                style={{
+                  color: COLORS.textWhite,
+                  fontSize: isMobile ? 13 : 14,
+                  fontWeight: "600",
+                  letterSpacing: 0.2,
+                }}
+              >
+                Trusted by 12,000+ EMS professionals
+              </Text>
+            </View>
+            <StarRating rating={4.9} reviewCount={847} />
+          </View>
+        </Animated.View>
+
         {/* Main Headline with fade-in + slide-up and enhanced typography */}
         <Animated.Text
           style={{
