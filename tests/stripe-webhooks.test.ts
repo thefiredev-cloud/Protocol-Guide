@@ -1007,3 +1007,269 @@ describe("Stripe Webhook Handler - Console Logging", () => {
     consoleLogSpy.mockRestore();
   });
 });
+
+describe("Stripe Webhook Handler - Dispute Events", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(db.getDb).mockResolvedValue(null);
+  });
+
+  it("handles charge.dispute.created event", async () => {
+    const req = createMockRequest("raw body", "sig_test_123");
+    const res = createMockResponse();
+
+    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    const mockEvent = {
+      id: "evt_dispute_123",
+      type: "charge.dispute.created",
+      data: {
+        object: {
+          id: "dp_test_123",
+          charge: "ch_test_123",
+          reason: "fraudulent",
+          status: "needs_response",
+          payment_intent: null,
+        } as Stripe.Dispute,
+      },
+    };
+
+    vi.mocked(constructWebhookEvent).mockReturnValue(mockEvent as any);
+
+    await handleStripeWebhook(req as Request, res as Response);
+
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect.stringContaining("[Stripe Webhook] Dispute created")
+    );
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Dispute reason: fraudulent")
+    );
+    expect(res.statusCode).toBe(200);
+    expect(res.jsonData).toEqual({ received: true });
+
+    consoleLogSpy.mockRestore();
+  });
+
+  it("handles charge.dispute.created with customer downgrade", async () => {
+    const req = createMockRequest("raw body", "sig_test_123");
+    const res = createMockResponse();
+
+    // Set env var to enable downgrade on dispute
+    process.env.STRIPE_DOWNGRADE_ON_DISPUTE = "true";
+
+    const mockEvent = {
+      id: "evt_dispute_456",
+      type: "charge.dispute.created",
+      data: {
+        object: {
+          id: "dp_test_456",
+          charge: "ch_test_456",
+          reason: "fraudulent",
+          status: "needs_response",
+          payment_intent: {
+            customer: "cus_test_123",
+          },
+        } as Stripe.Dispute,
+      },
+    };
+
+    vi.mocked(constructWebhookEvent).mockReturnValue(mockEvent as any);
+    vi.mocked(db.getUserByStripeCustomerId).mockResolvedValue({
+      id: 1,
+      tier: "pro",
+      subscriptionId: "sub_test_123",
+    } as any);
+
+    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    await handleStripeWebhook(req as Request, res as Response);
+
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Dispute affects user 1")
+    );
+    expect(res.statusCode).toBe(200);
+
+    consoleLogSpy.mockRestore();
+    delete process.env.STRIPE_DOWNGRADE_ON_DISPUTE;
+  });
+
+  it("handles charge.dispute.closed - won", async () => {
+    const req = createMockRequest("raw body", "sig_test_123");
+    const res = createMockResponse();
+
+    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    const mockEvent = {
+      id: "evt_dispute_789",
+      type: "charge.dispute.closed",
+      data: {
+        object: {
+          id: "dp_test_789",
+          charge: "ch_test_789",
+          reason: "fraudulent",
+          status: "won",
+        } as Stripe.Dispute,
+      },
+    };
+
+    vi.mocked(constructWebhookEvent).mockReturnValue(mockEvent as any);
+
+    await handleStripeWebhook(req as Request, res as Response);
+
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect.stringContaining("[Stripe Webhook] Dispute closed")
+    );
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Dispute won - funds retained")
+    );
+    expect(res.statusCode).toBe(200);
+
+    consoleLogSpy.mockRestore();
+  });
+
+  it("handles charge.dispute.closed - lost", async () => {
+    const req = createMockRequest("raw body", "sig_test_123");
+    const res = createMockResponse();
+
+    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    const mockEvent = {
+      id: "evt_dispute_lost",
+      type: "charge.dispute.closed",
+      data: {
+        object: {
+          id: "dp_test_lost",
+          charge: "ch_test_lost",
+          reason: "fraudulent",
+          status: "lost",
+        } as Stripe.Dispute,
+      },
+    };
+
+    vi.mocked(constructWebhookEvent).mockReturnValue(mockEvent as any);
+
+    await handleStripeWebhook(req as Request, res as Response);
+
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Dispute lost - funds returned to customer")
+    );
+    expect(res.statusCode).toBe(200);
+
+    consoleLogSpy.mockRestore();
+  });
+
+  it("handles charge.dispute.closed - warning_closed", async () => {
+    const req = createMockRequest("raw body", "sig_test_123");
+    const res = createMockResponse();
+
+    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    const mockEvent = {
+      id: "evt_dispute_warning",
+      type: "charge.dispute.closed",
+      data: {
+        object: {
+          id: "dp_test_warning",
+          charge: "ch_test_warning",
+          reason: "general",
+          status: "warning_closed",
+        } as Stripe.Dispute,
+      },
+    };
+
+    vi.mocked(constructWebhookEvent).mockReturnValue(mockEvent as any);
+
+    await handleStripeWebhook(req as Request, res as Response);
+
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Dispute warning closed")
+    );
+    expect(res.statusCode).toBe(200);
+
+    consoleLogSpy.mockRestore();
+  });
+});
+
+describe("Stripe Webhook Handler - Customer Deleted", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("handles customer.deleted event", async () => {
+    const req = createMockRequest("raw body", "sig_test_123");
+    const res = createMockResponse();
+
+    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    const mockEvent = {
+      id: "evt_customer_deleted",
+      type: "customer.deleted",
+      data: {
+        object: {
+          id: "cus_test_123",
+          email: "deleted@example.com",
+        } as Stripe.Customer,
+      },
+    };
+
+    const mockDb = {
+      update: vi.fn().mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue(undefined),
+        }),
+      }),
+    };
+
+    vi.mocked(constructWebhookEvent).mockReturnValue(mockEvent as any);
+    vi.mocked(db.getUserByStripeCustomerId).mockResolvedValue({
+      id: 1,
+      tier: "pro",
+      stripeCustomerId: "cus_test_123",
+    } as any);
+    vi.mocked(db.getDb).mockResolvedValue(mockDb as any);
+
+    await handleStripeWebhook(req as Request, res as Response);
+
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect.stringContaining("[Stripe Webhook] Customer deleted for user 1")
+    );
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Cleaned up Stripe data for user 1")
+    );
+    expect(mockDb.update).toHaveBeenCalled();
+    expect(res.statusCode).toBe(200);
+
+    consoleLogSpy.mockRestore();
+  });
+
+  it("handles customer.deleted when user not found", async () => {
+    const req = createMockRequest("raw body", "sig_test_123");
+    const res = createMockResponse();
+
+    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    const mockEvent = {
+      id: "evt_customer_not_found",
+      type: "customer.deleted",
+      data: {
+        object: {
+          id: "cus_unknown_123",
+          email: "unknown@example.com",
+        } as Stripe.Customer,
+      },
+    };
+
+    vi.mocked(constructWebhookEvent).mockReturnValue(mockEvent as any);
+    vi.mocked(db.getUserByStripeCustomerId).mockResolvedValue(undefined);
+    vi.mocked(db.getDb).mockResolvedValue(null);
+
+    await handleStripeWebhook(req as Request, res as Response);
+
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Customer deleted but no user found")
+    );
+    expect(res.statusCode).toBe(200);
+
+    consoleLogSpy.mockRestore();
+  });
+});
