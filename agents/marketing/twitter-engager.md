@@ -504,3 +504,29 @@ Align with content creator editorial calendar and industry events.
 - 50% reactive/real-time engagement
 - Always ready to pause for breaking news
 - Trend participation when appropriate
+
+---
+
+## Operations Resources
+
+See the following documents for ready-to-use assets:
+
+| Resource | Location | Use For |
+|----------|----------|---------|
+| **Strategy Playbook** | `/docs/marketing/twitter-strategy.md` | Full operations guide, templates, workflows |
+| **Tweet Bank** | `/docs/marketing/twitter-tweet-bank.md` | Pre-written tweets by category, ready to schedule |
+| **Monitoring List** | `/docs/marketing/twitter-monitoring-list.md` | Accounts, hashtags, keywords to track |
+| **Content Calendar** | `/docs/marketing/twitter-content-calendar.md` | Monthly planning template with sample month |
+
+### Quick Access Commands
+
+```bash
+# View all Twitter marketing assets
+ls docs/marketing/twitter-*
+
+# Open strategy playbook
+cat docs/marketing/twitter-strategy.md
+
+# Find specific tweet templates
+grep -A5 "Feature Announcement" docs/marketing/twitter-tweet-bank.md
+```
