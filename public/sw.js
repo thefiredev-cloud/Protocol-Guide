@@ -1,72 +1,131 @@
 /**
  * Protocol Guide Service Worker
- * Provides offline caching for the PWA
+ * Provides offline caching and PWA functionality
  */
 
-const CACHE_NAME = 'protocol-guide-v1';
+const CACHE_VERSION = 'v2';
+const CACHE_NAME = `protocol-guide-${CACHE_VERSION}`;
+const OFFLINE_PAGE = '/offline.html';
+
+// Static assets to cache on install
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
+  OFFLINE_PAGE,
+  '/icon-192.png',
+  '/icon-512.png',
 ];
 
 // Install - cache static assets
 self.addEventListener('install', (event) => {
+  console.log('[SW] Installing service worker...');
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
-    })
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        console.log('[SW] Caching static assets');
+        return cache.addAll(STATIC_ASSETS);
+      })
+      .then(() => {
+        console.log('[SW] Static assets cached successfully');
+        return self.skipWaiting();
+      })
+      .catch((error) => {
+        console.error('[SW] Failed to cache static assets:', error);
+      })
   );
-  self.skipWaiting();
 });
 
 // Activate - clean old caches
 self.addEventListener('activate', (event) => {
+  console.log('[SW] Activating service worker...');
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
-      );
-    })
+    caches.keys()
+      .then((cacheNames) => {
+        return Promise.all(
+          cacheNames
+            .filter((name) => name.startsWith('protocol-guide-') && name !== CACHE_NAME)
+            .map((name) => {
+              console.log('[SW] Deleting old cache:', name);
+              return caches.delete(name);
+            })
+        );
+      })
+      .then(() => {
+        console.log('[SW] Service worker activated');
+        return self.clients.claim();
+      })
   );
-  self.clients.claim();
 });
 
-// Fetch - network-first with cache fallback
+// Fetch strategy: Network-first with cache fallback
 self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+
   // Skip non-GET requests
-  if (event.request.method !== 'GET') return;
+  if (request.method !== 'GET') return;
+
+  // Skip cross-origin requests
+  if (url.origin !== location.origin) return;
 
   // Skip API calls - always go to network
-  if (event.request.url.includes('/api/') || event.request.url.includes('/trpc/')) {
+  if (url.pathname.startsWith('/api/') ||
+      url.pathname.startsWith('/trpc/') ||
+      url.pathname.includes('/_expo/')) {
     return;
   }
 
   event.respondWith(
-    fetch(event.request)
+    fetch(request)
       .then((response) => {
-        // Cache successful responses
+        // Only cache successful responses
         if (response.ok) {
+          // Clone the response before caching
           const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
+
+          // Cache strategy: cache everything except HTML for offline use
+          if (!url.pathname.endsWith('.html') && url.pathname !== '/') {
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, responseClone);
+            });
+          }
         }
         return response;
       })
-      .catch(() => {
+      .catch(async () => {
         // Network failed, try cache
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          // Return offline page for navigation requests
-          if (event.request.mode === 'navigate') {
-            return caches.match('/');
-          }
-          return new Response('Offline', { status: 503 });
+        const cachedResponse = await caches.match(request);
+
+        if (cachedResponse) {
+          console.log('[SW] Serving from cache:', request.url);
+          return cachedResponse;
+        }
+
+        // For navigation requests, return offline page
+        if (request.mode === 'navigate') {
+          console.log('[SW] Serving offline page');
+          const offlinePage = await caches.match(OFFLINE_PAGE);
+          return offlinePage || new Response('Offline', {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: { 'Content-Type': 'text/html' }
+          });
+        }
+
+        // For other requests, return a generic offline response
+        console.log('[SW] No cache available for:', request.url);
+        return new Response('Offline - Resource not available', {
+          status: 503,
+          statusText: 'Service Unavailable'
         });
       })
   );
+});
+
+// Handle service worker messages
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('[SW] Skipping waiting...');
+    self.skipWaiting();
+  }
 });
