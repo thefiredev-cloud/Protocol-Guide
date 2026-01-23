@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   ScrollView,
   Text,
@@ -10,12 +10,20 @@ import {
 } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { Modal } from "@/components/ui/Modal";
 import { useColors } from "@/hooks/use-colors";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { trpc } from "@/lib/trpc";
 import * as Haptics from "@/lib/haptics";
 
 type FeedbackCategory = "error" | "suggestion" | "general";
+
+interface ModalState {
+  visible: boolean;
+  title: string;
+  message: string;
+  onDismiss: () => void;
+}
 
 const CATEGORIES: { id: FeedbackCategory; label: string; icon: string; description: string }[] = [
   { 
@@ -50,16 +58,34 @@ export default function FeedbackScreen() {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [modalState, setModalState] = useState<ModalState>({
+    visible: false,
+    title: "",
+    message: "",
+    onDismiss: () => setModalState((prev) => ({ ...prev, visible: false })),
+  });
 
   const submitFeedback = trpc.feedback.submit.useMutation();
 
+  const showModal = (title: string, message: string, onDismiss?: () => void) => {
+    setModalState({
+      visible: true,
+      title,
+      message,
+      onDismiss: () => {
+        setModalState((prev) => ({ ...prev, visible: false }));
+        onDismiss?.();
+      },
+    });
+  };
+
   const handleSubmit = async () => {
     if (!subject.trim()) {
-      alert("Please enter a subject for your feedback.");
+      showModal("Missing Subject", "Please enter a subject for your feedback.");
       return;
     }
     if (!message.trim()) {
-      alert("Please enter your feedback message.");
+      showModal("Missing Message", "Please enter your feedback message.");
       return;
     }
 
@@ -75,13 +101,16 @@ export default function FeedbackScreen() {
 
       if (result.success) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        alert("Thank you! Your feedback has been submitted. We appreciate you helping us improve Protocol Guide.");
-        router.back();
+        showModal(
+          "Thank You!",
+          "Your feedback has been submitted. We appreciate you helping us improve Protocol Guide.",
+          () => router.back()
+        );
       } else {
-        alert(result.error || "Failed to submit feedback. Please try again.");
+        showModal("Error", result.error || "Failed to submit feedback. Please try again.");
       }
     } catch (error) {
-      alert("Failed to submit feedback. Please try again.");
+      showModal("Error", "Failed to submit feedback. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -264,6 +293,16 @@ export default function FeedbackScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Feedback Modal */}
+      <Modal
+        visible={modalState.visible}
+        onDismiss={modalState.onDismiss}
+        title={modalState.title}
+        message={modalState.message}
+        variant="alert"
+        testID="feedback-modal"
+      />
     </ScreenContainer>
   );
 }
