@@ -222,16 +222,14 @@ export async function downgradeToFree(userId: number): Promise<{ success: boolea
       }
     }
 
-    // Update user to free tier
-    await db.updateUserTier(userId, "free");
-
-    // Clear subscription details from user record
+    // Update user to free tier and clear subscription details in a single atomic operation
     const dbInstance = await db.getDb();
     if (dbInstance) {
       const { users } = await import("../drizzle/schema.js");
       const { eq } = await import("drizzle-orm");
 
       await dbInstance.update(users).set({
+        tier: "free",
         subscriptionId: null,
         subscriptionStatus: "canceled",
         subscriptionEndDate: null,

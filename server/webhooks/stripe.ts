@@ -234,15 +234,25 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
 
 async function handleDisputeCreated(dispute: Stripe.Dispute) {
   const chargeId = dispute.charge as string;
-  const customerId = dispute.payment_intent ?
-    (dispute.payment_intent as any).customer :
-    null;
+
+  // Safely extract customer ID - charge can be string or expanded object
+  let customerId: string | null = null;
+  if (dispute.charge && typeof dispute.charge === 'object') {
+    customerId = dispute.charge.customer as string;
+  } else if (typeof dispute.charge === 'string') {
+    // Charge is not expanded - try to get customer from metadata or payment_intent
+    if (dispute.payment_intent && typeof dispute.payment_intent === 'object') {
+      customerId = (dispute.payment_intent as any).customer as string;
+    } else {
+      console.warn('[Stripe Webhook] Dispute charge not expanded, cannot get customer ID directly');
+    }
+  }
 
   console.log(`[Stripe Webhook] Dispute created: ${dispute.id} for charge ${chargeId}`);
   console.log(`[Stripe Webhook] Dispute reason: ${dispute.reason}, status: ${dispute.status}`);
 
   if (customerId) {
-    const user = await db.getUserByStripeCustomerId(customerId as string);
+    const user = await db.getUserByStripeCustomerId(customerId);
     if (user) {
       console.log(`[Stripe Webhook] Dispute affects user ${user.id}`);
 
@@ -264,6 +274,29 @@ async function handleDisputeClosed(dispute: Stripe.Dispute) {
 
   if (dispute.status === "lost") {
     console.log(`[Stripe Webhook] Dispute lost - funds returned to customer`);
+
+    // Safely extract customer ID - charge can be string or expanded object
+    let customerId: string | null = null;
+    if (dispute.charge && typeof dispute.charge === 'object') {
+      customerId = dispute.charge.customer as string;
+    } else if (typeof dispute.charge === 'string') {
+      // Charge is not expanded - try to get customer from metadata or payment_intent
+      if (dispute.payment_intent && typeof dispute.payment_intent === 'object') {
+        customerId = (dispute.payment_intent as any).customer as string;
+      } else {
+        console.warn('[Stripe Webhook] Dispute charge not expanded, cannot get customer ID directly');
+      }
+    }
+
+    // Always downgrade user when dispute is lost, regardless of DOWNGRADE_ON_DISPUTE setting
+    if (customerId) {
+      const user = await db.getUserByStripeCustomerId(customerId);
+      if (user) {
+        console.log(`[Stripe Webhook] Downgrading user ${user.id} due to lost dispute`);
+        const { downgradeToFree } = await import("../stripe.js");
+        await downgradeToFree(user.id);
+      }
+    }
   } else if (dispute.status === "won") {
     console.log(`[Stripe Webhook] Dispute won - funds retained`);
   } else if (dispute.status === "warning_closed") {

@@ -4,50 +4,73 @@
  */
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { TRPCError } from "@trpc/server";
+import { paidProcedure, rateLimitedProcedure, router } from "../server/_core/trpc";
+
+import * as db from "../server/db";
+
+// Mock db module
+vi.mock("../server/db", () => ({
+  getUserUsage: vi.fn(),
+}));
 
 // Mock the context
 const createMockContext = (user?: any) => ({
   user,
 });
 
+// Create a test router with procedures
+const testRouter = router({
+  paidTest: paidProcedure.query(() => "success"),
+  rateLimitedTest: rateLimitedProcedure.query(() => "success"),
+});
+
+// Create caller function for testing
+const createCaller = (ctx: any) => testRouter.createCaller(ctx);
+
 describe("Tier Check Middleware", () => {
   it("allows pro tier users", async () => {
     const mockUser = {
       id: 1,
-      tier: "pro",
+      tier: "pro" as const,
       email: "pro@example.com",
     };
 
-    // Test that pro users can access paid features
-    expect(mockUser.tier).toBe("pro");
+    const caller = createCaller(createMockContext(mockUser));
+    const result = await caller.paidTest();
+
+    expect(result).toBe("success");
   });
 
   it("allows enterprise tier users", async () => {
     const mockUser = {
       id: 2,
-      tier: "enterprise",
+      tier: "enterprise" as const,
       email: "enterprise@example.com",
     };
 
-    expect(mockUser.tier).toBe("enterprise");
+    const caller = createCaller(createMockContext(mockUser));
+    const result = await caller.paidTest();
+
+    expect(result).toBe("success");
   });
 
   it("blocks free tier users from paid features", async () => {
     const mockUser = {
       id: 3,
-      tier: "free",
+      tier: "free" as const,
       email: "free@example.com",
     };
 
-    expect(mockUser.tier).toBe("free");
-    expect(mockUser.tier).not.toBe("pro");
-    expect(mockUser.tier).not.toBe("enterprise");
+    const caller = createCaller(createMockContext(mockUser));
+
+    await expect(caller.paidTest()).rejects.toThrow(TRPCError);
+    await expect(caller.paidTest()).rejects.toThrow("This feature requires a Pro or Enterprise subscription");
   });
 
   it("blocks unauthenticated users", async () => {
-    const mockContext = createMockContext(undefined);
+    const caller = createCaller(createMockContext(undefined));
 
-    expect(mockContext.user).toBeUndefined();
+    await expect(caller.paidTest()).rejects.toThrow(TRPCError);
   });
 });
 
@@ -57,57 +80,98 @@ describe("Rate Limit Middleware", () => {
   });
 
   it("allows queries within daily limit", async () => {
-    const mockUsage = {
+    const mockUser = {
+      id: 1,
+      tier: "free" as const,
+      email: "free@example.com",
+    };
+
+    vi.mocked(db.getUserUsage).mockResolvedValue({
       count: 3,
       limit: 5,
       tier: "free",
-    };
+    });
 
-    expect(mockUsage.count).toBeLessThan(mockUsage.limit);
+    const caller = createCaller(createMockContext(mockUser));
+    const result = await caller.rateLimitedTest();
+
+    expect(result).toBe("success");
+    expect(db.getUserUsage).toHaveBeenCalledWith(mockUser.id);
   });
 
   it("blocks queries at daily limit", async () => {
-    const mockUsage = {
+    const mockUser = {
+      id: 1,
+      tier: "free" as const,
+      email: "free@example.com",
+    };
+
+    vi.mocked(db.getUserUsage).mockResolvedValue({
       count: 5,
       limit: 5,
       tier: "free",
-    };
+    });
 
-    expect(mockUsage.count).toBeGreaterThanOrEqual(mockUsage.limit);
+    const caller = createCaller(createMockContext(mockUser));
+
+    await expect(caller.rateLimitedTest()).rejects.toThrow(TRPCError);
+    await expect(caller.rateLimitedTest()).rejects.toThrow("Daily query limit reached");
   });
 
   it("allows unlimited queries for pro users", async () => {
-    const mockUsage = {
+    const mockUser = {
+      id: 1,
+      tier: "pro" as const,
+      email: "pro@example.com",
+    };
+
+    vi.mocked(db.getUserUsage).mockResolvedValue({
       count: 1000,
       limit: Infinity,
       tier: "pro",
-    };
+    });
 
-    expect(mockUsage.count).toBeLessThan(mockUsage.limit);
+    const caller = createCaller(createMockContext(mockUser));
+    const result = await caller.rateLimitedTest();
+
+    expect(result).toBe("success");
   });
 
   it("allows unlimited queries for enterprise users", async () => {
-    const mockUsage = {
+    const mockUser = {
+      id: 1,
+      tier: "enterprise" as const,
+      email: "enterprise@example.com",
+    };
+
+    vi.mocked(db.getUserUsage).mockResolvedValue({
       count: 1000,
       limit: Infinity,
       tier: "enterprise",
-    };
+    });
 
-    expect(mockUsage.count).toBeLessThan(mockUsage.limit);
+    const caller = createCaller(createMockContext(mockUser));
+    const result = await caller.rateLimitedTest();
+
+    expect(result).toBe("success");
   });
 
   it("returns appropriate error message at limit", async () => {
-    const mockUsage = {
+    const mockUser = {
+      id: 1,
+      tier: "free" as const,
+      email: "free@example.com",
+    };
+
+    vi.mocked(db.getUserUsage).mockResolvedValue({
       count: 5,
       limit: 5,
       tier: "free",
-    };
+    });
 
-    const expectedError = `Daily query limit reached (${mockUsage.limit}). Upgrade to Pro for unlimited queries.`;
+    const caller = createCaller(createMockContext(mockUser));
 
-    expect(mockUsage.count >= mockUsage.limit).toBe(true);
-    expect(expectedError).toContain("Daily query limit reached");
-    expect(expectedError).toContain("Upgrade to Pro");
+    await expect(caller.rateLimitedTest()).rejects.toThrow("Daily query limit reached (5). Upgrade to Pro for unlimited queries.");
   });
 });
 
