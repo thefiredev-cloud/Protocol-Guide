@@ -694,6 +694,13 @@ export default function SearchScreen() {
           </View>
         </View>
       )}
+
+      {/* Voice Search Modal */}
+      <VoiceSearchModal
+        visible={showVoiceModal}
+        onClose={() => setShowVoiceModal(false)}
+        onTranscription={handleVoiceTranscription}
+      />
     </ScreenContainer>
   );
 }
