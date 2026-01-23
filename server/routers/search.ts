@@ -184,8 +184,13 @@ export const searchRouter = router({
         latencyMs,
       };
 
-      // Step 6: Cache results in Redis (5 min TTL)
+      // Step 6: Cache results in Redis (1 hour TTL)
       await cacheSearchResults(cacheKey, response);
+
+      // Set cache headers for cache miss
+      if (ctx.res) {
+        setSearchCacheHeaders(ctx.res, false);
+      }
 
       // Log performance metrics
       console.log(`[Search] Completed in ${latencyMs}ms (cache: ${optimizedResult.metrics.cacheHit}, rerank: ${optimizedResult.metrics.rerankingMs}ms)`);

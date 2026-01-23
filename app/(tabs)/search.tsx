@@ -615,6 +615,11 @@ export default function SearchScreen() {
               Found {searchResults.length} matching protocols
             </Text>
           }
+          ListFooterComponent={
+            <View className="mt-2 mb-4">
+              <MedicalDisclaimer variant="inline" />
+            </View>
+          }
         />
       ) : (
         <View className="flex-1">
