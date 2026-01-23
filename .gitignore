@@ -99,3 +99,14 @@ scripts/san_joaquin_protocols.md
 
 # Abandoned implementations
 rust-server/
+
+# External skills (synced from skill stores, not part of this project)
+.agents/skills/
+.agent/skills/
+.claude/skills/
+.codex/skills/
+.cursor/skills/
+.factory/skills/
+.gemini/skills/
+.github/skills/
+.opencode/skills/
