@@ -346,14 +346,27 @@ export function VoiceSearchModal({
 
   // Stop recording and process
   const stopRecording = useCallback(async () => {
-    try {
-      if (!recordingRef.current) return;
+    // Guard: Only allow stopping from recording state
+    if (stateRef.current !== "recording") {
+      console.warn(`stopRecording called in invalid state: ${stateRef.current}`);
+      return;
+    }
 
-      // Clear timeouts
-      cleanupRecording();
+    // Guard: Must have an active recording
+    if (!recordingRef.current) {
+      console.warn("stopRecording called but no recording ref exists");
+      transitionTo("error");
+      setErrorType("recording_failed");
+      return;
+    }
+
+    try {
+      // Clear timers but DON'T cleanup recording yet - we need the ref!
+      clearTimers();
       stopPulseAnimation();
 
-      setRecordingState("processing");
+      // Transition to processing state
+      if (!transitionTo("processing")) return;
       setTranscriptionPreview("Processing your speech...");
 
       // Haptic feedback
@@ -361,9 +374,11 @@ export function VoiceSearchModal({
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
 
-      // Stop and get recording
+      // Capture and clear the recording ref BEFORE async operations
       const recording = recordingRef.current;
       recordingRef.current = null;
+
+      // Now stop and get recording URI
       await recording.stopAndUnloadAsync();
       const uri = recording.getURI();
 
