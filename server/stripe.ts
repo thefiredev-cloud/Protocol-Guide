@@ -90,6 +90,106 @@ export async function createCheckoutSession({
   }
 }
 
+export interface CreateDepartmentCheckoutParams {
+  agencyId: number;
+  agencyEmail: string;
+  tier: SubscriptionTier;
+  seatCount: number;
+  interval: BillingInterval;
+  successUrl: string;
+  cancelUrl: string;
+}
+
+/**
+ * Create Stripe checkout session for department/agency subscription
+ */
+export async function createDepartmentCheckoutSession({
+  agencyId,
+  agencyEmail,
+  tier,
+  seatCount,
+  interval,
+  successUrl,
+  cancelUrl,
+}: CreateDepartmentCheckoutParams): Promise<{ url: string } | { error: string }> {
+  if (!stripe) {
+    return { error: "Stripe is not configured. Please add STRIPE_SECRET_KEY to environment variables." };
+  }
+
+  // Validate seat count for tier
+  const validation = validateSeatCount(tier, seatCount);
+  if (!validation.valid) {
+    return { error: validation.error || "Invalid seat count for tier" };
+  }
+
+  // Enterprise requires custom pricing - redirect to contact sales
+  if (tier === "enterprise") {
+    return { error: "Enterprise tier requires custom pricing. Please contact sales." };
+  }
+
+  // Get the appropriate price ID
+  let priceId: string;
+  if (tier === "starter") {
+    priceId = interval === "monthly"
+      ? PRICE_IDS.departmentStarterMonthly
+      : PRICE_IDS.departmentStarterAnnual;
+  } else if (tier === "professional") {
+    priceId = interval === "monthly"
+      ? PRICE_IDS.departmentProfessionalMonthly
+      : PRICE_IDS.departmentProfessionalAnnual;
+  } else {
+    return { error: "Invalid subscription tier" };
+  }
+
+  if (!priceId) {
+    return { error: `Price ID for ${tier} ${interval} plan is not configured.` };
+  }
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price: priceId,
+          quantity: tier === "professional" ? seatCount : 1, // Professional is per-seat, Starter is flat rate
+        },
+      ],
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      customer_email: agencyEmail,
+      client_reference_id: agencyId.toString(),
+      metadata: {
+        agencyId: agencyId.toString(),
+        tier,
+        seatCount: seatCount.toString(),
+        interval,
+        subscriptionType: "department",
+      },
+      subscription_data: {
+        metadata: {
+          agencyId: agencyId.toString(),
+          tier,
+          seatCount: seatCount.toString(),
+          interval,
+          subscriptionType: "department",
+        },
+        trial_period_days: TRIAL_PERIOD_DAYS,
+      },
+      allow_promotion_codes: true,
+    });
+
+    if (!session.url) {
+      return { error: "Failed to create checkout session URL" };
+    }
+
+    return { url: session.url };
+  } catch (error) {
+    console.error("[Stripe] Department checkout session error:", error);
+    return { error: (error as Error).message || "Failed to create checkout session" };
+  }
+}
+
 export interface CreateCustomerPortalParams {
   stripeCustomerId: string;
   returnUrl: string;
