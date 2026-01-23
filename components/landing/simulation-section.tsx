@@ -38,6 +38,12 @@ const MAX_TIME = 95;
 type SimulationState = "idle" | "running" | "complete";
 
 export function SimulationSection() {
+  const { width } = useWindowDimensions();
+
+  // Three-tier responsive breakpoints
+  const isMobile = width < 640;
+  const isTablet = width >= 640 && width < 1024;
+
   const [state, setState] = useState<SimulationState>("idle");
   const [showCelebration, setShowCelebration] = useState(false);
   const [manualElapsedTime, setManualElapsedTime] = useState(0);

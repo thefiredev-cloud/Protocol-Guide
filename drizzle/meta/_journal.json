@@ -71,6 +71,13 @@
       "when": 1769144517996,
       "tag": "0009_common_rockslide",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1769145988169,
+      "tag": "0010_furry_molten_man",
+      "breakpoints": true
     }
   ]
 }

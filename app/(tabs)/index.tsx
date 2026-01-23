@@ -447,12 +447,12 @@ export default function HomeScreen() {
             <IconSymbol name="magnifyingglass" size={40} color={colors.muted} />
             <Text className="text-lg font-semibold text-foreground mt-3">Quick Protocol Search</Text>
             <Text className="text-sm text-muted text-center mt-1">
-              3-5 words → instant answer
+              Type or tap the mic to speak
             </Text>
             <View className="mt-4 gap-1">
               <Text className="text-xs text-muted text-center italic">{'"cardiac arrest adult"'}</Text>
               <Text className="text-xs text-muted text-center italic">{'"pediatric seizure"'}</Text>
-              <Text className="text-xs text-muted text-center italic">{'"chest pain stemi"'}</Text>
+              <Text className="text-xs text-muted text-center italic">{'"vtach amiodarone dose"'}</Text>
             </View>
           </View>
           <RecentSearches onSelectSearch={handleSendMessage} />
