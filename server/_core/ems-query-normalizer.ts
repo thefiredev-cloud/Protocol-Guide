@@ -126,7 +126,6 @@ export const EMS_ABBREVIATIONS: Record<string, string> = {
   'ntg': 'nitroglycerin',
   'nitro': 'nitroglycerin',
   'asa': 'aspirin',
-  'neb': 'nebulizer',
   'narcan': 'naloxone',
   'benadryl': 'diphenhydramine',
   'versed': 'midazolam',

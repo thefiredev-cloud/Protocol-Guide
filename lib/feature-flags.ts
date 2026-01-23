@@ -30,8 +30,8 @@ export interface FeatureFlags {
  * Toggle features by changing these values
  */
 export const FLAGS: FeatureFlags = {
-  // Integration features - OFF until partner demo
-  enable_imagetrend_deep_linking: false,
+  // Integration features - ENABLED for partner demo
+  enable_imagetrend_deep_linking: true,
 
   // Enterprise features
   enable_enterprise_security_audit: false,
