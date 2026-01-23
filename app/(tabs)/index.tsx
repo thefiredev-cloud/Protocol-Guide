@@ -182,8 +182,15 @@ export default function HomeScreen() {
   const trpcUtils = trpc.useUtils();
   
   const handleSendMessage = useCallback(async (text: string) => {
+    // P0 CRITICAL: Block search if disclaimer not acknowledged
+    if (isAuthenticated && !disclaimerAcknowledged) {
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      setShowDisclaimerModal(true);
+      return;
+    }
+
     addRecentSearch(text);
-    
+
     const userMessage: Message = {
       id: Date.now().toString(),
       type: "user",
