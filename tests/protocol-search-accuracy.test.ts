@@ -95,8 +95,8 @@ function createMockSearchResult(overrides: Partial<{
 describe("Protocol Search Accuracy - Critical EMS Scenarios", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockMapCountyIdToAgencyId.mockResolvedValue(1);
-    mockGetAgencyByCountyId.mockResolvedValue({
+    vi.mocked(mapCountyIdToAgencyId).mockResolvedValue(1);
+    vi.mocked(getAgencyByCountyId).mockResolvedValue({
       name: "Los Angeles County EMS",
       state_code: "CA",
     });
@@ -108,7 +108,7 @@ describe("Protocol Search Accuracy - Critical EMS Scenarios", () => {
 
   describe("Cardiac Emergency Queries", () => {
     it("should return cardiac arrest protocols for 'cardiac arrest' query", async () => {
-      mockSemanticSearch.mockResolvedValue([
+      vi.mocked(semanticSearchProtocols).mockResolvedValue([
         createMockSearchResult({
           protocol_number: "CARD-001",
           protocol_title: "Cardiac Arrest - Adult",
@@ -145,7 +145,7 @@ describe("Protocol Search Accuracy - Critical EMS Scenarios", () => {
     });
 
     it("should find STEMI protocols for 'heart attack' query", async () => {
-      mockSemanticSearch.mockResolvedValue([
+      vi.mocked(semanticSearchProtocols).mockResolvedValue([
         createMockSearchResult({
           protocol_number: "CARD-005",
           protocol_title: "Acute Coronary Syndrome / STEMI",
@@ -168,7 +168,7 @@ describe("Protocol Search Accuracy - Critical EMS Scenarios", () => {
     });
 
     it("should handle chest pain natural language query", async () => {
-      mockSemanticSearch.mockResolvedValue([
+      vi.mocked(semanticSearchProtocols).mockResolvedValue([
         createMockSearchResult({
           protocol_number: "CARD-003",
           protocol_title: "Chest Pain - Cardiac",
@@ -202,7 +202,7 @@ describe("Protocol Search Accuracy - Critical EMS Scenarios", () => {
 
   describe("Respiratory Emergency Queries", () => {
     it("should find respiratory distress protocols", async () => {
-      mockSemanticSearch.mockResolvedValue([
+      vi.mocked(semanticSearchProtocols).mockResolvedValue([
         createMockSearchResult({
           protocol_number: "RESP-001",
           protocol_title: "Respiratory Distress - Adult",
@@ -223,7 +223,7 @@ describe("Protocol Search Accuracy - Critical EMS Scenarios", () => {
     });
 
     it("should find asthma protocols for wheezing query", async () => {
-      mockSemanticSearch.mockResolvedValue([
+      vi.mocked(semanticSearchProtocols).mockResolvedValue([
         createMockSearchResult({
           protocol_number: "RESP-003",
           protocol_title: "Asthma / Bronchospasm",
@@ -246,7 +246,7 @@ describe("Protocol Search Accuracy - Critical EMS Scenarios", () => {
 
   describe("Trauma Emergency Queries", () => {
     it("should find trauma protocols for MVA query", async () => {
-      mockSemanticSearch.mockResolvedValue([
+      vi.mocked(semanticSearchProtocols).mockResolvedValue([
         createMockSearchResult({
           protocol_number: "TRAU-001",
           protocol_title: "Major Trauma / Multi-System Trauma",
@@ -267,7 +267,7 @@ describe("Protocol Search Accuracy - Critical EMS Scenarios", () => {
     });
 
     it("should find hemorrhage control protocols", async () => {
-      mockSemanticSearch.mockResolvedValue([
+      vi.mocked(semanticSearchProtocols).mockResolvedValue([
         createMockSearchResult({
           protocol_number: "TRAU-005",
           protocol_title: "Hemorrhage Control",
@@ -290,7 +290,7 @@ describe("Protocol Search Accuracy - Critical EMS Scenarios", () => {
 
   describe("Pediatric Emergency Queries", () => {
     it("should find pediatric-specific protocols", async () => {
-      mockSemanticSearch.mockResolvedValue([
+      vi.mocked(semanticSearchProtocols).mockResolvedValue([
         createMockSearchResult({
           protocol_number: "PED-001",
           protocol_title: "Pediatric Assessment",
@@ -312,7 +312,7 @@ describe("Protocol Search Accuracy - Critical EMS Scenarios", () => {
     });
 
     it("should find febrile seizure protocols", async () => {
-      mockSemanticSearch.mockResolvedValue([
+      vi.mocked(semanticSearchProtocols).mockResolvedValue([
         createMockSearchResult({
           protocol_number: "PED-010",
           protocol_title: "Pediatric Seizures",
@@ -335,7 +335,7 @@ describe("Protocol Search Accuracy - Critical EMS Scenarios", () => {
 
   describe("Search Filtering", () => {
     it("should filter results by county/agency", async () => {
-      mockSemanticSearch.mockResolvedValue([
+      vi.mocked(semanticSearchProtocols).mockResolvedValue([
         createMockSearchResult({
           agency_id: 1,
         }),
@@ -361,7 +361,7 @@ describe("Protocol Search Accuracy - Critical EMS Scenarios", () => {
     });
 
     it("should filter by state when no county specified", async () => {
-      mockSemanticSearch.mockResolvedValue([
+      vi.mocked(semanticSearchProtocols).mockResolvedValue([
         createMockSearchResult(),
       ]);
 
@@ -382,7 +382,7 @@ describe("Protocol Search Accuracy - Critical EMS Scenarios", () => {
     });
 
     it("should respect limit parameter", async () => {
-      mockSemanticSearch.mockResolvedValue([
+      vi.mocked(semanticSearchProtocols).mockResolvedValue([
         createMockSearchResult({ id: 1 }),
         createMockSearchResult({ id: 2 }),
         createMockSearchResult({ id: 3 }),
@@ -407,7 +407,7 @@ describe("Protocol Search Accuracy - Critical EMS Scenarios", () => {
 
   describe("Edge Cases", () => {
     it("should return empty results for nonsense query", async () => {
-      mockSemanticSearch.mockResolvedValue([]);
+      vi.mocked(semanticSearchProtocols).mockResolvedValue([]);
 
       const ctx = createTestContext();
       const caller = appRouter.createCaller(ctx);
@@ -422,7 +422,7 @@ describe("Protocol Search Accuracy - Critical EMS Scenarios", () => {
     });
 
     it("should handle special characters in query", async () => {
-      mockSemanticSearch.mockResolvedValue([
+      vi.mocked(semanticSearchProtocols).mockResolvedValue([
         createMockSearchResult(),
       ]);
 
@@ -438,7 +438,7 @@ describe("Protocol Search Accuracy - Critical EMS Scenarios", () => {
     });
 
     it("should handle abbreviations and acronyms", async () => {
-      mockSemanticSearch.mockResolvedValue([
+      vi.mocked(semanticSearchProtocols).mockResolvedValue([
         createMockSearchResult({
           protocol_number: "RESP-002",
           protocol_title: "COPD Exacerbation",
@@ -460,7 +460,7 @@ describe("Protocol Search Accuracy - Critical EMS Scenarios", () => {
 
     it("should truncate long content in results", async () => {
       const longContent = "A".repeat(600);
-      mockSemanticSearch.mockResolvedValue([
+      vi.mocked(semanticSearchProtocols).mockResolvedValue([
         createMockSearchResult({
           content: longContent,
         }),
@@ -481,7 +481,7 @@ describe("Protocol Search Accuracy - Critical EMS Scenarios", () => {
 
   describe("Search by Agency", () => {
     it("should search within specific agency", async () => {
-      mockSemanticSearch.mockResolvedValue([
+      vi.mocked(semanticSearchProtocols).mockResolvedValue([
         createMockSearchResult({
           agency_id: 5,
         }),
@@ -508,7 +508,7 @@ describe("Protocol Search - Drug Dosing Queries", () => {
   });
 
   it("should find epinephrine dosing for anaphylaxis", async () => {
-    mockSemanticSearch.mockResolvedValue([
+    vi.mocked(semanticSearchProtocols).mockResolvedValue([
       createMockSearchResult({
         protocol_number: "ALLER-001",
         protocol_title: "Anaphylaxis / Severe Allergic Reaction",
@@ -530,7 +530,7 @@ describe("Protocol Search - Drug Dosing Queries", () => {
   });
 
   it("should find narcan dosing for overdose", async () => {
-    mockSemanticSearch.mockResolvedValue([
+    vi.mocked(semanticSearchProtocols).mockResolvedValue([
       createMockSearchResult({
         protocol_number: "TOX-001",
         protocol_title: "Opioid Overdose",
