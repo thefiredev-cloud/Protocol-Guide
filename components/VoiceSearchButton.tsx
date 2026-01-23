@@ -307,6 +307,7 @@ export function VoiceSearchButton({
       stopPulseAnimation();
       setRecordingState("processing");
       setStatusText("Processing...");
+      announceForAccessibility(MEDICAL_A11Y_LABELS.voice.processing);
 
       // Haptic feedback
       if (Platform.OS !== "web") {
