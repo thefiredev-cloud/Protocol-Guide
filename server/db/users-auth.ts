@@ -109,7 +109,6 @@ export async function linkAuthProvider(
   provider: {
     provider: string;
     providerUserId: string;
-    email?: string;
   }
 ): Promise<{ success: boolean; error?: string }> {
   const db = await getDb();
@@ -133,7 +132,7 @@ export async function linkAuthProvider(
       if (existing[0].providerUserId !== provider.providerUserId) {
         await db
           .update(userAuthProviders)
-          .set({ providerUserId: provider.providerUserId, email: provider.email })
+          .set({ providerUserId: provider.providerUserId })
           .where(eq(userAuthProviders.id, existing[0].id));
       }
       return { success: true };
@@ -160,7 +159,6 @@ export async function linkAuthProvider(
       userId,
       provider: provider.provider,
       providerUserId: provider.providerUserId,
-      email: provider.email,
     });
 
     return { success: true };
