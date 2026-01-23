@@ -30,7 +30,7 @@ export default function PrivacyPolicyScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Text className="text-2xl font-bold text-foreground mb-2">Privacy Policy</Text>
-        <Text className="text-sm text-muted mb-6">Last updated: January 10, 2026</Text>
+        <Text className="text-sm text-muted mb-6">Last updated: January 23, 2026</Text>
 
         <Section title="1. Introduction">
           Protocol Guide ({'"we," "our," or "us"'}) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application and related services (collectively, the {'"Service"'}).
