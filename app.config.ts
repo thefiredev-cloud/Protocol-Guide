@@ -225,7 +225,7 @@ const config: ExpoConfig = {
       "expo-build-properties",
       {
         ios: {
-          deploymentTarget: "14.0",
+          deploymentTarget: "15.1",
           useFrameworks: "static",
           // Enable microphone and speech recognition capabilities
           newArchEnabled: true,
