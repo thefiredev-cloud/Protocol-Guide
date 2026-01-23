@@ -131,3 +131,33 @@ export const stripeWebhookEvents = mysqlTable("stripe_webhook_events", {
 
 export type StripeWebhookEvent = typeof stripeWebhookEvents.$inferSelect;
 export type InsertStripeWebhookEvent = typeof stripeWebhookEvents.$inferInsert;
+
+/**
+ * Audit log actions enum for tracking admin activities
+ */
+export const auditActionEnum = mysqlEnum("audit_action", [
+  "USER_ROLE_CHANGED",
+  "USER_TIER_CHANGED",
+  "FEEDBACK_STATUS_CHANGED",
+  "CONTACT_STATUS_CHANGED",
+  "USER_DELETED",
+  "PROTOCOL_MODIFIED",
+]);
+
+/**
+ * Audit logs table for tracking admin actions
+ * Provides compliance and accountability for administrative operations
+ */
+export const auditLogs = mysqlTable("audit_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(), // Admin who performed the action
+  action: auditActionEnum.notNull(),
+  targetType: varchar("targetType", { length: 50 }).notNull(), // e.g., "user", "feedback", "contact"
+  targetId: varchar("targetId", { length: 50 }).notNull(), // ID of the affected entity
+  details: json("details").$type<Record<string, unknown>>(), // Additional context (old/new values)
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = typeof auditLogs.$inferInsert;
+export type AuditAction = "USER_ROLE_CHANGED" | "USER_TIER_CHANGED" | "FEEDBACK_STATUS_CHANGED" | "CONTACT_STATUS_CHANGED" | "USER_DELETED" | "PROTOCOL_MODIFIED";
