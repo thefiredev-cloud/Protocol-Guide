@@ -12,12 +12,22 @@ import { useState } from "react";
 import { useFavorites, FavoriteProtocol } from "@/hooks/use-favorites";
 import { signInWithGoogle, signInWithApple } from "@/lib/supabase";
 import { GoogleLogo, AppleLogo } from "@/components/icons";
+import { Modal } from "@/components/ui/Modal";
 
 export default function ProfileScreen() {
   const { user, isAuthenticated, logout } = useAuth();
   const colors = useColors();
   const router = useRouter();
   const [isLoadingPortal, setIsLoadingPortal] = useState(false);
+
+  // Modal states
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showClearCacheModal, setShowClearCacheModal] = useState(false);
+  const [errorModal, setErrorModal] = useState<{ visible: boolean; title: string; message: string }>({
+    visible: false,
+    title: "",
+    message: "",
+  });
   
   const { data: usage } = trpc.user.usage.useQuery(undefined, {
     enabled: isAuthenticated,
@@ -37,22 +47,26 @@ export default function ProfileScreen() {
   
   const createPortalMutation = trpc.subscription.createPortal.useMutation();
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-
-    if (confirm("Are you sure you want to sign out?")) {
-      await logout();
-      // Tabs layout guard will redirect to landing automatically
-    }
+    setShowLogoutModal(true);
   };
 
-  const handleClearCache = async () => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+  const confirmLogout = async () => {
+    setShowLogoutModal(false);
+    await logout();
+    // Tabs layout guard will redirect to landing automatically
+  };
 
-    if (confirm("Clear all cached protocols? You won't be able to access them offline until you search again.")) {
-      await clearCache();
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
+  const handleClearCache = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    setShowClearCacheModal(true);
+  };
+
+  const confirmClearCache = async () => {
+    setShowClearCacheModal(false);
+    await clearCache();
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
   const handleManageSubscription = async () => {
@@ -69,10 +83,18 @@ export default function ProfileScreen() {
       if (result.success && result.url) {
         window.location.href = result.url;
       } else {
-        alert(result.error || "Failed to open billing portal");
+        setErrorModal({
+          visible: true,
+          title: "Billing Portal Error",
+          message: result.error || "Failed to open billing portal",
+        });
       }
     } catch (error) {
-      alert("Failed to open billing portal. Please try again.");
+      setErrorModal({
+        visible: true,
+        title: "Billing Portal Error",
+        message: "Failed to open billing portal. Please try again.",
+      });
     } finally {
       setIsLoadingPortal(false);
     }
@@ -150,7 +172,11 @@ export default function ProfileScreen() {
       await signInWithGoogle();
     } catch (error) {
       console.error("Google sign-in error:", error);
-      alert("Unable to sign in with Google. Please try again.");
+      setErrorModal({
+        visible: true,
+        title: "Sign In Error",
+        message: "Unable to sign in with Google. Please try again.",
+      });
       setSignInLoading(null);
     }
   };
@@ -167,7 +193,11 @@ export default function ProfileScreen() {
         return;
       }
       console.error("Apple Sign-In error:", error);
-      alert("An error occurred during Apple Sign-In.");
+      setErrorModal({
+        visible: true,
+        title: "Sign In Error",
+        message: "An error occurred during Apple Sign-In.",
+      });
       setSignInLoading(null);
     }
   };
@@ -610,6 +640,41 @@ export default function ProfileScreen() {
         {/* Version */}
         <Text style={[styles.versionText, { color: colors.muted }]}>Protocol Guide v1.0.0</Text>
       </ScrollView>
+
+      {/* Logout Confirmation Modal */}
+      <Modal
+        visible={showLogoutModal}
+        onDismiss={() => setShowLogoutModal(false)}
+        title="Sign Out"
+        message="Are you sure you want to sign out?"
+        variant="confirm"
+        buttons={[
+          { label: "Cancel", onPress: () => setShowLogoutModal(false), variant: "secondary" },
+          { label: "Sign Out", onPress: confirmLogout, variant: "destructive" },
+        ]}
+      />
+
+      {/* Clear Cache Confirmation Modal */}
+      <Modal
+        visible={showClearCacheModal}
+        onDismiss={() => setShowClearCacheModal(false)}
+        title="Clear Cache"
+        message="Clear all cached protocols? You won't be able to access them offline until you search again."
+        variant="confirm"
+        buttons={[
+          { label: "Cancel", onPress: () => setShowClearCacheModal(false), variant: "secondary" },
+          { label: "Clear", onPress: confirmClearCache, variant: "destructive" },
+        ]}
+      />
+
+      {/* Error Modal */}
+      <Modal
+        visible={errorModal.visible}
+        onDismiss={() => setErrorModal({ visible: false, title: "", message: "" })}
+        title={errorModal.title}
+        message={errorModal.message}
+        variant="alert"
+      />
     </ScreenContainer>
   );
 }

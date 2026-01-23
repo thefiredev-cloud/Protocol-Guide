@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { ScrollView, Text, View, ActivityIndicator, Pressable, TouchableOpacity } from "react-native";
+import { ScrollView, Text, View, Pressable, TouchableOpacity } from "react-native";
+import { SkeletonCard, Skeleton } from "@/components/ui/Skeleton";
 import { ScreenContainer } from "@/components/screen-container";
 import { useRouter } from "expo-router";
 import { IconSymbol } from "@/components/ui/icon-symbol";
@@ -208,9 +209,19 @@ export default function CoverageScreen() {
         </View>
         
         {isLoading ? (
-          <View className="flex-1 items-center justify-center py-20">
-            <ActivityIndicator size="large" color="#6366F1" />
-            <Text className="text-muted mt-4">Loading coverage data...</Text>
+          <View className="flex-1 py-4">
+            <Text className="text-muted mb-4">Loading coverage data...</Text>
+            {/* Stats Cards Skeleton */}
+            <View className="flex-row flex-wrap justify-between mb-5">
+              <SkeletonCard showImage={false} lines={1} style={{ width: '48%', marginBottom: 12 }} />
+              <SkeletonCard showImage={false} lines={1} style={{ width: '48%', marginBottom: 12 }} />
+              <SkeletonCard showImage={false} lines={1} style={{ width: '48%' }} />
+              <SkeletonCard showImage={false} lines={1} style={{ width: '48%' }} />
+            </View>
+            {/* Map Skeleton */}
+            <Skeleton variant="card" height={200} style={{ marginBottom: 20 }} />
+            {/* List Skeleton */}
+            <Skeleton variant="card" height={300} />
           </View>
         ) : error ? (
           <View className="flex-1 items-center justify-center py-20">
