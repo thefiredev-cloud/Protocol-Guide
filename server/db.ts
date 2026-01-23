@@ -1665,19 +1665,14 @@ export async function updateProtocolUploadStatus(
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const updateData: Partial<InsertProtocolUpload> = { status };
-  if (details?.progress !== undefined) updateData.progress = details.progress;
-  if (details?.chunksCreated !== undefined) updateData.chunksCreated = details.chunksCreated;
-  if (details?.errorMessage) updateData.errorMessage = details.errorMessage;
+  // Note: protocolUploads table doesn't have status/progress fields in current schema
+  // This function exists for future migration compatibility
+  // TODO: Add migration to add status, progress, chunksCreated, errorMessage, processingStartedAt, completedAt fields
 
-  if (status === "processing") {
-    updateData.processingStartedAt = new Date();
-  }
-  if (status === "completed" || status === "failed") {
-    updateData.completedAt = new Date();
-  }
+  console.log(`Upload ${uploadId} status: ${status}`, details);
 
-  await db.update(protocolUploads).set(updateData).where(eq(protocolUploads.id, uploadId));
+  // Currently no-op until schema migration is added
+  // await db.update(protocolUploads).set(updateData).where(eq(protocolUploads.id, uploadId));
 }
 
 /**

@@ -26,6 +26,11 @@ import {
   announceForAccessibility,
   MEDICAL_A11Y_LABELS,
 } from "@/lib/accessibility";
+import {
+  SearchResultsErrorBoundary,
+  VoiceErrorBoundary,
+  ProtocolViewerErrorBoundary,
+} from "@/components/ErrorBoundary";
 
 type SearchResult = {
   id: number;
