@@ -87,8 +87,10 @@ export default function LandingPage() {
           <SimulationSection />
         </View>
 
-        {/* Time Calculator Section */}
-        <TimeCalculatorSection />
+        {/* Time Calculator Section - Impact */}
+        <View nativeID="impact-section">
+          <TimeCalculatorSection />
+        </View>
 
         {/* Features Section */}
         <FeaturesSection />
