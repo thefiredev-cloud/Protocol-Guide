@@ -107,6 +107,7 @@ describe("Stripe Checkout Sessions", () => {
           userId: "1",
           plan: "monthly",
         },
+        trial_period_days: expect.any(Number),
       },
       allow_promotion_codes: true,
     });
