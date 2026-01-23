@@ -166,12 +166,16 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
 
   // Animation values for staggered entrance
   const navOpacity = useRef(new Animated.Value(0)).current;
+  const socialProofOpacity = useRef(new Animated.Value(0)).current;
+  const socialProofTranslateY = useRef(new Animated.Value(10)).current;
   const headlineOpacity = useRef(new Animated.Value(0)).current;
   const headlineTranslateY = useRef(new Animated.Value(20)).current;
   const subheadOpacity = useRef(new Animated.Value(0)).current;
   const subheadTranslateY = useRef(new Animated.Value(20)).current;
   const ctaOpacity = useRef(new Animated.Value(0)).current;
   const ctaScale = useRef(new Animated.Value(0.95)).current;
+  const testimonialOpacity = useRef(new Animated.Value(0)).current;
+  const testimonialTranslateY = useRef(new Animated.Value(10)).current;
   const badgesOpacity = useRef(new Animated.Value(0)).current;
   const badgesTranslateY = useRef(new Animated.Value(15)).current;
   const menuHeight = useRef(new Animated.Value(0)).current;

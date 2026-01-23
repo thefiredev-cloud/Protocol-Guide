@@ -7,9 +7,16 @@
  * 3. Query result caching (Redis-ready)
  * 4. Re-ranking for improved accuracy
  * 5. Latency monitoring and adaptive routing
+ * 6. Multi-query fusion for better recall
+ * 7. Reciprocal Rank Fusion (RRF) for result merging
+ * 8. Context-aware boosting
  */
 
-import { normalizeEmsQuery, type NormalizedQuery } from './ems-query-normalizer';
+import {
+  normalizeEmsQuery,
+  generateQueryVariations,
+  type NormalizedQuery,
+} from './ems-query-normalizer';
 
 // ============================================================================
 // CONFIGURATION
