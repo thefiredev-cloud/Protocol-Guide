@@ -388,10 +388,11 @@ export const appRouter = router({
           console.log(`[Search:Agency] "${normalized.original}" -> "${normalized.normalized}"`);
         }
 
-        // Step 2: Check Redis cache
-        const cacheKey = generateSearchCacheKey({
+        // Step 2: Check Redis cache (target <10ms for cache hits)
+        const cacheKey = getSearchCacheKey({
           query: normalized.normalized,
           agencyId: input.agencyId,
+          limit: input.limit,
         });
 
         type AgencyCachedResult = {

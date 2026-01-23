@@ -329,9 +329,9 @@ export function SimulationSection() {
             <Text style={styles.barTime}>~{PROTOCOL_GUIDE_TIME}s average</Text>
           </View>
 
-          {/* X-axis labels */}
+          {/* X-axis labels - reduced to 4 on mobile */}
           <View style={styles.xAxis}>
-            {[0, 10, 20, 30, 40, 50, 60, 70, 80, 95].map((val) => (
+            {(isMobile ? [0, 30, 60, 95] : [0, 10, 20, 30, 40, 50, 60, 70, 80, 95]).map((val) => (
               <Text key={val} style={styles.xAxisLabel}>
                 {val}
               </Text>
@@ -340,8 +340,8 @@ export function SimulationSection() {
           <Text style={styles.xAxisTitle}>Seconds Elapsed</Text>
         </View>
 
-        {/* Comparison Cards */}
-        <View style={styles.cardsRow}>
+        {/* Comparison Cards - stack on mobile */}
+        <View style={[styles.cardsRow, isMobile && styles.cardsRowMobile]}>
           <ComparisonCard
             label="Current Standard"
             value="~90s"
