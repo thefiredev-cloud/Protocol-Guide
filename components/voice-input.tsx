@@ -381,13 +381,14 @@ export function VoiceInput({ onTranscription, onError, disabled = false }: Voice
   const handlePress = useCallback(() => {
     if (disabled) return;
 
-    if (recordingState === "idle") {
+    const currentState = stateRef.current;
+    if (currentState === "idle") {
       startRecording();
-    } else if (recordingState === "recording") {
+    } else if (currentState === "recording") {
       stopRecording();
     }
-    // Don't do anything while processing
-  }, [recordingState, disabled]);
+    // Ignore presses during processing or complete states
+  }, [disabled]);
 
   const formatDuration = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
