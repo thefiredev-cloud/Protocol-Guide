@@ -77,17 +77,21 @@ serve(async (req) => {
     };
 
     if (!result.allowed) {
+      // Get CORS headers for error response
+      const origin = req.headers.get("origin");
       return new Response(JSON.stringify({ error: "Rate limit exceeded", ...response }), {
         status: 429,
         headers: {
           "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": origin || "",
+          "Access-Control-Allow-Credentials": "true",
           ...headers,
           "Retry-After": Math.max(0, result.resetAt - Math.floor(Date.now() / 1000)).toString(),
         },
       });
     }
 
-    return jsonResponse(response);
+    return jsonResponse(response, 200, req);
   } catch (error) {
     console.error("[RateLimit] Error:", error);
     // On error, allow request but log
@@ -96,6 +100,6 @@ serve(async (req) => {
       remaining: -1,
       resetAt: 0,
       tier: "error",
-    });
+    }, 200, req);
   }
 });
