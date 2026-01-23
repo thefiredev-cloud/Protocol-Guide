@@ -551,7 +551,7 @@ export function generateQueryVariations(query: string): string[] {
       break;
   }
 
-  return [...new Set(variations)]; // Deduplicate
+  return Array.from(new Set(variations)); // Deduplicate
 }
 
 /**
