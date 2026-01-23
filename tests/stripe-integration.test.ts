@@ -539,6 +539,7 @@ describe("Stripe Integration - Edge Cases", () => {
             userId: "42",
             plan: "annual",
           },
+          trial_period_days: expect.any(Number),
         },
       })
     );
