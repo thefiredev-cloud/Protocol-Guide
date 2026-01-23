@@ -109,6 +109,74 @@ const RAG_CONFIG = {
 };
 ```
 
+### 2b. Multi-Query Fusion (`rag-optimizer.ts`)
+
+**Problem**: Single-query semantic search may miss relevant results due to vocabulary mismatch.
+
+**Solution**: Generate query variations and search with all of them, then merge results.
+
+```typescript
+import { multiQueryFusion, generateQueryVariations } from './server/_core/rag-optimizer';
+
+// Generates variations like:
+// "epi dose anaphylaxis" -> [
+//   "epinephrine dose anaphylaxis allergic reaction",
+//   "anaphylaxis allergic reaction protocol treatment",
+//   "epinephrine dosage indication route"
+// ]
+```
+
+**Key Features**:
+- Uses `generateQueryVariations()` from query normalizer
+- Searches with up to 3 variations in parallel
+- Merges results using Reciprocal Rank Fusion (RRF)
+- Automatically enabled for complex/medication queries
+
+### 2c. Reciprocal Rank Fusion (RRF)
+
+**Problem**: Simple interleaving of results from multiple searches is suboptimal.
+
+**Solution**: Use RRF algorithm to combine rankings mathematically.
+
+```typescript
+// RRF score = 1 / (k + rank)
+// k = 60 (standard constant for balanced contribution)
+
+const merged = reciprocalRankFusion([
+  semanticResults,
+  keywordResults,
+  variationResults
+], limit);
+```
+
+### 2d. Advanced Re-ranking
+
+**Problem**: Basic re-ranking misses important semantic signals.
+
+**Solution**: Enhanced scoring with term frequency, position, and intent-specific signals.
+
+```typescript
+// Scoring factors:
+// - Term frequency (capped at 20 points)
+// - Early position mentions (+5 points)
+// - Exact phrase matches (+15 points)
+// - Title relevance (+8 points per term)
+// - Protocol number match (+50 points)
+// - Dosage info for medication queries (+15 points)
+// - Step presence for procedure queries (+10 points)
+```
+
+### 2e. Context-Aware Boosting
+
+**Problem**: Results from user's own agency should be prioritized.
+
+**Solution**: Boost scores based on agency/state match.
+
+```typescript
+// Same agency: +15 points
+// Same state: +5 points
+```
+
 ### 3. Protocol Chunker (`protocol-chunker.ts`)
 
 **Problem**: Fixed-size chunking breaks mid-sentence and separates drug names from dosages.

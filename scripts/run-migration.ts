@@ -40,9 +40,10 @@ async function runMigration() {
     for (let i = 0; i < statements.length; i++) {
       const statement = statements[i];
       if (statement) {
+        // Extract index name from CREATE INDEX statement for logging
+        const indexMatch = statement.match(/CREATE INDEX (\w+)/i);
+
         try {
-          // Extract index name from CREATE INDEX statement for logging
-          const indexMatch = statement.match(/CREATE INDEX (\w+)/i);
           if (indexMatch) {
             const indexName = indexMatch[1];
             process.stdout.write(`  Creating index: ${indexName}...`);
