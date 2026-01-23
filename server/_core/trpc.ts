@@ -161,74 +161,8 @@ const requirePaidTier = t.middleware(async (opts) => {
 export const paidProcedure = t.procedure.use(requirePaidTier);
 
 // ============================================================================
-// RATE LIMIT HEADERS UTILITY
+// RATE LIMIT MIDDLEWARE
 // ============================================================================
-
-/**
- * Rate limit header names following RFC 6585 and draft-ietf-httpapi-ratelimit-headers
- */
-export const RATE_LIMIT_HEADERS = {
-  LIMIT: "X-RateLimit-Limit",
-  REMAINING: "X-RateLimit-Remaining",
-  RESET: "X-RateLimit-Reset",
-  DAILY_LIMIT: "X-RateLimit-Daily-Limit",
-  DAILY_REMAINING: "X-RateLimit-Daily-Remaining",
-  DAILY_RESET: "X-RateLimit-Daily-Reset",
-  RETRY_AFTER: "Retry-After",
-} as const;
-
-/**
- * Rate limit info returned from usage check
- */
-export interface RateLimitInfo {
-  limit: number;
-  remaining: number;
-  resetTime: number;
-  daily?: {
-    limit: number | "unlimited";
-    remaining: number | "unlimited";
-    resetTime: number;
-  };
-}
-
-/**
- * Set rate limit headers on the response
- * Can be called from any tRPC procedure with access to ctx.res
- */
-export function setRateLimitHeaders(
-  res: { setHeader: (name: string, value: string | number) => void },
-  info: RateLimitInfo
-): void {
-  res.setHeader(RATE_LIMIT_HEADERS.LIMIT, info.limit);
-  res.setHeader(RATE_LIMIT_HEADERS.REMAINING, Math.max(0, info.remaining));
-  res.setHeader(RATE_LIMIT_HEADERS.RESET, Math.ceil(info.resetTime / 1000));
-
-  if (info.daily) {
-    res.setHeader(
-      RATE_LIMIT_HEADERS.DAILY_LIMIT,
-      info.daily.limit === "unlimited" ? "unlimited" : info.daily.limit
-    );
-    res.setHeader(
-      RATE_LIMIT_HEADERS.DAILY_REMAINING,
-      info.daily.remaining === "unlimited" ? "unlimited" : Math.max(0, info.daily.remaining as number)
-    );
-    res.setHeader(RATE_LIMIT_HEADERS.DAILY_RESET, Math.ceil(info.daily.resetTime / 1000));
-  }
-}
-
-/**
- * Calculate next midnight UTC for daily reset
- */
-function getNextMidnightUTC(): number {
-  const now = new Date();
-  const tomorrow = new Date(Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate() + 1,
-    0, 0, 0, 0
-  ));
-  return tomorrow.getTime();
-}
 
 // Middleware that enforces daily query limits based on tier
 const enforceRateLimit = t.middleware(async (opts) => {
