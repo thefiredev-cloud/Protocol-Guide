@@ -291,7 +291,14 @@ class Analytics {
    * Track protocol view with engagement metrics
    */
   trackProtocolView(props: ProtocolViewProperties): void {
-    this.track("protocol_viewed", props);
+    this.track("protocol_viewed", {
+      protocolId: props.protocolId,
+      protocolNumber: props.protocolNumber,
+      protocolTitle: props.protocolTitle,
+      source: props.source,
+      searchResultRank: props.searchResultRank,
+      fromQuery: props.fromQuery,
+    });
   }
 
   /**
