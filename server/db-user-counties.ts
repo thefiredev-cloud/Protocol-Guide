@@ -331,10 +331,10 @@ export async function getUserPrimaryCounty(userId: number): Promise<SavedCounty 
 export interface SearchHistoryEntry {
   id: number;
   userId: number;
-  queryText: string;
+  searchQuery: string;
   countyId: number | null;
-  timestamp: Date;
-  deviceId: string | null;
+  resultsCount: number | null;
+  createdAt: Date;
 }
 
 /**
@@ -351,10 +351,13 @@ export async function getUserSearchHistory(
     .select()
     .from(searchHistory)
     .where(eq(searchHistory.userId, userId))
-    .orderBy(desc(searchHistory.timestamp))
+    .orderBy(desc(searchHistory.createdAt))
     .limit(limit);
 
-  return results;
+  return results.map(r => ({
+    ...r,
+    createdAt: new Date(r.createdAt),
+  }));
 }
 
 /**

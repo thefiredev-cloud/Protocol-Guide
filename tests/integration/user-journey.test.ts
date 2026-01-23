@@ -71,25 +71,27 @@ vi.mock("../../server/_core/embeddings", () => ({
 }));
 
 vi.mock("stripe", () => {
+  class MockStripe {
+    checkout = {
+      sessions: {
+        create: vi.fn().mockResolvedValue({
+          id: "cs_test_123",
+          url: "https://checkout.stripe.com/session/cs_test_123",
+        }),
+      },
+    };
+    billingPortal = {
+      sessions: {
+        create: vi.fn().mockResolvedValue({
+          id: "bps_test_123",
+          url: "https://billing.stripe.com/session/bps_test_123",
+        }),
+      },
+    };
+  }
+
   return {
-    default: vi.fn().mockImplementation(() => ({
-      checkout: {
-        sessions: {
-          create: vi.fn().mockResolvedValue({
-            id: "cs_test_123",
-            url: "https://checkout.stripe.com/session/cs_test_123",
-          }),
-        },
-      },
-      billingPortal: {
-        sessions: {
-          create: vi.fn().mockResolvedValue({
-            id: "bps_test_123",
-            url: "https://billing.stripe.com/session/bps_test_123",
-          }),
-        },
-      },
-    })),
+    default: MockStripe,
   };
 });
 

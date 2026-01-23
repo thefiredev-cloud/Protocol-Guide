@@ -71,7 +71,8 @@ describe("Protocols Router Security", () => {
 
         expect(result.success).toBe(false);
         if (!result.success) {
-          expect(result.error.errors[0].message).toContain("20MB limit");
+          const errorMessage = result.error.issues[0]?.message || "";
+          expect(errorMessage).toContain("20MB limit");
         }
       });
 
