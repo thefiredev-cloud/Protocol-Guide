@@ -39,10 +39,18 @@ type SimulationState = "idle" | "running" | "complete";
 export function SimulationSection() {
   const [state, setState] = useState<SimulationState>("idle");
   const [showCelebration, setShowCelebration] = useState(false);
+  const [manualElapsedTime, setManualElapsedTime] = useState(0);
+  const [protocolElapsedTime, setProtocolElapsedTime] = useState(0);
+  const [protocolComplete, setProtocolComplete] = useState(false);
   const manualWidth = useRef(new Animated.Value(0)).current;
   const protocolWidth = useRef(new Animated.Value(0)).current;
   const protocolBounce = useRef(new Animated.Value(1)).current;
   const completeBadgeScale = useRef(new Animated.Value(0)).current;
+  const protocolFoundScale = useRef(new Animated.Value(0)).current;
+  const checkmarkRotate = useRef(new Animated.Value(0)).current;
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const protocolTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef<number>(0);
 
   const resetAnimation = useCallback(() => {
     manualWidth.setValue(0);
