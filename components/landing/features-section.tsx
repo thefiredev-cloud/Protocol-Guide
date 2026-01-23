@@ -459,12 +459,12 @@ export function FeaturesSection() {
       nativeID="features-section"
       style={{
         backgroundColor: COLORS.bgDark,
-        paddingVertical: isMobile ? 48 : 80,
+        paddingVertical: isMobile ? 48 : isTablet ? 64 : 80,
       }}
     >
       <View
         style={{
-          paddingHorizontal: isMobile ? 16 : 24,
+          paddingHorizontal: isMobile ? 16 : isTablet ? 24 : 32,
           maxWidth: 1100,
           alignSelf: "center",
           width: "100%",

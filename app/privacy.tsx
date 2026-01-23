@@ -90,7 +90,7 @@ export default function PrivacyPolicyScreen() {
           <BulletPoint>AI responses may occasionally be inaccurate or incomplete; always verify critical information against official protocol documents.</BulletPoint>
         </Section>
 
-        <Section title="5. Data Security">
+        <Section title="6. Data Security">
           We implement industry-standard security measures to protect your data, including encryption in transit and at rest. However, no method of transmission over the Internet is 100% secure, and we cannot guarantee absolute security.
         </Section>
 
