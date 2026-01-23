@@ -245,7 +245,7 @@ export function VoiceSearchModal({
     return () => {
       cleanupRecording();
     };
-  }, []);
+  }, [cleanupRecording]);
 
   // Reset state when modal opens
   useEffect(() => {

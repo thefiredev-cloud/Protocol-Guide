@@ -24,6 +24,7 @@ import { useCountyRestriction } from "@/hooks/use-county-restriction";
 import { CountyLimitModal } from "@/components/county-limit-modal";
 import { DisclaimerConsentModal } from "@/components/DisclaimerConsentModal";
 import { useAuth } from "@/hooks/use-auth";
+import { MedicalDisclaimer } from "@/components/MedicalDisclaimer";
 
 type Agency = {
   id: number;
