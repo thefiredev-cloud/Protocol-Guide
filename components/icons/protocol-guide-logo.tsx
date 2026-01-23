@@ -191,20 +191,19 @@ function getCrispSize(size: number): number {
   return Math.round(size * pixelRatio) / pixelRatio;
 }
 
-// Generate SVG data URI for web
+// Generate SVG data URI for web - Star of Life icon
 function getSvgDataUri(
   size: number,
   color: string,
   variant: LogoVariant = "default"
 ): string {
   if (variant === "inverted") {
-    // Inverted: light background with red caduceus on top
-    // The caduceus interior paths (after first 'z') define the medical symbol
-    const svg = `<svg width="${size}" height="${size}" viewBox="0 0 600 685" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="3" width="597" height="679" rx="8" fill="${INVERTED_BG_COLOR}"/><g transform="translate(0,685) scale(0.1,-0.1)" fill="${color}" stroke="none"><path d="${MAIN_PATH}"/><path d="${SECONDARY_PATH}"/></g></svg>`;
+    // Inverted: dark rounded rect background with colored star
+    const svg = `<svg width="${size}" height="${size}" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="4" fill="${INVERTED_BG_COLOR}"/><path d="${STAR_OF_LIFE_PATH}" fill="${color}"/><path d="${ROD_PATH}" fill="none" stroke="${INVERTED_BG_COLOR}" stroke-width="1" stroke-linecap="round"/></svg>`;
     return `data:image/svg+xml,${encodeURIComponent(svg)}`;
   }
-  // Default: solid color fill
-  const svg = `<svg width="${size}" height="${size}" viewBox="0 0 600 685" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0,685) scale(0.1,-0.1)" fill="${color}" stroke="none"><path d="${MAIN_PATH}"/><path d="${SECONDARY_PATH}"/></g></svg>`;
+  // Default: Star of Life in solid color
+  const svg = `<svg width="${size}" height="${size}" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="${STAR_OF_LIFE_PATH}" fill="${color}"/><path d="${ROD_PATH}" fill="none" stroke="#0F172A" stroke-width="1" stroke-linecap="round"/></svg>`;
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
