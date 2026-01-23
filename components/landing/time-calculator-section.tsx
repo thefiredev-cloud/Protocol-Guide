@@ -366,7 +366,7 @@ export function TimeCalculatorSection() {
 
         {/* Results Card */}
         <View
-          style={[styles.resultsCard, isMobile && { padding: 20 }]}
+          style={[styles.resultsCard, isMobile ? { padding: 20 } : isTablet ? { padding: 24 } : null]}
           accessibilityRole="summary"
           accessibilityLabel={`Time calculator results: ${timeWasted.toFixed(1)} minutes wasted per shift with current methods, ${timeReclaimed.toFixed(1)} minutes reclaimed with Protocol Guide`}
         >
@@ -376,7 +376,7 @@ export function TimeCalculatorSection() {
             <AnimatedNumber
               value={timeWasted}
               suffix="min"
-              style={[styles.resultValueWasted, isMobile && { fontSize: 36 }]}
+              style={[styles.resultValueWasted, isMobile ? { fontSize: 36 } : isTablet ? { fontSize: 40 } : null]}
             />
             <Text style={styles.resultDescription}>per shift staring at PDFs</Text>
           </View>
@@ -390,14 +390,14 @@ export function TimeCalculatorSection() {
             <AnimatedNumber
               value={timeReclaimed}
               suffix="min"
-              style={[styles.resultValueReclaimed, isMobile && { fontSize: 36 }]}
+              style={[styles.resultValueReclaimed, isMobile ? { fontSize: 36 } : isTablet ? { fontSize: 40 } : null]}
               glowColor={COLORS.textGreenGlow}
             />
             <Text style={styles.resultDescription}>per shift returned to patient care</Text>
           </View>
 
           {/* Per Year Calculation */}
-          <View style={[styles.yearlySection, isMobile && { flexDirection: "column", alignItems: "flex-start", gap: 8 }]}>
+          <View style={[styles.yearlySection, isMobile ? { flexDirection: "column", alignItems: "flex-start", gap: 8 } : null]}>
             <Text style={styles.yearlyLabel}>Per Year (260 shifts)</Text>
             <Text style={[styles.yearlyValue, Platform.OS === "web" && {
               textShadowColor: COLORS.textGreenGlow,

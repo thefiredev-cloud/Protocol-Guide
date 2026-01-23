@@ -1,4 +1,4 @@
-import { mysqlTable, mysqlSchema, AnyMySqlColumn, int, varchar, text, timestamp, mysqlEnum, index, longtext, json, tinyint } from "drizzle-orm/mysql-core"
+import { mysqlTable, mysqlSchema, AnyMySqlColumn, int, varchar, text, timestamp, mysqlEnum, index, longtext, json } from "drizzle-orm/mysql-core"
 import { sql } from "drizzle-orm"
 
 export const bookmarks = mysqlTable("bookmarks", {
@@ -26,7 +26,7 @@ export const counties = mysqlTable("counties", {
 	id: int().autoincrement().notNull(),
 	name: varchar({ length: 255 }).notNull(),
 	state: varchar({ length: 64 }).notNull(),
-	usesStateProtocols: tinyint().default(0).notNull(),
+	usesStateProtocols: tinyint().notNull(),
 	protocolVersion: varchar({ length: 50 }),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 },
@@ -109,7 +109,7 @@ export const users = mysqlTable("users", {
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
 	lastSignedIn: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	tier: mysqlEnum(['free','pro','enterprise']).default('free').notNull(),
-	queryCountToday: int().default(0).notNull(),
+	queryCountToday: int().notNull(),
 	lastQueryDate: varchar({ length: 10 }),
 	selectedCountyId: int(),
 	stripeCustomerId: varchar({ length: 255 }),
@@ -118,10 +118,8 @@ export const users = mysqlTable("users", {
 	subscriptionEndDate: timestamp({ mode: 'string' }),
 	homeCountyId: int(),
 	supabaseId: varchar({ length: 36 }),
-	disclaimerAcknowledgedAt: timestamp({ mode: 'string' }),
 },
 (table) => [
 	index("users_openId_unique").on(table.openId),
 	index("users_supabaseId_unique").on(table.supabaseId),
-	index("idx_users_disclaimer_acknowledged").on(table.disclaimerAcknowledgedAt),
 ]);

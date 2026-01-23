@@ -123,26 +123,32 @@ export function validateSeatCount(tier: SubscriptionTier, seatCount: number): {
     return { valid: false, error: "Seat count must be at least 1" };
   }
 
-  if (tier === "starter") {
-    if (seatCount > DEPARTMENT_PRICING.starter.maxSeats) {
+  if (tier === "small") {
+    if (seatCount < DEPARTMENT_PRICING.small.minSeats) {
       return {
         valid: false,
-        error: `Starter tier supports up to ${DEPARTMENT_PRICING.starter.maxSeats} seats. Please upgrade to Professional.`
+        error: `Small Department tier requires at least ${DEPARTMENT_PRICING.small.minSeats} seats.`
+      };
+    }
+    if (seatCount > DEPARTMENT_PRICING.small.maxSeats) {
+      return {
+        valid: false,
+        error: `Small Department tier supports up to ${DEPARTMENT_PRICING.small.maxSeats} seats. Please upgrade to Large Department.`
       };
     }
   }
 
-  if (tier === "professional") {
-    if (seatCount < DEPARTMENT_PRICING.professional.minSeats) {
+  if (tier === "large") {
+    if (seatCount < DEPARTMENT_PRICING.large.minSeats) {
       return {
         valid: false,
-        error: `Professional tier requires at least ${DEPARTMENT_PRICING.professional.minSeats} seats. Use Starter tier instead.`
+        error: `Large Department tier requires at least ${DEPARTMENT_PRICING.large.minSeats} seats. Use Small Department tier instead.`
       };
     }
-    if (seatCount > DEPARTMENT_PRICING.professional.maxSeats) {
+    if (seatCount > DEPARTMENT_PRICING.large.maxSeats) {
       return {
         valid: false,
-        error: `Professional tier supports up to ${DEPARTMENT_PRICING.professional.maxSeats} seats. Please contact sales for Enterprise pricing.`
+        error: `Large Department tier supports up to ${DEPARTMENT_PRICING.large.maxSeats} seats. Please contact sales for Enterprise pricing.`
       };
     }
   }
@@ -151,7 +157,7 @@ export function validateSeatCount(tier: SubscriptionTier, seatCount: number): {
     if (seatCount < DEPARTMENT_PRICING.enterprise.minSeats) {
       return {
         valid: false,
-        error: `Enterprise tier is for ${DEPARTMENT_PRICING.enterprise.minSeats}+ seats. Use Professional tier instead.`
+        error: `Enterprise tier is for ${DEPARTMENT_PRICING.enterprise.minSeats}+ seats. Use Large Department tier instead.`
       };
     }
   }
