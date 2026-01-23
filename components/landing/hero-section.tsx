@@ -445,7 +445,7 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
             }}
             pressScale={0.96}
             accessibilityRole="button"
-            accessibilityLabel="See the Difference"
+            accessibilityLabel="Try the Demo"
             accessibilityHint="Scrolls to the speed comparison demo"
           >
             <Text
@@ -456,7 +456,7 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
                 letterSpacing: 0.5,
               }}
             >
-              See the Difference
+              Try the Demo
             </Text>
             <Text style={{ color: "#FFFFFF", fontSize: isMobile ? 18 : 19, fontWeight: "400" }}>{"\u2192"}</Text>
           </AnimatedPressable>
