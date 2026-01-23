@@ -11,6 +11,7 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useRouter } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
+import { EncodingType } from "expo-file-system";
 
 export default function UploadProtocolScreen() {
   const colors = useColors();
