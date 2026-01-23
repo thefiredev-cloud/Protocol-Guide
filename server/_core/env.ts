@@ -24,11 +24,12 @@ const envSchema = z.object({
     .describe('Node environment'),
 
   PORT: z
-    .string()
-    .default('3000')
-    .regex(/^\d+$/, 'PORT must be a valid number')
-    .transform(Number)
-    .pipe(z.number().int().positive().max(65535))
+    .coerce
+    .number({ invalid_type_error: 'PORT must be a number' })
+    .int('PORT must be an integer')
+    .positive('PORT must be positive')
+    .max(65535, 'PORT must be between 1 and 65535')
+    .default(3000)
     .describe('Server port (1-65535)'),
 
   // ===========================================

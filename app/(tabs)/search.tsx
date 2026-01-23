@@ -333,6 +333,7 @@ export default function SearchScreen() {
           </Text>
         </View>
 
+        <ProtocolViewerErrorBoundary>
         <FlatList
           data={[selectedProtocol]}
           keyExtractor={(item) => item.id.toString()}
