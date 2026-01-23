@@ -164,7 +164,9 @@ export default function AdminDashboard() {
             <View style={styles.subscriptionRow}>
               <Text style={[styles.subscriptionLabel, { color: colors.muted }]}>Plan</Text>
               <Text style={[styles.subscriptionValue, { color: colors.foreground }]}>
-                {agency.subscriptionTier?.charAt(0).toUpperCase() + agency.subscriptionTier?.slice(1) || "Starter"}
+                {agency.subscriptionTier
+                  ? agency.subscriptionTier.charAt(0).toUpperCase() + agency.subscriptionTier.slice(1)
+                  : "Starter"}
               </Text>
             </View>
             <View style={styles.subscriptionRow}>
