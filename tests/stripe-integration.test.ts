@@ -21,6 +21,7 @@ const mockCheckoutSessionsCreate = vi.fn();
 const mockBillingPortalSessionsCreate = vi.fn();
 const mockSubscriptionsRetrieve = vi.fn();
 const mockSubscriptionsUpdate = vi.fn();
+const mockSubscriptionsCancel = vi.fn();
 const mockWebhooksConstructEvent = vi.fn();
 
 vi.mock("stripe", () => {
