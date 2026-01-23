@@ -391,10 +391,9 @@ export async function addSearchHistory(
 export async function syncSearchHistory(
   userId: number,
   localQueries: {
-    queryText: string;
+    searchQuery: string;
     countyId?: number;
-    timestamp: Date | string;
-    deviceId?: string;
+    resultsCount?: number;
   }[]
 ): Promise<{
   success: boolean;
@@ -419,34 +418,15 @@ export async function syncSearchHistory(
 
   let merged = 0;
 
-  // Insert local queries that don't exist on server
+  // Insert local queries
   for (const local of localQueries) {
-    const timestamp = new Date(local.timestamp);
-
-    // Check for duplicate (same query text within 1 minute)
-    const existing = await db
-      .select()
-      .from(searchHistory)
-      .where(
-        and(
-          eq(searchHistory.userId, userId),
-          eq(searchHistory.queryText, local.queryText),
-          sql`ABS(TIMESTAMPDIFF(SECOND, ${searchHistory.timestamp}, ${timestamp})) < 60`
-        )
-      )
-      .limit(1);
-
-    if (existing.length === 0) {
-      await db.insert(searchHistory).values({
-        userId,
-        queryText: local.queryText,
-        countyId: local.countyId || null,
-        timestamp,
-        deviceId: local.deviceId || null,
-        synced: true,
-      });
-      merged++;
-    }
+    await db.insert(searchHistory).values({
+      userId,
+      searchQuery: local.searchQuery,
+      countyId: local.countyId ?? null,
+      resultsCount: local.resultsCount ?? null,
+    });
+    merged++;
   }
 
   // Get all server history to return

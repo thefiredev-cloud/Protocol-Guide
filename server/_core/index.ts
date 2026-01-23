@@ -67,6 +67,25 @@ async function startServer() {
     logger.warn("Redis not available - using in-memory rate limiting (not recommended for production)");
   }
 
+  // Initialize resilience infrastructure (circuit breakers, fallback caches)
+  const resilientRedis = initResilientRedis();
+  const resilientDb = initResilientDb({
+    slowQuery: {
+      warningThresholdMs: 500,
+      errorThresholdMs: 2000,
+      onSlowQuery: (operation, durationMs, severity) => {
+        logger.warn({ operation, durationMs, severity }, "Slow database query detected");
+      },
+    },
+  });
+
+  // Log initial resilience status
+  const resilienceStatus = ServiceRegistry.getStats();
+  logger.info({
+    overallHealth: resilienceStatus.overallHealth,
+    redisMode: resilientRedis.isAvailable() ? "redis" : "fallback",
+  }, "Resilience infrastructure initialized");
+
   const app = express();
   const server = createServer(app);
 
