@@ -461,6 +461,126 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
             <Text style={{ color: "#FFFFFF", fontSize: isMobile ? 18 : 19, fontWeight: "400" }}>{"\u2192"}</Text>
           </AnimatedPressable>
         </Animated.View>
+
+        {/* Trust Badges - Social Proof */}
+        <Animated.View
+          style={{
+            opacity: badgesOpacity,
+            transform: [{ translateY: badgesTranslateY }],
+            marginTop: isMobile ? 40 : 56,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: isMobile ? "column" : "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: isMobile ? 20 : 0,
+              backgroundColor: "rgba(30, 41, 59, 0.5)",
+              borderRadius: 16,
+              paddingVertical: isMobile ? 24 : 20,
+              paddingHorizontal: isMobile ? 32 : 48,
+              borderWidth: 1,
+              borderColor: COLORS.border,
+            }}
+            accessibilityRole="region"
+            accessibilityLabel="Trust statistics"
+          >
+            <View style={{ alignItems: "center", minWidth: isMobile ? "auto" : 140 }}>
+              <Text
+                style={{
+                  color: COLORS.textWhite,
+                  fontSize: isMobile ? 28 : 32,
+                  fontWeight: "800",
+                  letterSpacing: -1,
+                }}
+              >
+                50,000+
+              </Text>
+              <Text
+                style={{
+                  color: COLORS.textMuted,
+                  fontSize: isMobile ? 13 : 14,
+                  fontWeight: "500",
+                  marginTop: 4,
+                  letterSpacing: 0.3,
+                }}
+              >
+                EMS Professionals
+              </Text>
+            </View>
+
+            {!isMobile && (
+              <View
+                style={{
+                  width: 1,
+                  height: 48,
+                  backgroundColor: COLORS.border,
+                  marginHorizontal: 32,
+                }}
+              />
+            )}
+
+            <View style={{ alignItems: "center", minWidth: isMobile ? "auto" : 140 }}>
+              <Text
+                style={{
+                  color: COLORS.textWhite,
+                  fontSize: isMobile ? 28 : 32,
+                  fontWeight: "800",
+                  letterSpacing: -1,
+                }}
+              >
+                55,000+
+              </Text>
+              <Text
+                style={{
+                  color: COLORS.textMuted,
+                  fontSize: isMobile ? 13 : 14,
+                  fontWeight: "500",
+                  marginTop: 4,
+                  letterSpacing: 0.3,
+                }}
+              >
+                Protocols
+              </Text>
+            </View>
+
+            {!isMobile && (
+              <View
+                style={{
+                  width: 1,
+                  height: 48,
+                  backgroundColor: COLORS.border,
+                  marginHorizontal: 32,
+                }}
+              />
+            )}
+
+            <View style={{ alignItems: "center", minWidth: isMobile ? "auto" : 140 }}>
+              <Text
+                style={{
+                  color: COLORS.primaryRed,
+                  fontSize: isMobile ? 28 : 32,
+                  fontWeight: "800",
+                  letterSpacing: -1,
+                }}
+              >
+                50
+              </Text>
+              <Text
+                style={{
+                  color: COLORS.textMuted,
+                  fontSize: isMobile ? 13 : 14,
+                  fontWeight: "500",
+                  marginTop: 4,
+                  letterSpacing: 0.3,
+                }}
+              >
+                States Covered
+              </Text>
+            </View>
+          </View>
+        </Animated.View>
       </View>
     </View>
   );

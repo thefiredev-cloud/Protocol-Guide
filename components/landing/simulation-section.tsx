@@ -91,6 +91,47 @@ export function SimulationSection() {
     }
 
     setState("running");
+    startTimeRef.current = Date.now();
+
+    // Start main elapsed time timer (updates every 100ms)
+    timerRef.current = setInterval(() => {
+      const elapsed = (Date.now() - startTimeRef.current) / 1000;
+      // Map 4 seconds of real time to 90 seconds of simulated time
+      const simulatedTime = (elapsed / 4) * MANUAL_SEARCH_TIME;
+      setManualElapsedTime(Math.min(simulatedTime, MANUAL_SEARCH_TIME));
+    }, 100);
+
+    // Start protocol elapsed time timer (faster, finishes at 2.3s simulated)
+    protocolTimerRef.current = setInterval(() => {
+      const elapsed = (Date.now() - startTimeRef.current) / 1000;
+      // Protocol finishes in ~200ms real time, mapping to 2.3s simulated
+      const simulatedTime = (elapsed / 0.2) * PROTOCOL_GUIDE_TIME;
+      if (simulatedTime >= PROTOCOL_GUIDE_TIME) {
+        setProtocolElapsedTime(PROTOCOL_GUIDE_TIME);
+        if (protocolTimerRef.current) {
+          clearInterval(protocolTimerRef.current);
+          protocolTimerRef.current = null;
+        }
+        // Show "Protocol Found" badge with checkmark animation
+        setProtocolComplete(true);
+        Animated.parallel([
+          Animated.spring(protocolFoundScale, {
+            toValue: 1,
+            friction: 5,
+            tension: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(checkmarkRotate, {
+            toValue: 1,
+            duration: 300,
+            easing: Easing.out(Easing.back(1.5)),
+            useNativeDriver: true,
+          }),
+        ]).start();
+      } else {
+        setProtocolElapsedTime(simulatedTime);
+      }
+    }, 50);
 
     // Protocol Guide finishes fast with enhanced spring bounce
     Animated.sequence([
@@ -123,6 +164,13 @@ export function SimulationSection() {
       easing: Easing.bezier(0.33, 1, 0.68, 1), // Smoother ease-out
       useNativeDriver: false,
     }).start(() => {
+      // Stop the timer when animation completes
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      setManualElapsedTime(MANUAL_SEARCH_TIME);
+
       setState("complete");
       setShowCelebration(true);
 
@@ -137,7 +185,7 @@ export function SimulationSection() {
       // Hide celebration after delay
       setTimeout(() => setShowCelebration(false), 2500);
     });
-  }, [state, resetAnimation, protocolWidth, protocolBounce, manualWidth, completeBadgeScale]);
+  }, [state, resetAnimation, protocolWidth, protocolBounce, manualWidth, completeBadgeScale, protocolFoundScale, checkmarkRotate]);
 
   const getStatusText = () => {
     switch (state) {
