@@ -26,6 +26,11 @@ import { CountyLimitModal } from "@/components/county-limit-modal";
 import { DisclaimerConsentModal } from "@/components/DisclaimerConsentModal";
 import { useAuth } from "@/hooks/use-auth";
 import { MedicalDisclaimer } from "@/components/MedicalDisclaimer";
+import {
+  VoiceErrorBoundary,
+  SearchResultsErrorBoundary,
+  ProtocolViewerErrorBoundary,
+} from "@/components/ErrorBoundary";
 
 type Agency = {
   id: number;

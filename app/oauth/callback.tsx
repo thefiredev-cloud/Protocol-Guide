@@ -4,6 +4,7 @@
 
 import { ThemedView } from "@/components/themed-view";
 import { supabase } from "@/lib/supabase";
+import { validateOAuthState } from "@/lib/oauth-state-validation";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Text } from "react-native";
