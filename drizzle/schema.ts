@@ -428,3 +428,39 @@ export const integrationLogs = mysqlTable("integration_logs", {
 export type IntegrationLog = typeof integrationLogs.$inferSelect;
 export type InsertIntegrationLog = typeof integrationLogs.$inferInsert;
 export type IntegrationPartner = "imagetrend" | "esos" | "zoll" | "emscloud" | "none";
+
+// ============ Analytics Schema ============
+
+export {
+  analyticsEvents,
+  searchAnalytics,
+  protocolAccessLogs,
+  sessionAnalytics,
+  dailyMetrics,
+  retentionCohorts,
+  contentGaps,
+  conversionEvents,
+  featureUsageStats,
+  type AnalyticsEvent,
+  type InsertAnalyticsEvent,
+  type SearchAnalytics,
+  type InsertSearchAnalytics,
+  type ProtocolAccessLog,
+  type InsertProtocolAccessLog,
+  type SessionAnalytics,
+  type InsertSessionAnalytics,
+  type DailyMetric,
+  type InsertDailyMetric,
+  type RetentionCohort,
+  type InsertRetentionCohort,
+  type ContentGap,
+  type InsertContentGap,
+  type ConversionEvent,
+  type InsertConversionEvent,
+  type FeatureUsageStat,
+  type InsertFeatureUsageStat,
+  type EventType,
+  type SearchMethod,
+  type AccessSource,
+  type QueryCategory,
+} from "./analytics-schema";
