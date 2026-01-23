@@ -7,6 +7,7 @@
  * - Hover states on nav links and CTA
  * - Enhanced CTA button with glow effect
  * - Staggered entry animations
+ * - Three-tier responsive design (mobile < 640, tablet 640-1024, desktop >= 1024)
  *
  * Accessibility: Full ARIA support, keyboard navigation, focus indicators
  * Performance: 60fps animations using native driver, minimal re-renders
@@ -116,7 +117,12 @@ function CloseIcon({ color }: { color: string }) {
 export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const { width } = useWindowDimensions();
-  const isMobile = width < 768;
+
+  // Three-tier responsive breakpoints
+  const isMobile = width < 640;
+  const isTablet = width >= 640 && width < 1024;
+  const isDesktop = width >= 1024;
+  const showMobileMenu = width < 768; // Keep hamburger menu threshold for nav
 
   // Animation values for staggered entrance
   const navOpacity = useRef(new Animated.Value(0)).current;
@@ -216,9 +222,34 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
     onSignIn?.();
   };
 
+  // Responsive typography helpers
+  const getHeadlineFontSize = () => {
+    if (isMobile) return 40;
+    if (isTablet) return 56;
+    return 72;
+  };
+
+  const getHeadlineLineHeight = () => {
+    if (isMobile) return 48;
+    if (isTablet) return 64;
+    return 84;
+  };
+
+  const getSubheadlineFontSize = () => {
+    if (isMobile) return 16;
+    if (isTablet) return 18;
+    return 20;
+  };
+
+  const getMinHeight = () => {
+    if (isMobile) return 520;
+    if (isTablet) return 580;
+    return 640;
+  };
+
   return (
     <View
-      style={{ backgroundColor: COLORS.bgDark, minHeight: isMobile ? 520 : 640 }}
+      style={{ backgroundColor: COLORS.bgDark, minHeight: getMinHeight() }}
     >
       {/* Navigation Bar with fade-in */}
       <Animated.View
@@ -227,7 +258,7 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
-          paddingHorizontal: isMobile ? 16 : 24,
+          paddingHorizontal: isMobile ? 16 : isTablet ? 20 : 24,
           paddingVertical: 16,
           maxWidth: 1200,
           alignSelf: "center",
@@ -235,15 +266,15 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
         }}
       >
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-          <ProtocolGuideLogo size={isMobile ? 32 : 40} color={COLORS.primaryRed} invertOnHover />
-          <Text style={{ color: COLORS.textWhite, fontSize: isMobile ? 16 : 18, fontWeight: "700" }}>
+          <ProtocolGuideLogo size={isMobile ? 32 : isTablet ? 36 : 40} color={COLORS.primaryRed} invertOnHover />
+          <Text style={{ color: COLORS.textWhite, fontSize: isMobile ? 16 : isTablet ? 17 : 18, fontWeight: "700" }}>
             Protocol Guide
           </Text>
         </View>
 
-        {!isMobile && (
+        {!showMobileMenu && (
           <View
-            style={{ flexDirection: "row", alignItems: "center", gap: 32 }}
+            style={{ flexDirection: "row", alignItems: "center", gap: isTablet ? 24 : 32 }}
             accessibilityLabel="Main navigation"
           >
             <AnimatedNavLink
@@ -270,8 +301,8 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
               accessibilityLabel="Request Access"
               style={{
                 backgroundColor: COLORS.textWhite,
-                paddingHorizontal: 16,
-                paddingVertical: 8,
+                paddingHorizontal: isTablet ? 14 : 16,
+                paddingVertical: isTablet ? 7 : 8,
                 borderRadius: 6,
               }}
               pressScale={0.95}
@@ -283,7 +314,7 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
           </View>
         )}
 
-        {isMobile && (
+        {showMobileMenu && (
           <AnimatedPressable
             onPress={() => setMenuOpen(!menuOpen)}
             style={{ minWidth: 44, minHeight: 44, alignItems: "center", justifyContent: "center" }}
@@ -298,7 +329,7 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
       </Animated.View>
 
       {/* Mobile Dropdown Menu with slide animation */}
-      {isMobile && (
+      {showMobileMenu && (
         <Animated.View
           style={{
             backgroundColor: COLORS.bgSurface,
@@ -359,19 +390,19 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          paddingHorizontal: isMobile ? 16 : 24,
-          paddingVertical: isMobile ? 48 : 80,
+          paddingHorizontal: isMobile ? 16 : isTablet ? 32 : 24,
+          paddingVertical: isMobile ? 48 : isTablet ? 64 : 80,
         }}
       >
         {/* Main Headline with fade-in + slide-up and enhanced typography */}
         <Animated.Text
           style={{
-            fontSize: isMobile ? 44 : 72,
+            fontSize: getHeadlineFontSize(),
             fontWeight: "900",
             textAlign: "center",
-            marginBottom: isMobile ? 24 : 32,
-            lineHeight: isMobile ? 52 : 84,
-            letterSpacing: isMobile ? -2 : -2.5,
+            marginBottom: isMobile ? 24 : isTablet ? 28 : 32,
+            lineHeight: getHeadlineLineHeight(),
+            letterSpacing: isMobile ? -1.5 : isTablet ? -2 : -2.5,
             opacity: headlineOpacity,
             transform: [{ translateY: headlineTranslateY }],
           }}
@@ -397,10 +428,10 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
           <Text
             style={{
               color: COLORS.textMuted,
-              fontSize: isMobile ? 22 : 30,
+              fontSize: isMobile ? 20 : isTablet ? 26 : 30,
               fontWeight: "700",
               textAlign: "center",
-              marginBottom: isMobile ? 18 : 24,
+              marginBottom: isMobile ? 18 : isTablet ? 20 : 24,
               letterSpacing: -0.5,
             }}
           >
@@ -409,12 +440,12 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
           <Text
             style={{
               color: COLORS.textMuted,
-              fontSize: isMobile ? 18 : 20,
+              fontSize: getSubheadlineFontSize(),
               fontWeight: "400",
               textAlign: "center",
-              marginBottom: isMobile ? 40 : 52,
-              maxWidth: 560,
-              lineHeight: isMobile ? 28 : 32,
+              marginBottom: isMobile ? 40 : isTablet ? 46 : 52,
+              maxWidth: isMobile ? 320 : isTablet ? 480 : 560,
+              lineHeight: isMobile ? 26 : isTablet ? 28 : 32,
               letterSpacing: 0.2,
             }}
           >
@@ -429,9 +460,9 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
             onPress={() => scrollToSection("simulation-section")}
             style={{
               backgroundColor: COLORS.primaryRed,
-              paddingHorizontal: isMobile ? 32 : 40,
-              paddingVertical: isMobile ? 16 : 18,
-              minHeight: isMobile ? 56 : 62,
+              paddingHorizontal: isMobile ? 28 : isTablet ? 34 : 40,
+              paddingVertical: isMobile ? 14 : isTablet ? 16 : 18,
+              minHeight: isMobile ? 52 : isTablet ? 58 : 62,
               borderRadius: 14,
               flexDirection: "row",
               alignItems: "center",
@@ -451,14 +482,14 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
             <Text
               style={{
                 color: "#FFFFFF",
-                fontSize: isMobile ? 18 : 19,
+                fontSize: isMobile ? 16 : isTablet ? 17 : 19,
                 fontWeight: "700",
                 letterSpacing: 0.5,
               }}
             >
               Try the Demo
             </Text>
-            <Text style={{ color: "#FFFFFF", fontSize: isMobile ? 18 : 19, fontWeight: "400" }}>{"\u2192"}</Text>
+            <Text style={{ color: "#FFFFFF", fontSize: isMobile ? 16 : isTablet ? 17 : 19, fontWeight: "400" }}>{"\u2192"}</Text>
           </AnimatedPressable>
         </Animated.View>
 
@@ -467,7 +498,7 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
           style={{
             opacity: badgesOpacity,
             transform: [{ translateY: badgesTranslateY }],
-            marginTop: isMobile ? 40 : 56,
+            marginTop: isMobile ? 40 : isTablet ? 48 : 56,
           }}
         >
           <View
@@ -478,19 +509,19 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
               gap: isMobile ? 20 : 0,
               backgroundColor: "rgba(30, 41, 59, 0.5)",
               borderRadius: 16,
-              paddingVertical: isMobile ? 24 : 20,
-              paddingHorizontal: isMobile ? 32 : 48,
+              paddingVertical: isMobile ? 24 : isTablet ? 22 : 20,
+              paddingHorizontal: isMobile ? 32 : isTablet ? 40 : 48,
               borderWidth: 1,
               borderColor: COLORS.border,
             }}
             accessibilityRole="region"
             accessibilityLabel="Trust statistics"
           >
-            <View style={{ alignItems: "center", minWidth: isMobile ? "auto" : 140 }}>
+            <View style={{ alignItems: "center", minWidth: isMobile ? "auto" : isTablet ? 120 : 140 }}>
               <Text
                 style={{
                   color: COLORS.textWhite,
-                  fontSize: isMobile ? 28 : 32,
+                  fontSize: isMobile ? 28 : isTablet ? 30 : 32,
                   fontWeight: "800",
                   letterSpacing: -1,
                 }}
@@ -516,16 +547,16 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
                   width: 1,
                   height: 48,
                   backgroundColor: COLORS.border,
-                  marginHorizontal: 32,
+                  marginHorizontal: isTablet ? 24 : 32,
                 }}
               />
             )}
 
-            <View style={{ alignItems: "center", minWidth: isMobile ? "auto" : 140 }}>
+            <View style={{ alignItems: "center", minWidth: isMobile ? "auto" : isTablet ? 120 : 140 }}>
               <Text
                 style={{
                   color: COLORS.textWhite,
-                  fontSize: isMobile ? 28 : 32,
+                  fontSize: isMobile ? 28 : isTablet ? 30 : 32,
                   fontWeight: "800",
                   letterSpacing: -1,
                 }}
@@ -551,16 +582,16 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
                   width: 1,
                   height: 48,
                   backgroundColor: COLORS.border,
-                  marginHorizontal: 32,
+                  marginHorizontal: isTablet ? 24 : 32,
                 }}
               />
             )}
 
-            <View style={{ alignItems: "center", minWidth: isMobile ? "auto" : 140 }}>
+            <View style={{ alignItems: "center", minWidth: isMobile ? "auto" : isTablet ? 120 : 140 }}>
               <Text
                 style={{
                   color: COLORS.primaryRed,
-                  fontSize: isMobile ? 28 : 32,
+                  fontSize: isMobile ? 28 : isTablet ? 30 : 32,
                   fontWeight: "800",
                   letterSpacing: -1,
                 }}
