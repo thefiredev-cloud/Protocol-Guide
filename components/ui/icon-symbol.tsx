@@ -45,6 +45,9 @@ const MAPPING: Record<string, MaterialIconName> = {
   "map.fill": "map",
   "flag.fill": "flag",
   "square.and.arrow.up": "share",
+  "scalemass.fill": "monitor-weight",
+  "arrow.left.arrow.right": "swap-horiz",
+  "cross.vial.fill": "science",
 };
 
 type IconSymbolName = keyof typeof MAPPING;
