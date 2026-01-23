@@ -305,7 +305,7 @@ function SubmitButton({ onPress, isLoading, disabled }: { onPress: () => void; i
       ]}
     >
       {isLoading && <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />}
-      <Text style={{ color: "#FFFFFF", fontSize: 16, fontWeight: "600" }}>
+      <Text style={{ color: disabled ? "#64748B" : "#FFFFFF", fontSize: 16, fontWeight: "600" }}>
         {isLoading ? "Submitting..." : "Get Early Access"}
       </Text>
     </Animated.View>

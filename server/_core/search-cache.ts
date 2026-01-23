@@ -12,8 +12,12 @@ import { getRedis, isRedisAvailable } from './redis';
 import { logger } from './logger';
 import { createHash } from 'crypto';
 
-/** Cache TTL in seconds */
-const CACHE_TTL = 300; // 5 minutes
+/** Cache TTL in seconds (1 hour for stable protocol data) */
+export const CACHE_TTL = 3600; // 1 hour - protocols don't change frequently
+
+/** Cache TTL for cache headers (public cacheability) */
+export const CACHE_HEADER_MAX_AGE = 3600; // 1 hour
+export const CACHE_HEADER_STALE_WHILE_REVALIDATE = 300; // 5 minutes
 
 /** Cache key prefix */
 const CACHE_PREFIX = 'search:';
