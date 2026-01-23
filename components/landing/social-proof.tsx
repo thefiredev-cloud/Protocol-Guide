@@ -11,7 +11,7 @@
  * - Three-tier responsive design (mobile < 640, tablet 640-1024, desktop >= 1024)
  */
 
-import React from "react";
+import * as React from "react";
 import { View, Text, Animated } from "react-native";
 
 const COLORS = {

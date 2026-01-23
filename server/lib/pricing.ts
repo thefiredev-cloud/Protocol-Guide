@@ -2,40 +2,43 @@
  * Department/Enterprise Pricing Configuration
  *
  * Pricing strategy:
- * - Starter: 1-10 users, flat rate
- * - Professional: 11-100 users, per-seat pricing
+ * - Individual: $9.99/month (single user)
+ * - Small Department: 5-20 users, $7.99/user/month
+ * - Large Department: 20+ users, $5.99/user/month
  * - Enterprise: 100+ users, custom pricing (contact sales)
  */
 
 export const DEPARTMENT_PRICING = {
-  starter: {
-    // 1-10 users - flat rate
-    monthly: 19.99,
-    annual: 199, // $16.58/mo (17% discount)
-    maxSeats: 10,
-    minSeats: 1,
-  },
-  professional: {
-    // 11-100 users - per-seat pricing
+  small: {
+    // 5-20 users - per-seat pricing
     perSeat: {
       monthly: 7.99,
-      annual: 89, // $7.42/mo (7% discount)
+      annual: 95.88, // $7.99 × 12 (no discount for simplicity)
     },
+    minSeats: 5,
+    maxSeats: 20,
+  },
+  large: {
+    // 20+ users - volume pricing
+    perSeat: {
+      monthly: 5.99,
+      annual: 71.88, // $5.99 × 12
+    },
+    minSeats: 20,
     maxSeats: 100,
-    minSeats: 11,
   },
   enterprise: {
     // 100+ users - custom pricing
     contact: true,
-    minSeats: 101,
+    minSeats: 100,
   },
 } as const;
 
-export type SubscriptionTier = "starter" | "professional" | "enterprise";
+export type SubscriptionTier = "small" | "large" | "enterprise";
 export type BillingInterval = "monthly" | "annual";
 
 /**
- * Calculate monthly cost for a department subscription
+ * Calculate total cost for a department subscription
  */
 export function calculateDepartmentPrice(
   tier: SubscriptionTier,
@@ -43,22 +46,23 @@ export function calculateDepartmentPrice(
   interval: BillingInterval
 ): number | null {
   // Validate tier and seat count match
-  if (tier === "starter") {
-    if (seatCount < DEPARTMENT_PRICING.starter.minSeats || seatCount > DEPARTMENT_PRICING.starter.maxSeats) {
-      return null;
-    }
-    return interval === "monthly"
-      ? DEPARTMENT_PRICING.starter.monthly
-      : DEPARTMENT_PRICING.starter.annual;
-  }
-
-  if (tier === "professional") {
-    if (seatCount < DEPARTMENT_PRICING.professional.minSeats || seatCount > DEPARTMENT_PRICING.professional.maxSeats) {
+  if (tier === "small") {
+    if (seatCount < DEPARTMENT_PRICING.small.minSeats || seatCount > DEPARTMENT_PRICING.small.maxSeats) {
       return null;
     }
     const pricePerSeat = interval === "monthly"
-      ? DEPARTMENT_PRICING.professional.perSeat.monthly
-      : DEPARTMENT_PRICING.professional.perSeat.annual;
+      ? DEPARTMENT_PRICING.small.perSeat.monthly
+      : DEPARTMENT_PRICING.small.perSeat.annual;
+    return pricePerSeat * seatCount;
+  }
+
+  if (tier === "large") {
+    if (seatCount < DEPARTMENT_PRICING.large.minSeats || seatCount > DEPARTMENT_PRICING.large.maxSeats) {
+      return null;
+    }
+    const pricePerSeat = interval === "monthly"
+      ? DEPARTMENT_PRICING.large.perSeat.monthly
+      : DEPARTMENT_PRICING.large.perSeat.annual;
     return pricePerSeat * seatCount;
   }
 

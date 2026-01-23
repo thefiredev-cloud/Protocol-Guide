@@ -270,7 +270,7 @@ export const searchRouter = router({
       agencyId: z.number(), // MySQL county ID (will be mapped)
       limit: z.number().min(1).max(50).default(10),
     }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const searchStartTime = Date.now();
 
       // Step 1: Normalize the EMS query

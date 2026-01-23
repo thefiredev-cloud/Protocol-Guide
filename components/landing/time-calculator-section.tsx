@@ -270,21 +270,21 @@ export function TimeCalculatorSection() {
   }, [sectionOpacity, sectionTranslateY, isVisible]);
 
   return (
-    <View style={[styles.container, isMobile && { paddingVertical: 48 }]} nativeID="impact-section">
+    <View style={[styles.container, isMobile ? { paddingVertical: 48 } : isTablet ? { paddingVertical: 60 } : null]} nativeID="impact-section">
       <Animated.View
         style={[
           styles.content,
-          isMobile && { paddingHorizontal: 16 },
+          isMobile ? { paddingHorizontal: 16 } : isTablet ? { paddingHorizontal: 32 } : null,
           { opacity: sectionOpacity, transform: [{ translateY: sectionTranslateY }] },
         ]}
       >
         {/* Title */}
-        <Text style={[styles.title, isMobile && { fontSize: 26 }]} accessibilityRole="header">
+        <Text style={[styles.title, isMobile ? { fontSize: 26 } : isTablet ? { fontSize: 30 } : null]} accessibilityRole="header">
           What is your time worth?
         </Text>
 
         {/* Subtitle */}
-        <Text style={[styles.subtitle, isMobile && { fontSize: 15, marginBottom: 32 }]}>
+        <Text style={[styles.subtitle, isMobile ? { fontSize: 15, marginBottom: 32 } : isTablet ? { fontSize: 16, marginBottom: 40 } : null]}>
           Every second spent looking at a screen is a second not looking at your patient. Calculate
           the impact of switching to Protocol Guide for your department.
         </Text>

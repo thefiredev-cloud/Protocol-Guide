@@ -1,6 +1,6 @@
 /**
  * Simulation Section - Animated bar chart comparing manual search vs Protocol Guide
- * Features: pulsing CTA, spring animations, celebration effects, hover cards
+ * Features: pulsing CTA, spring animations, celebration effects, hover cards, live timer
  *
  * Accessibility: Reduced-motion support, ARIA labels, keyboard accessible button
  */
@@ -16,6 +16,8 @@ import {
   Pressable,
   useWindowDimensions,
 } from "react-native";
+import { SimulationTimer } from "./simulation";
+import { useSimulationTimer } from "@/hooks/useSimulationTimer";
 
 // Color Palette - Dark Theme
 const COLORS = {
