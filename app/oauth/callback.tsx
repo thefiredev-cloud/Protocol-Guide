@@ -20,6 +20,23 @@ export default function OAuthCallback() {
       console.log("[OAuth] Callback handler triggered");
 
       try {
+        // Validate OAuth state parameter first
+        const url = new URL(window.location.href);
+        const receivedState = url.searchParams.get("state");
+
+        if (receivedState) {
+          const validation = await validateOAuthState(receivedState);
+
+          if (!validation.valid) {
+            console.error("[OAuth] State validation failed:", validation.error);
+            setStatus("error");
+            setErrorMessage(validation.error || "OAuth state validation failed");
+            return;
+          }
+
+          console.log("[OAuth] State validated successfully");
+        }
+
         // Supabase handles the OAuth callback automatically via URL hash
         // We just need to check if there's a session
         const { data, error } = await supabase.auth.getSession();

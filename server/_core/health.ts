@@ -398,16 +398,18 @@ function determineOverallStatus(services: HealthCheckResult['services']): 'healt
  */
 export async function runHealthCheck(options?: { quick?: boolean }): Promise<HealthCheckResult> {
   const isQuick = options?.quick ?? false;
+  const skipPlaceholder = { status: 'healthy' as const, latencyMs: 0, lastChecked: new Date().toISOString() };
 
   // Run checks in parallel for speed
-  const [database, supabase, claude, voyage] = await Promise.all([
+  const [database, supabase, claude, voyage, redis] = await Promise.all([
     checkDatabase(),
     checkSupabase(),
-    isQuick ? Promise.resolve({ status: 'healthy' as const, latencyMs: 0, lastChecked: new Date().toISOString() }) : checkClaude(),
-    isQuick ? Promise.resolve({ status: 'healthy' as const, latencyMs: 0, lastChecked: new Date().toISOString() }) : checkVoyage(),
+    isQuick ? Promise.resolve(skipPlaceholder) : checkClaude(),
+    isQuick ? Promise.resolve(skipPlaceholder) : checkVoyage(),
+    checkRedis(), // Always check Redis (fast operation)
   ]);
 
-  const services = { database, supabase, claude, voyage };
+  const services = { database, supabase, claude, voyage, redis };
 
   return {
     status: determineOverallStatus(services),
@@ -417,6 +419,7 @@ export async function runHealthCheck(options?: { quick?: boolean }): Promise<Hea
     uptime: Math.floor((Date.now() - serverStartTime) / 1000),
     services,
     resources: getResourceUsage(),
+    resilience: getResilienceStatus(),
   };
 }
 
