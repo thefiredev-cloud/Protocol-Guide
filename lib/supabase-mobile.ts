@@ -22,7 +22,7 @@ const getRedirectUri = () => {
     // For web, use the current origin
     return typeof window !== "undefined"
       ? `${window.location.origin}/oauth/callback`
-      : "http://localhost:8081/oauth/callback";
+      : "http://localhost:8082/oauth/callback";
   }
 
   // For native apps, use the deep link scheme
