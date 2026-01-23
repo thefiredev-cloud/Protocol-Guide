@@ -82,7 +82,7 @@ export default function InviteScreen() {
           </View>
           <Text style={[styles.successTitle, { color: colors.foreground }]}>Invitation Sent!</Text>
           <Text style={[styles.successText, { color: colors.muted }]}>
-            An invitation has been sent to {email}. They'll receive an email with instructions to join.
+            An invitation has been sent to {email}. They will receive an email with instructions to join.
           </Text>
           <View style={styles.successButtons}>
             <TouchableOpacity
