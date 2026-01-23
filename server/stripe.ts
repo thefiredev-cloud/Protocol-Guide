@@ -154,7 +154,7 @@ export async function createDepartmentCheckoutSession({
       line_items: [
         {
           price: priceId,
-          quantity: tier === "professional" ? seatCount : 1, // Professional is per-seat, Starter is flat rate
+          quantity: seatCount, // Both small and large departments are per-seat
         },
       ],
       success_url: successUrl,

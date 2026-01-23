@@ -3,7 +3,7 @@
  * Shared configuration and helper functions
  */
 
-import crypto from "crypto";
+import * as crypto from "crypto";
 
 /**
  * Referral reward tiers
