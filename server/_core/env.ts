@@ -136,10 +136,10 @@ const envSchema = z.object({
   // Trial period configuration
   STRIPE_TRIAL_PERIOD_DAYS: z
     .string()
+    .default('7')
     .regex(/^\d+$/, 'STRIPE_TRIAL_PERIOD_DAYS must be a number')
     .transform(Number)
     .pipe(z.number().int().nonnegative().max(365))
-    .default('7')
     .describe('Stripe trial period in days (0-365)'),
 
   // ===========================================

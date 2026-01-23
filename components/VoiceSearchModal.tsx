@@ -655,15 +655,17 @@ export function VoiceSearchModal({
               {/* Mic button */}
               <TouchableOpacity
                 onPress={handleMicPress}
-                disabled={recordingState === "processing"}
+                disabled={recordingState === "processing" || recordingState === "complete"}
                 activeOpacity={0.8}
                 accessibilityLabel={
                   recordingState === "recording"
                     ? "Stop recording"
+                    : recordingState === "complete"
+                    ? "Transcription complete"
                     : "Start voice search"
                 }
                 accessibilityRole="button"
-                accessibilityState={{ disabled: recordingState === "processing" }}
+                accessibilityState={{ disabled: recordingState === "processing" || recordingState === "complete" }}
               >
                 <Animated.View
                   style={[
@@ -675,6 +677,8 @@ export function VoiceSearchModal({
                           ? colors.error
                           : recordingState === "processing"
                           ? colors.primary
+                          : recordingState === "complete"
+                          ? colors.success
                           : recordingState === "error"
                           ? colors.warning
                           : colors.primary,
@@ -683,6 +687,12 @@ export function VoiceSearchModal({
                 >
                   {recordingState === "processing" ? (
                     <ActivityIndicator size="large" color="#FFFFFF" />
+                  ) : recordingState === "complete" ? (
+                    <IconSymbol
+                      name="checkmark"
+                      size={32}
+                      color="#FFFFFF"
+                    />
                   ) : (
                     <IconSymbol
                       name={recordingState === "recording" ? "stop.fill" : "mic.fill"}
