@@ -158,6 +158,27 @@ export default function HomeScreen() {
     }
   }, [messages]);
 
+  // P0 CRITICAL: Check disclaimer acknowledgment on mount and show modal if needed
+  useEffect(() => {
+    if (isAuthenticated && disclaimerStatus) {
+      const hasAcknowledged = disclaimerStatus.hasAcknowledged;
+      setDisclaimerAcknowledged(hasAcknowledged);
+
+      // Show modal if not acknowledged
+      if (!hasAcknowledged) {
+        setShowDisclaimerModal(true);
+      }
+    }
+  }, [isAuthenticated, disclaimerStatus]);
+
+  // Handler for when disclaimer is acknowledged
+  const handleDisclaimerAcknowledged = useCallback(() => {
+    setShowDisclaimerModal(false);
+    setDisclaimerAcknowledged(true);
+    // Refetch to ensure we have the latest status
+    refetchDisclaimerStatus();
+  }, [refetchDisclaimerStatus]);
+
   const trpcUtils = trpc.useUtils();
   
   const handleSendMessage = useCallback(async (text: string) => {
