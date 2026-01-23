@@ -658,23 +658,25 @@ export default function SearchScreen() {
           </Text>
         </View>
       ) : searchResults.length > 0 ? (
-        <FlatList
-          data={searchResults}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderSearchResult}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 20 }}
-          ListHeaderComponent={
-            <Text className="text-sm text-muted mb-3">
-              Found {searchResults.length} matching protocols
-            </Text>
-          }
-          ListFooterComponent={
-            <View className="mt-2 mb-4">
-              <MedicalDisclaimer variant="inline" />
-            </View>
-          }
-        />
+        <SearchResultsErrorBoundary>
+          <FlatList
+            data={searchResults}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderSearchResult}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            ListHeaderComponent={
+              <Text className="text-sm text-muted mb-3">
+                Found {searchResults.length} matching protocols
+              </Text>
+            }
+            ListFooterComponent={
+              <View className="mt-2 mb-4">
+                <MedicalDisclaimer variant="inline" />
+              </View>
+            }
+          />
+        </SearchResultsErrorBoundary>
       ) : (
         <View className="flex-1">
           {/* Example Searches */}
