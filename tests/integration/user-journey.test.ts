@@ -9,7 +9,7 @@
  *
  * Uses real database, mocks external services (Stripe, AI)
  */
-import { describe, it, expect, vi, beforeAll, afterAll, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import express from "express";
 import request from "supertest";

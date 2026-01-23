@@ -314,7 +314,13 @@ export default function HistoryScreen() {
         </Text>
       </View>
 
-      {/* History List - wrapped with ProFeatureLock for free users */}
+      {/* Loading State */}
+      {isHistoryLoading ? (
+        <View style={styles.listContent}>
+          <SkeletonHistoryList count={4} />
+        </View>
+      ) : (
+      /* History List - wrapped with ProFeatureLock for free users */
       <ProFeatureLock
         locked={isFreeTier}
         featureName="Offline History"
