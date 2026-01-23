@@ -288,7 +288,9 @@ export const integrationRouter = router({
           })),
         };
       } catch (error) {
-        console.error("[Integration] Failed to get daily usage:", error);
+        // Safe error logging: only log error type, not full error which may contain sensitive data
+        const errorType = error instanceof Error ? error.name : "UnknownError";
+        console.error(`[Integration] Daily usage query failed - errorType=${errorType}`);
         return { dailyUsage: [] };
       }
     }),

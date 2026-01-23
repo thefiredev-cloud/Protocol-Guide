@@ -544,11 +544,11 @@ export function FeaturesSection() {
           We removed the bloat. You get exactly what you need when the tones drop.
         </Animated.Text>
 
-        {/* Feature Cards - Stack on mobile */}
+        {/* Feature Cards - Stack on mobile, 2-col on tablet, 3-col on desktop */}
         <View
           style={{
             flexDirection: isMobile ? "column" : "row",
-            gap: isMobile ? 16 : 28,
+            gap: isMobile ? 16 : isTablet ? 20 : 28,
             flexWrap: "wrap",
             justifyContent: "center",
           }}
@@ -560,6 +560,7 @@ export function FeaturesSection() {
               index={index}
               isVisible={isVisible}
               isMobile={isMobile}
+              isTablet={isTablet}
             />
           ))}
         </View>
