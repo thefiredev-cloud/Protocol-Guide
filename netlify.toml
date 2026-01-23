@@ -12,9 +12,9 @@
 [build.environment]
   # Node version for build
   NODE_VERSION = "20"
-  # Ensure production mode
-  NODE_ENV = "production"
-  # Suppress Expo CLI interactive prompts
+  # Do NOT set NODE_ENV=production here - it causes pnpm to skip devDependencies
+  # NativeWind's react-native-css-interop needs devDeps to generate .cache/web.css
+  # CI = "true" suppresses interactive prompts
   CI = "true"
 
 # SPA routing - all paths serve index.html for client-side routing
