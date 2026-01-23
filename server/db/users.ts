@@ -22,6 +22,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   try {
     const values: InsertUser = {
       openId: user.openId,
+      queryCountToday: user.queryCountToday ?? 0,
     };
     const updateSet: Record<string, unknown> = {};
 
