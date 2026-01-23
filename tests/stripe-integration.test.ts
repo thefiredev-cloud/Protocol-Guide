@@ -12,6 +12,8 @@ import {
   constructWebhookEvent,
   getSubscription,
   cancelSubscription,
+  TRIAL_PERIOD_DAYS,
+  downgradeToFree,
 } from "../server/stripe";
 
 // Mock Stripe SDK - define mocks BEFORE any imports
