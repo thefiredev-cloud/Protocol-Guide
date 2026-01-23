@@ -160,7 +160,6 @@ export async function getAgenciesByState(state: string): Promise<AgencyInfo[]> {
  */
 export async function getAgenciesWithProtocols(state?: string): Promise<AgencyInfo[]> {
   const db = await getDb();
-  if (!db) return [];
 
   let query;
   if (state) {
