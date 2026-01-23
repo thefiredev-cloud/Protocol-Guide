@@ -161,7 +161,9 @@ export const integrationRouter = router({
           periodDays: days,
         };
       } catch (error) {
-        console.error("[Integration] Failed to get stats:", error);
+        // Safe error logging: only log error type, not full error which may contain query data
+        const errorType = error instanceof Error ? error.name : "UnknownError";
+        console.error(`[Integration] Stats query failed - errorType=${errorType}`);
         return { stats: [], total: 0, periodDays: days };
       }
     }),

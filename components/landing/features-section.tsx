@@ -513,10 +513,10 @@ export function FeaturesSection() {
           style={[
             {
               color: COLORS.textWhite,
-              fontSize: isMobile ? 28 : 36,
+              fontSize: isMobile ? 28 : isTablet ? 32 : 36,
               fontWeight: "800",
               textAlign: "center",
-              marginBottom: isMobile ? 12 : 16,
+              marginBottom: isMobile ? 12 : isTablet ? 14 : 16,
               letterSpacing: -0.5,
             },
             animatedHeaderStyle,
@@ -531,11 +531,11 @@ export function FeaturesSection() {
           style={[
             {
               color: COLORS.textMuted,
-              fontSize: isMobile ? 16 : 18,
+              fontSize: isMobile ? 16 : isTablet ? 17 : 18,
               textAlign: "center",
-              marginBottom: isMobile ? 32 : 56,
-              lineHeight: isMobile ? 24 : 28,
-              maxWidth: 500,
+              marginBottom: isMobile ? 32 : isTablet ? 44 : 56,
+              lineHeight: isMobile ? 24 : isTablet ? 26 : 28,
+              maxWidth: isMobile ? "100%" : 500,
               alignSelf: "center",
             },
             animatedHeaderStyle,

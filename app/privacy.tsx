@@ -116,7 +116,7 @@ export default function PrivacyPolicyScreen() {
           We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the {'"Last updated"'} date.
         </Section>
 
-        <Section title="10. Contact Us">
+        <Section title="11. Contact Us">
           If you have questions about this Privacy Policy, please contact us at:
           {"\n\n"}
           Email: privacy@protocol-guide.com{"\n"}
