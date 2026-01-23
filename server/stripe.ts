@@ -2,10 +2,9 @@ import Stripe from "stripe";
 import { PRICING } from "./db";
 
 // Initialize Stripe with secret key from environment
-// Using stable API version 2024-12-18 (latest stable as of Jan 2025)
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: "2024-12-18.acacia",
+      apiVersion: "2025-12-15.clover",
     })
   : null;
 
