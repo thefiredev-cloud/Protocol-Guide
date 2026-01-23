@@ -193,4 +193,57 @@ export async function cancelSubscription(subscriptionId: string) {
   }
 }
 
+/**
+ * Downgrade a user to free tier
+ * - Cancels their Stripe subscription immediately
+ * - Updates user record to free tier
+ * - Clears subscription details
+ * Can be called from webhooks (disputes) or admin actions
+ */
+export async function downgradeToFree(userId: number): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Import db functions to avoid circular dependency
+    const db = await import("./db.js");
+
+    // Get user
+    const user = await db.getUserById(userId);
+    if (!user) {
+      return { success: false, error: "User not found" };
+    }
+
+    // Cancel Stripe subscription if exists
+    if (user.subscriptionId && stripe) {
+      try {
+        await stripe.subscriptions.cancel(user.subscriptionId);
+        console.log(`[Stripe] Cancelled subscription ${user.subscriptionId} for user ${userId}`);
+      } catch (error) {
+        console.error(`[Stripe] Failed to cancel subscription for user ${userId}:`, error);
+        // Continue with downgrade even if Stripe call fails
+      }
+    }
+
+    // Update user to free tier
+    await db.updateUserTier(userId, "free");
+
+    // Clear subscription details from user record
+    const dbInstance = await db.getDb();
+    if (dbInstance) {
+      const { users } = await import("../drizzle/schema.js");
+      const { eq } = await import("drizzle-orm");
+
+      await dbInstance.update(users).set({
+        subscriptionId: null,
+        subscriptionStatus: "canceled",
+        subscriptionEndDate: null,
+      }).where(eq(users.id, userId));
+    }
+
+    console.log(`[Stripe] User ${userId} downgraded to free tier`);
+    return { success: true };
+  } catch (error) {
+    console.error(`[Stripe] Downgrade to free failed for user ${userId}:`, error);
+    return { success: false, error: (error as Error).message || "Failed to downgrade user" };
+  }
+}
+
 export { stripe };
