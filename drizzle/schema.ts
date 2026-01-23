@@ -118,8 +118,10 @@ export const users = mysqlTable("users", {
 	subscriptionEndDate: timestamp({ mode: 'string' }),
 	homeCountyId: int(),
 	supabaseId: varchar({ length: 36 }),
+	disclaimerAcknowledgedAt: timestamp({ mode: 'string' }),
 },
 (table) => [
 	index("users_openId_unique").on(table.openId),
 	index("users_supabaseId_unique").on(table.supabaseId),
+	index("idx_users_disclaimer_acknowledged").on(table.disclaimerAcknowledgedAt),
 ]);

@@ -373,18 +373,8 @@ export default function HomeScreen() {
             {msg.text}
           </Text>
 
-          {/* Medical Disclaimer */}
-          <Text
-            className="mt-3"
-            style={{
-              fontSize: 12,
-              color: colors.muted,
-              fontStyle: 'italic',
-              lineHeight: 16,
-            }}
-          >
-            Consult medical director for patient-specific guidance. Follow your local protocols.
-          </Text>
+          {/* Medical Disclaimer - Required for legal compliance */}
+          <MedicalDisclaimer variant="inline" />
         </View>
       </View>
     );

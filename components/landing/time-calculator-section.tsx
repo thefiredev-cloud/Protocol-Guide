@@ -185,7 +185,9 @@ const sliderStyles = Platform.OS === "web" ? `
 
 export function TimeCalculatorSection() {
   const { width } = useWindowDimensions();
-  const isMobile = width < 768;
+  // Three-tier responsive breakpoints
+  const isMobile = width < 640;
+  const isTablet = width >= 640 && width < 1024;
 
   const [calls, setCalls] = useState(10);
   const [isVisible, setIsVisible] = useState(false);
