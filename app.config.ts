@@ -36,7 +36,7 @@ const config: ExpoConfig = {
   owner: "tannero19",  // Expo account username
   extra: {
     eas: {
-      projectId: ""  // Will be populated by `eas project:init`
+      projectId: "9ab928c4-ba00-4c6e-affc-0a827b869942"
     }
   },
 
