@@ -81,7 +81,7 @@ export function UpgradeScreen({
             <Text style={[styles.limitText, { color: colors.foreground }]}>
               You{"'"}ve used your 5 free lookups today.{"\n"}
               <Text style={{ fontWeight: "700" }}>
-                Upgrade to Pro for unlimited queries—$39/year, less than a shift meal.
+                Upgrade to Pro for unlimited queries—$89/year, less than two shift meals.
               </Text>
             </Text>
           </View>
@@ -123,7 +123,7 @@ export function UpgradeScreen({
               </View>
             </View>
             <View style={styles.priceRow}>
-              <Text style={[styles.price, { color: colors.foreground }]}>$4.99</Text>
+              <Text style={[styles.price, { color: colors.foreground }]}>$9.99</Text>
               <Text style={[styles.period, { color: colors.muted }]}>/month</Text>
             </View>
             <Text style={[styles.priceNote, { color: colors.muted }]}>
@@ -144,12 +144,12 @@ export function UpgradeScreen({
             ]}
           >
             <View style={styles.savingsBadge}>
-              <Text style={styles.savingsText}>SAVE 35%</Text>
+              <Text style={styles.savingsText}>SAVE 25%</Text>
             </View>
             <View style={styles.pricingHeader}>
               <Text style={[styles.planName, { color: colors.foreground }]}>Annual</Text>
               <View style={[
-                styles.radioOuter, 
+                styles.radioOuter,
                 { borderColor: selectedPlan === "annual" ? colors.primary : colors.border }
               ]}>
                 {selectedPlan === "annual" && (
@@ -158,11 +158,11 @@ export function UpgradeScreen({
               </View>
             </View>
             <View style={styles.priceRow}>
-              <Text style={[styles.price, { color: colors.foreground }]}>$39</Text>
+              <Text style={[styles.price, { color: colors.foreground }]}>$89</Text>
               <Text style={[styles.period, { color: colors.muted }]}>/year</Text>
             </View>
             <Text style={[styles.priceNote, { color: colors.muted }]}>
-              Just $3.25/month • Best value
+              Just $7.42/month • Best value
             </Text>
           </Pressable>
         </View>
