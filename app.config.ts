@@ -244,26 +244,6 @@ const config: ExpoConfig = {
         }
       }
     ],
-
-    // Video player with background support
-    [
-      "expo-video",
-      {
-        supportsBackgroundPlayback: true,
-        supportsPictureInPicture: true,
-      },
-    ],
-
-    // Splash screen configuration
-    [
-      "expo-splash-screen",
-      {
-        image: "./assets/images/splash-icon.png",
-        imageWidth: 200,
-        resizeMode: "contain",
-        backgroundColor: "#ffffff",
-      },
-    ],
   ],
 
   experiments: {

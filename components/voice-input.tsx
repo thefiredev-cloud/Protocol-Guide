@@ -246,11 +246,23 @@ export function VoiceInput({ onTranscription, onError, disabled = false }: Voice
   };
 
   const startRecording = async () => {
+    // Guard: Only allow starting from idle state
+    if (stateRef.current !== "idle") {
+      console.warn(`startRecording called in invalid state: ${stateRef.current}`);
+      return;
+    }
+
     try {
       // Request permissions
       const { granted } = await Audio.requestPermissionsAsync();
       if (!granted) {
         onError?.("Microphone permission is required for voice input");
+        return;
+      }
+
+      // Verify state hasn't changed during async permission check
+      if (stateRef.current !== "idle") {
+        console.warn("State changed during permission check, aborting startRecording");
         return;
       }
 
@@ -260,13 +272,27 @@ export function VoiceInput({ onTranscription, onError, disabled = false }: Voice
         playsInSilentModeIOS: true,
       });
 
+      // Verify state again after async audio setup
+      if (stateRef.current !== "idle") {
+        console.warn("State changed during audio setup, aborting startRecording");
+        return;
+      }
+
       // Start recording
       const { recording } = await Audio.Recording.createAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY
       );
 
       recordingRef.current = recording;
-      setRecordingState("recording");
+
+      // Transition to recording state
+      if (!transitionTo("recording")) {
+        // If transition failed, clean up the recording we just created
+        recording.stopAndUnloadAsync().catch(() => {});
+        recordingRef.current = null;
+        return;
+      }
+
       setRecordingDuration(0);
       startPulseAnimation();
 
@@ -278,6 +304,7 @@ export function VoiceInput({ onTranscription, onError, disabled = false }: Voice
     } catch (error) {
       console.error("Failed to start recording:", error);
       onError?.("Failed to start recording. Please try again.");
+      stateRef.current = "idle";
       setRecordingState("idle");
     }
   };
