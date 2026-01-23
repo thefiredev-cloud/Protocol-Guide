@@ -460,15 +460,15 @@ export function EmailCaptureSection() {
   };
 
   return (
-    <View style={{ backgroundColor: COLORS.bgDark, paddingVertical: isMobile ? 48 : 64 }} nativeID="email-capture-section">
+    <View style={{ backgroundColor: COLORS.bgDark, paddingVertical: isMobile ? 48 : isTablet ? 56 : 64 }} nativeID="email-capture-section">
       <Animated.View
-        style={[{ paddingHorizontal: isMobile ? 16 : 24, maxWidth: 600, alignSelf: "center", width: "100%" }, animatedSectionStyle]}
+        style={[{ paddingHorizontal: isMobile ? 16 : isTablet ? 32 : 24, maxWidth: 600, alignSelf: "center", width: "100%" }, animatedSectionStyle]}
       >
-        <Text style={{ color: COLORS.textWhite, fontSize: 28, fontWeight: "700", textAlign: "center", marginBottom: 16 }}>
+        <Text style={{ color: COLORS.textWhite, fontSize: isMobile ? 26 : isTablet ? 28 : 30, fontWeight: "700", textAlign: "center", marginBottom: isMobile ? 14 : 16 }}>
           Ready to upgrade your response?
         </Text>
 
-        <Text style={{ color: COLORS.textMuted, fontSize: 16, textAlign: "center", marginBottom: 32, lineHeight: 24 }}>
+        <Text style={{ color: COLORS.textMuted, fontSize: isMobile ? 15 : isTablet ? 16 : 17, textAlign: "center", marginBottom: isMobile ? 28 : isTablet ? 32 : 36, lineHeight: isMobile ? 22 : 24 }}>
           Join the medics and departments already switching{"\n"}to the new standard of care.
         </Text>
 
