@@ -52,7 +52,7 @@ export default function HomeScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const flatListRef = useRef<FlatList>(null);
-  
+
   // Filter states
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
@@ -65,6 +65,16 @@ export default function HomeScreen() {
   const [agenciesData, setAgenciesData] = useState<Agency[]>([]);
   const [agenciesLoading, setAgenciesLoading] = useState(false);
   const [totalStats, setTotalStats] = useState<{ totalProtocols: number; totalAgencies: number } | null>(null);
+
+  // County restriction hook for monetization
+  const {
+    showUpgradeModal,
+    closeUpgradeModal,
+    checkCanAddCounty,
+    currentCounties,
+    maxCounties,
+    incrementCountyCount,
+  } = useCountyRestriction(selectedAgency ? 1 : 0);
 
   // tRPC queries
   const { data: coverageData, isLoading: coverageLoading } = trpc.search.coverageByState.useQuery();
