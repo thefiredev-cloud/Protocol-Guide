@@ -1167,3 +1167,496 @@ export async function getAuditLogs(options: {
 
   return { items, total };
 }
+
+// ============ OAuth Provider Functions ============
+
+/**
+ * Find or create user by Supabase auth with provider info
+ * Supports account linking when user signs in with multiple providers
+ */
+export async function findOrCreateUserBySupabaseAuth(
+  supabaseId: string,
+  metadata: {
+    email?: string;
+    name?: string;
+    provider?: string;
+    providerUserId?: string;
+  }
+): Promise<User | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot find/create user: database not available");
+    return null;
+  }
+
+  try {
+    // First, try to find existing user by supabaseId
+    let existing = await db
+      .select()
+      .from(users)
+      .where(eq(users.supabaseId, supabaseId))
+      .limit(1);
+
+    // If not found by supabaseId, try by email for account linking
+    if (existing.length === 0 && metadata.email) {
+      existing = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, metadata.email))
+        .limit(1);
+
+      // If found by email, link the Supabase ID
+      if (existing.length > 0) {
+        await db.update(users)
+          .set({ supabaseId })
+          .where(eq(users.id, existing[0].id));
+      }
+    }
+
+    if (existing.length > 0) {
+      const user = existing[0];
+
+      // Link provider if provided and not already linked
+      if (metadata.provider && metadata.providerUserId) {
+        await linkAuthProvider(user.id, {
+          provider: metadata.provider,
+          providerUserId: metadata.providerUserId,
+          email: metadata.email,
+        });
+      }
+
+      return user;
+    }
+
+    // Create new user
+    const [newUser] = await db
+      .insert(users)
+      .values({
+        openId: supabaseId,
+        supabaseId,
+        email: metadata.email,
+        name: metadata.name,
+        tier: "free",
+        role: "user",
+        queryCountToday: 0,
+      })
+      .$returningId();
+
+    // Link provider for new user
+    if (metadata.provider && metadata.providerUserId) {
+      await linkAuthProvider(newUser.id, {
+        provider: metadata.provider,
+        providerUserId: metadata.providerUserId,
+        email: metadata.email,
+      });
+    }
+
+    // Fetch and return the created user
+    const created = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, newUser.id))
+      .limit(1);
+
+    return created.length > 0 ? created[0] : null;
+  } catch (error) {
+    console.error("[Database] Failed to find/create user by supabaseAuth:", error);
+    return null;
+  }
+}
+
+/**
+ * Link an auth provider to a user account
+ */
+export async function linkAuthProvider(
+  userId: number,
+  provider: {
+    provider: string;
+    providerUserId: string;
+    email?: string;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  const db = await getDb();
+  if (!db) return { success: false, error: "Database not available" };
+
+  try {
+    // Check if this provider is already linked to this user
+    const existing = await db
+      .select()
+      .from(userAuthProviders)
+      .where(
+        and(
+          eq(userAuthProviders.userId, userId),
+          eq(userAuthProviders.provider, provider.provider)
+        )
+      )
+      .limit(1);
+
+    if (existing.length > 0) {
+      // Already linked, update providerUserId if different
+      if (existing[0].providerUserId !== provider.providerUserId) {
+        await db
+          .update(userAuthProviders)
+          .set({ providerUserId: provider.providerUserId, email: provider.email })
+          .where(eq(userAuthProviders.id, existing[0].id));
+      }
+      return { success: true };
+    }
+
+    // Check if this provider account is linked to another user
+    const otherUser = await db
+      .select()
+      .from(userAuthProviders)
+      .where(
+        and(
+          eq(userAuthProviders.provider, provider.provider),
+          eq(userAuthProviders.providerUserId, provider.providerUserId)
+        )
+      )
+      .limit(1);
+
+    if (otherUser.length > 0) {
+      return { success: false, error: "This account is already linked to another user" };
+    }
+
+    // Link the provider
+    await db.insert(userAuthProviders).values({
+      userId,
+      provider: provider.provider,
+      providerUserId: provider.providerUserId,
+      email: provider.email,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("[Database] Failed to link auth provider:", error);
+    return { success: false, error: "Failed to link provider" };
+  }
+}
+
+/**
+ * Unlink an auth provider from a user account
+ */
+export async function unlinkAuthProvider(
+  userId: number,
+  provider: string
+): Promise<{ success: boolean; error?: string }> {
+  const db = await getDb();
+  if (!db) return { success: false, error: "Database not available" };
+
+  try {
+    // Check how many providers the user has
+    const providers = await db
+      .select()
+      .from(userAuthProviders)
+      .where(eq(userAuthProviders.userId, userId));
+
+    if (providers.length <= 1) {
+      return { success: false, error: "Cannot unlink the only authentication method" };
+    }
+
+    // Remove the provider
+    await db
+      .delete(userAuthProviders)
+      .where(
+        and(
+          eq(userAuthProviders.userId, userId),
+          eq(userAuthProviders.provider, provider)
+        )
+      );
+
+    return { success: true };
+  } catch (error) {
+    console.error("[Database] Failed to unlink auth provider:", error);
+    return { success: false, error: "Failed to unlink provider" };
+  }
+}
+
+/**
+ * Get all linked providers for a user
+ */
+export async function getUserAuthProviders(userId: number): Promise<UserAuthProvider[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return db
+    .select()
+    .from(userAuthProviders)
+    .where(eq(userAuthProviders.userId, userId));
+}
+
+// ============ Agency Admin Functions ============
+
+/**
+ * Get agency by ID
+ */
+export async function getAgencyById(agencyId: number): Promise<Agency | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(agencies).where(eq(agencies.id, agencyId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+/**
+ * Get agency by slug
+ */
+export async function getAgencyBySlug(slug: string): Promise<Agency | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(agencies).where(eq(agencies.slug, slug)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+/**
+ * Create a new agency
+ */
+export async function createAgency(data: InsertAgency): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(agencies).values(data);
+  return result[0].insertId;
+}
+
+/**
+ * Update agency
+ */
+export async function updateAgency(
+  agencyId: number,
+  data: Partial<InsertAgency>
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(agencies).set(data).where(eq(agencies.id, agencyId));
+}
+
+/**
+ * Get agency members
+ */
+export async function getAgencyMembers(agencyId: number): Promise<AgencyMember[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return db
+    .select()
+    .from(agencyMembers)
+    .where(eq(agencyMembers.agencyId, agencyId))
+    .orderBy(desc(agencyMembers.createdAt));
+}
+
+/**
+ * Add member to agency
+ */
+export async function addAgencyMember(data: InsertAgencyMember): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(agencyMembers).values(data);
+  return result[0].insertId;
+}
+
+/**
+ * Update agency member role
+ */
+export async function updateAgencyMemberRole(
+  memberId: number,
+  role: "owner" | "admin" | "protocol_author" | "member"
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(agencyMembers).set({ role }).where(eq(agencyMembers.id, memberId));
+}
+
+/**
+ * Remove member from agency
+ */
+export async function removeAgencyMember(memberId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(agencyMembers).where(eq(agencyMembers.id, memberId));
+}
+
+/**
+ * Get user's agencies (where they are a member)
+ */
+export async function getUserAgencies(userId: number): Promise<Agency[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const memberships = await db
+    .select({ agencyId: agencyMembers.agencyId })
+    .from(agencyMembers)
+    .where(and(eq(agencyMembers.userId, userId), eq(agencyMembers.status, "active")));
+
+  if (memberships.length === 0) return [];
+
+  const agencyIds = memberships.map((m) => m.agencyId);
+  const result = await db
+    .select()
+    .from(agencies)
+    .where(sql`${agencies.id} IN (${sql.join(agencyIds.map(id => sql`${id}`), sql`, `)})`);
+
+  return result;
+}
+
+/**
+ * Check if user is agency admin
+ */
+export async function isUserAgencyAdmin(userId: number, agencyId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+
+  const result = await db
+    .select()
+    .from(agencyMembers)
+    .where(
+      and(
+        eq(agencyMembers.userId, userId),
+        eq(agencyMembers.agencyId, agencyId),
+        eq(agencyMembers.status, "active"),
+        sql`${agencyMembers.role} IN ('owner', 'admin')`
+      )
+    )
+    .limit(1);
+
+  return result.length > 0;
+}
+
+// ============ Protocol Version Functions ============
+
+/**
+ * Get protocol versions for agency
+ */
+export async function getAgencyProtocolVersions(
+  agencyId: number,
+  options?: { status?: string; limit?: number; offset?: number }
+): Promise<{ items: ProtocolVersion[]; total: number }> {
+  const db = await getDb();
+  if (!db) return { items: [], total: 0 };
+
+  const { status, limit = 50, offset = 0 } = options || {};
+
+  const conditions = [eq(protocolVersions.agencyId, agencyId)];
+  if (status) {
+    conditions.push(eq(protocolVersions.status, status as any));
+  }
+
+  const [countResult] = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(protocolVersions)
+    .where(and(...conditions));
+
+  const items = await db
+    .select()
+    .from(protocolVersions)
+    .where(and(...conditions))
+    .orderBy(desc(protocolVersions.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  return { items, total: countResult?.count || 0 };
+}
+
+/**
+ * Create protocol version
+ */
+export async function createProtocolVersion(data: InsertProtocolVersion): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(protocolVersions).values(data);
+  return result[0].insertId;
+}
+
+/**
+ * Update protocol version status
+ */
+export async function updateProtocolVersionStatus(
+  versionId: number,
+  status: "draft" | "review" | "approved" | "published" | "archived",
+  approvedBy?: number
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const updateData: Partial<InsertProtocolVersion> = { status };
+  if (status === "approved" && approvedBy) {
+    updateData.approvedBy = approvedBy;
+    updateData.approvedAt = new Date();
+  }
+  if (status === "published") {
+    updateData.publishedAt = new Date();
+  }
+
+  await db.update(protocolVersions).set(updateData).where(eq(protocolVersions.id, versionId));
+}
+
+// ============ Protocol Upload Functions ============
+
+/**
+ * Create protocol upload job
+ */
+export async function createProtocolUpload(data: InsertProtocolUpload): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(protocolUploads).values(data);
+  return result[0].insertId;
+}
+
+/**
+ * Get protocol upload by ID
+ */
+export async function getProtocolUpload(uploadId: number): Promise<ProtocolUpload | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(protocolUploads).where(eq(protocolUploads.id, uploadId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+/**
+ * Update protocol upload status
+ */
+export async function updateProtocolUploadStatus(
+  uploadId: number,
+  status: "pending" | "processing" | "chunking" | "embedding" | "completed" | "failed",
+  details?: { progress?: number; chunksCreated?: number; errorMessage?: string }
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const updateData: Partial<InsertProtocolUpload> = { status };
+  if (details?.progress !== undefined) updateData.progress = details.progress;
+  if (details?.chunksCreated !== undefined) updateData.chunksCreated = details.chunksCreated;
+  if (details?.errorMessage) updateData.errorMessage = details.errorMessage;
+
+  if (status === "processing") {
+    updateData.processingStartedAt = new Date();
+  }
+  if (status === "completed" || status === "failed") {
+    updateData.completedAt = new Date();
+  }
+
+  await db.update(protocolUploads).set(updateData).where(eq(protocolUploads.id, uploadId));
+}
+
+/**
+ * Get pending protocol uploads for processing
+ */
+export async function getPendingProtocolUploads(limit = 10): Promise<ProtocolUpload[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return db
+    .select()
+    .from(protocolUploads)
+    .where(eq(protocolUploads.status, "pending"))
+    .orderBy(protocolUploads.createdAt)
+    .limit(limit);
+}
