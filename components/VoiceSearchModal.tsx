@@ -44,6 +44,12 @@ import Animated, {
   SlideInDown,
   SlideOutDown,
 } from "react-native-reanimated";
+import {
+  createButtonA11y,
+  createLiveRegionA11y,
+  announceForAccessibility,
+  MEDICAL_A11Y_LABELS,
+} from "@/lib/accessibility";
 
 // Recording state types - proper state machine
 type RecordingState = "idle" | "permission_required" | "recording" | "processing" | "complete" | "error";
