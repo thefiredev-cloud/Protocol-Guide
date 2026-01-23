@@ -5,15 +5,26 @@
  * Uses name + state matching to correlate records
  *
  * This is a temporary solution until frontend is migrated to use Supabase agencies directly.
+ *
+ * PERFORMANCE OPTIMIZATIONS:
+ * - In-memory cache for ID mappings
+ * - Redis cache for full agency details (1-hour TTL)
+ * - Combined lookup to prevent N+1 queries
  */
 
 import { createClient } from '@supabase/supabase-js';
 import { getCountyById, getAllCounties } from './db';
+import { getRedis, isRedisAvailable } from './_core/redis';
+import { logger } from './_core/logger';
 
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+// Redis cache configuration
+const AGENCY_CACHE_TTL = 3600; // 1 hour
+const AGENCY_CACHE_PREFIX = 'agency:';
 
 /**
  * Agency mapping cache

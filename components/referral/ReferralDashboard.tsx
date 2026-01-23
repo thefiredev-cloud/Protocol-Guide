@@ -20,6 +20,7 @@ import {
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { trpc } from "@/lib/trpc";
+import { Skeleton } from "@/components/ui/Skeleton";
 const { useState, useCallback } = React;
 
 // ============ Constants ============

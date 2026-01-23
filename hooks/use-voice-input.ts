@@ -4,10 +4,26 @@ import { useAudioRecorder, AudioModule, RecordingPresets } from "@/lib/audio";
 import * as FileSystem from "expo-file-system/legacy";
 import { trpc } from "@/lib/trpc";
 
+// Proper state machine states
+type RecordingState = "idle" | "recording" | "processing" | "complete";
+
+// Valid state transitions
+const VALID_TRANSITIONS: Record<RecordingState, RecordingState[]> = {
+  idle: ["recording"],
+  recording: ["processing", "idle"], // idle for cancel/error
+  processing: ["complete", "idle"], // idle for error
+  complete: ["idle"],
+};
+
 type VoiceInputState = {
+  recordingState: RecordingState;
+  error: string | null;
+};
+
+// Legacy computed properties for backwards compatibility
+type VoiceInputStateComputed = VoiceInputState & {
   isRecording: boolean;
   isProcessing: boolean;
-  error: string | null;
 };
 
 export function useVoiceInput(onTranscription: (text: string) => void) {
