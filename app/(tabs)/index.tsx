@@ -276,6 +276,19 @@ export default function HomeScreen() {
     setSelectedAgency(null);
   }, []);
 
+  // Voice search handlers
+  const handleVoiceTranscription = useCallback((text: string) => {
+    setVoiceError(null);
+    // Automatically trigger search with transcribed text
+    handleSendMessage(text);
+  }, [handleSendMessage]);
+
+  const handleVoiceError = useCallback((error: string) => {
+    setVoiceError(error);
+    // Clear error after 3 seconds
+    setTimeout(() => setVoiceError(null), 3000);
+  }, []);
+
   // Get year color
   const getYearColor = (year?: number) => {
     if (!year) return colors.muted;
