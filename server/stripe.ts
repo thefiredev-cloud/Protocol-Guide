@@ -1,5 +1,7 @@
 import Stripe from "stripe";
 import { PRICING } from "./db";
+import type { SubscriptionTier, BillingInterval } from "./lib/pricing";
+import { calculateDepartmentPrice, validateSeatCount } from "./lib/pricing";
 
 // Initialize Stripe with secret key from environment
 const stripe = process.env.STRIPE_SECRET_KEY
@@ -10,8 +12,15 @@ const stripe = process.env.STRIPE_SECRET_KEY
 
 // Price IDs from Stripe Dashboard - set via environment variables
 const PRICE_IDS = {
+  // Individual/Pro subscriptions
   proMonthly: process.env.STRIPE_PRO_MONTHLY_PRICE_ID || "",
   proAnnual: process.env.STRIPE_PRO_ANNUAL_PRICE_ID || "",
+
+  // Department subscriptions
+  departmentStarterMonthly: process.env.STRIPE_DEPT_STARTER_MONTHLY_PRICE_ID || "",
+  departmentStarterAnnual: process.env.STRIPE_DEPT_STARTER_ANNUAL_PRICE_ID || "",
+  departmentProfessionalMonthly: process.env.STRIPE_DEPT_PROFESSIONAL_MONTHLY_PRICE_ID || "",
+  departmentProfessionalAnnual: process.env.STRIPE_DEPT_PROFESSIONAL_ANNUAL_PRICE_ID || "",
 };
 
 // Trial period configuration - default 7 days, can be overridden via env var

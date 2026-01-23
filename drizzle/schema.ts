@@ -193,7 +193,9 @@ export const searchHistory = mysqlTable("search_history", {
   timestamp: timestamp("timestamp").defaultNow().notNull(),
   deviceId: varchar("deviceId", { length: 64 }), // Optional device identifier for sync tracking
   synced: boolean("synced").default(true).notNull(), // Whether this was synced from a local device
-});
+}, (table) => ({
+  userTimestampIdx: index("idx_search_history_user_ts").on(table.userId, table.timestamp),
+}));
 
 export type SearchHistory = typeof searchHistory.$inferSelect;
 export type InsertSearchHistory = typeof searchHistory.$inferInsert;
