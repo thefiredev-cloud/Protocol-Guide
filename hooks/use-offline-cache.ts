@@ -1,6 +1,17 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { OfflineCache, CachedProtocol, formatCacheSize } from "@/lib/offline-cache";
 import NetInfo, { NetInfoState } from "@react-native-community/netinfo";
+import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/hooks/use-auth";
+
+// Tier configuration - mirrors server/db.ts TIER_CONFIG
+const TIER_OFFLINE_ACCESS = {
+  free: false,
+  pro: true,
+  enterprise: true,
+} as const;
+
+type Tier = keyof typeof TIER_OFFLINE_ACCESS;
 
 type CacheState = {
   isOnline: boolean;
@@ -9,6 +20,10 @@ type CacheState = {
   itemCount: number;
   isLoading: boolean;
 };
+
+export type OfflineCacheResult =
+  | { success: true; data?: CachedProtocol[] }
+  | { success: false; reason: "upgrade_required" | "not_authenticated" | "error"; message?: string };
 
 /**
  * Hook for managing offline cache state and operations
