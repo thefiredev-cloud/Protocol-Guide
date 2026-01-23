@@ -913,6 +913,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 16,
   },
+  cardsRowMobile: {
+    flexDirection: "column",
+  },
   // PulsingButton styles
   buttonContainer: {
     position: "relative",
