@@ -9,9 +9,8 @@ import { getDb } from "./connection";
 
 export async function getAllCounties() {
   const db = await getDb();
-  if (!db) return [];
 
-  return db.select().from(counties).orderBy(counties.state, counties.name);
+  return await db.select().from(counties).orderBy(counties.state, counties.name);
 }
 
 export async function getCountyById(id: number) {
