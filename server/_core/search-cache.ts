@@ -5,7 +5,12 @@
  * Target: Repeat queries <10ms (vs 200-500ms for embedding + pgvector search)
  *
  * Cache key format: search:{md5(query:agencyId:stateCode:limit)}
- * TTL: 5 minutes (300 seconds) - balances freshness with performance
+ * TTL: 1 hour (3600 seconds) - protocols are stable data that rarely change
+ *
+ * Cache Headers:
+ * - Cache-Control: public, max-age=3600, stale-while-revalidate=300
+ * - X-Cache: HIT or MISS (indicates cache status)
+ * - X-Cache-TTL: 3600 (cache TTL in seconds)
  */
 
 import { getRedis, isRedisAvailable } from './redis';

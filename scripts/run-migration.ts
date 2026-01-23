@@ -28,11 +28,17 @@ async function runMigration() {
     const migrationPath = path.join(process.cwd(), migrationFile);
     const sql = await fs.readFile(migrationPath, "utf-8");
 
-    // Split by semicolon and filter out empty statements
-    const statements = sql
+    // Remove comments and split by semicolon
+    const cleanedSql = sql
+      .split("\n")
+      .filter((line) => !line.trim().startsWith("--"))
+      .join("\n")
+      .replace(/\/\*[\s\S]*?\*\//g, ""); // Remove /* */ comments
+
+    const statements = cleanedSql
       .split(";")
       .map((s) => s.trim())
-      .filter((s) => s.length > 0 && !s.startsWith("--") && !s.startsWith("/*"));
+      .filter((s) => s.length > 0);
 
     console.log(`📝 Found ${statements.length} SQL statements\n`);
 
