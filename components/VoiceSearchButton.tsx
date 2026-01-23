@@ -244,7 +244,9 @@ export function VoiceSearchButton({
       // Request permissions
       const { granted } = await Audio.requestPermissionsAsync();
       if (!granted) {
-        onError?.("Microphone permission required for voice search");
+        const permissionError = "Microphone permission required for voice search";
+        onError?.(permissionError);
+        announceForAccessibility(permissionError);
         return;
       }
 
@@ -262,6 +264,7 @@ export function VoiceSearchButton({
       recordingRef.current = recording;
       setRecordingState("recording");
       setStatusText("Listening...");
+      announceForAccessibility(MEDICAL_A11Y_LABELS.voice.recording);
       startPulseAnimation();
 
       // Set up silence detection (auto-stop after 2s of no input)
