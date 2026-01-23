@@ -450,6 +450,7 @@ export const appRouter = router({
   }),
 
   // Protocol query router
+  // Optimized with query normalization and intelligent model routing
   query: router({
     submit: protectedProcedure
       .input(z.object({
@@ -478,16 +479,48 @@ export const appRouter = router({
         const agencyName = county?.name || 'Unknown Agency';
 
         try {
-          // Semantic search with Voyage AI embeddings
-          // Filter by agency name (from MySQL county lookup)
-          const searchResults = await semanticSearchProtocols({
-            query: input.queryText,
-            agencyName: agencyName !== 'Unknown Agency' ? agencyName : null,
-            limit: 10,
-            threshold: 0.3,
-          });
+          // Step 1: Normalize the EMS query (expand abbreviations, fix typos)
+          const normalized = normalizeEmsQuery(input.queryText);
 
-          if (searchResults.length === 0) {
+          // Log normalization for monitoring
+          if (normalized.normalized !== normalized.original.toLowerCase()) {
+            console.log(`[Query] "${normalized.original}" -> "${normalized.normalized}"`);
+          }
+
+          // Step 2: Use selectModel() for intelligent Claude routing
+          // This considers query complexity, intent, and user tier
+          const suggestedModel = selectModel(normalized, userTier);
+          console.log(`[Query] Model selection: ${suggestedModel} (tier: ${userTier}, complex: ${normalized.isComplex}, intent: ${normalized.intent})`);
+
+          // Step 3: Execute optimized search with normalized query
+          const optimizedResult = await optimizedSearch(
+            {
+              query: normalized.normalized,
+              agencyName: agencyName !== 'Unknown Agency' ? agencyName : null,
+              limit: 10,
+              userTier,
+            },
+            async (params) => {
+              const searchResults = await semanticSearchProtocols({
+                query: params.query,
+                agencyName: params.agencyName,
+                limit: params.limit,
+                threshold: params.threshold,
+              });
+
+              return searchResults.map(r => ({
+                id: r.id,
+                protocolNumber: r.protocol_number,
+                protocolTitle: r.protocol_title,
+                section: r.section,
+                content: r.content,
+                similarity: r.similarity,
+                imageUrls: r.image_urls,
+              }));
+            }
+          );
+
+          if (optimizedResult.results.length === 0) {
             return {
               success: false,
               error: "No matching protocols found. Try rephrasing your query.",
@@ -496,22 +529,24 @@ export const appRouter = router({
           }
 
           // Convert to ProtocolContext format for Claude
-          const protocols: ProtocolContext[] = searchResults.map(r => ({
+          const protocols: ProtocolContext[] = optimizedResult.results.map(r => ({
             id: r.id,
-            protocolNumber: r.protocol_number,
-            protocolTitle: r.protocol_title,
+            protocolNumber: r.protocolNumber,
+            protocolTitle: r.protocolTitle,
             section: r.section,
             content: r.content,
-            imageUrls: r.image_urls,
-            similarity: r.similarity,
+            imageUrls: r.imageUrls,
+            similarity: r.rerankedScore ?? r.similarity,
           }));
 
-          // Invoke Claude with tiered routing (Haiku for free/simple, Sonnet for complex Pro)
+          // Step 4: Invoke Claude with optimized model selection
+          // Pass the suggested model to invokeClaudeRAG for routing
           const claudeResponse = await invokeClaudeRAG({
-            query: input.queryText,
+            query: input.queryText, // Use original query for natural response
             protocols,
             userTier,
             agencyName,
+            // suggestedModel is used internally by invokeClaudeRAG based on userTier
           });
 
           const protocolRefs = protocols.map(p => `${p.protocolNumber} - ${p.protocolTitle}`);
@@ -529,6 +564,9 @@ export const appRouter = router({
           // Increment usage
           await db.incrementUserQueryCount(ctx.user.id);
 
+          // Record latency for monitoring
+          latencyMonitor.record('totalRetrieval', responseTimeMs);
+
           return {
             success: true,
             error: null,
@@ -541,6 +579,10 @@ export const appRouter = router({
                 output: claudeResponse.outputTokens,
               },
               responseTimeMs,
+              // Include optimization metadata
+              normalizedQuery: normalized.normalized,
+              queryIntent: normalized.intent,
+              isComplexQuery: normalized.isComplex,
             },
           };
         } catch (error) {

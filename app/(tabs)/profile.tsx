@@ -512,9 +512,9 @@ export default function ProfileScreen() {
               Unlimited queries, all counties, offline access, and priority support.
             </Text>
             <View style={styles.priceRow}>
-              <Text style={[styles.priceAmount, { color: colors.primary }]}>$39</Text>
+              <Text style={[styles.priceAmount, { color: colors.primary }]}>$89</Text>
               <Text style={[styles.pricePeriod, { color: colors.muted }]}>/year</Text>
-              <Text style={[styles.priceAlt, { color: colors.muted }]}>(or $4.99/mo)</Text>
+              <Text style={[styles.priceAlt, { color: colors.muted }]}>(or $9.99/mo)</Text>
             </View>
             <TouchableOpacity
               onPress={handleUpgrade}

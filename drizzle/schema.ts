@@ -78,7 +78,9 @@ export const queries = mysqlTable("queries", {
   responseText: text("responseText"),
   protocolRefs: json("protocolRefs").$type<string[]>(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
+}, (table) => ({
+  userCreatedIdx: index("idx_queries_user_created").on(table.userId, table.createdAt),
+}));
 
 export type Query = typeof queries.$inferSelect;
 export type InsertQuery = typeof queries.$inferInsert;
