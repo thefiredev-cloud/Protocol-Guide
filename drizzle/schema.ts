@@ -327,7 +327,9 @@ export const agencyMembers = mysqlTable("agency_members", {
   acceptedAt: timestamp("acceptedAt"),
   status: mysqlEnum("status", ["pending", "active", "suspended"]).default("pending"),
   createdAt: timestamp("createdAt").defaultNow(),
-});
+}, (table) => ({
+  userAgencyIdx: index("idx_agency_members_user").on(table.userId, table.agencyId),
+}));
 
 export type AgencyMember = typeof agencyMembers.$inferSelect;
 export type InsertAgencyMember = typeof agencyMembers.$inferInsert;

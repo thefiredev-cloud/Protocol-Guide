@@ -55,6 +55,9 @@ export default function HomeScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
+  // Voice search state
+  const [voiceError, setVoiceError] = useState<string | null>(null);
+
   // Filter states
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
