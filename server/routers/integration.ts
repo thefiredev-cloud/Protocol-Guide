@@ -233,7 +233,9 @@ export const integrationRouter = router({
           total: Number(countResult?.count || 0),
         };
       } catch (error) {
-        console.error("[Integration] Failed to get logs:", error);
+        // Safe error logging: only log error type, not full error which may contain sensitive data
+        const errorType = error instanceof Error ? error.name : "UnknownError";
+        console.error(`[Integration] Logs query failed - errorType=${errorType}`);
         return { logs: [], total: 0 };
       }
     }),

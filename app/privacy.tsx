@@ -123,7 +123,7 @@ export default function PrivacyPolicyScreen() {
           Website: https://protocol-guide.com/contact
         </Section>
 
-        <Section title="11. Healthcare Regulatory Status">
+        <Section title="12. Healthcare Regulatory Status">
           Protocol Guide is a reference tool for healthcare professionals and is not a HIPAA-covered entity. We do not collect, store, or process Protected Health Information (PHI) or individually identifiable health information about patients.
         </Section>
 

@@ -277,3 +277,31 @@ export function resetSearchCacheStats(): void {
   stats.misses = 0;
   stats.errors = 0;
 }
+
+/**
+ * Generate cache control headers for search responses
+ * @param fromCache - Whether the response was served from cache
+ * @returns Object with cache headers to set on the response
+ */
+export function getSearchCacheHeaders(fromCache: boolean): Record<string, string> {
+  return {
+    'Cache-Control': `public, max-age=${CACHE_HEADER_MAX_AGE}, stale-while-revalidate=${CACHE_HEADER_STALE_WHILE_REVALIDATE}`,
+    'X-Cache': fromCache ? 'HIT' : 'MISS',
+    'X-Cache-TTL': String(CACHE_TTL),
+  };
+}
+
+/**
+ * Set cache headers on an Express response object
+ * @param res - Express response object
+ * @param fromCache - Whether the response was served from cache
+ */
+export function setSearchCacheHeaders(
+  res: { setHeader: (name: string, value: string) => void },
+  fromCache: boolean
+): void {
+  const headers = getSearchCacheHeaders(fromCache);
+  for (const [name, value] of Object.entries(headers)) {
+    res.setHeader(name, value);
+  }
+}
