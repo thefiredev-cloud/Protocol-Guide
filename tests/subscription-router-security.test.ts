@@ -248,7 +248,6 @@ describe("Subscription Router Security", () => {
           "not-a-url",
           "ftp://invalid.com",
           "javascript:alert(1)",
-          "",
         ];
 
         invalidUrls.forEach(url => {
@@ -260,6 +259,17 @@ describe("Subscription Router Security", () => {
 
           expect(result.success).toBe(false);
         });
+      });
+
+      it("should reject empty URLs", () => {
+        const result = createCheckoutInputSchema.safeParse({
+          plan: "monthly",
+          successUrl: "",
+          cancelUrl: "https://app.protocol-guide.com/cancel",
+        });
+
+        // Empty string should fail URL validation
+        expect(result.success).toBe(false);
       });
 
       it("should accept HTTPS URLs only for callbacks", () => {
