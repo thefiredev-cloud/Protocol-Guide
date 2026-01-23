@@ -621,8 +621,14 @@ export default function HomeScreen() {
           </View>
 
           {agenciesLoading ? (
-            <View className="flex-1 items-center justify-center">
-              <ActivityIndicator size="large" color={colors.primary} />
+            <View className="flex-1 px-4 pt-4">
+              <View style={{ gap: 8 }}>
+                <SkeletonListItem showAvatar={false} lines={1} />
+                <SkeletonListItem showAvatar={false} lines={1} />
+                <SkeletonListItem showAvatar={false} lines={1} />
+                <SkeletonListItem showAvatar={false} lines={1} />
+                <SkeletonListItem showAvatar={false} lines={1} />
+              </View>
             </View>
           ) : (
             <FlatList

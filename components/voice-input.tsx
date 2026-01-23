@@ -310,22 +310,40 @@ export function VoiceInput({ onTranscription, onError, disabled = false }: Voice
   };
 
   const stopRecording = async () => {
-    try {
-      if (!recordingRef.current) return;
+    // Guard: Only allow stopping from recording state
+    if (stateRef.current !== "recording") {
+      console.warn(`stopRecording called in invalid state: ${stateRef.current}`);
+      return;
+    }
 
-      // Stop duration tracking
+    // Guard: Must have an active recording
+    if (!recordingRef.current) {
+      console.warn("stopRecording called but no recording ref exists");
+      stateRef.current = "idle";
+      setRecordingState("idle");
+      onError?.("No recording found");
+      return;
+    }
+
+    try {
+      // Stop duration tracking first
       if (durationIntervalRef.current) {
         clearInterval(durationIntervalRef.current);
         durationIntervalRef.current = null;
       }
 
       stopPulseAnimation();
-      setRecordingState("processing");
+
+      // Transition to processing state
+      if (!transitionTo("processing")) return;
+
+      // Capture and clear the recording ref BEFORE async operations
+      const recording = recordingRef.current;
+      recordingRef.current = null;
 
       // Stop and get recording
-      await recordingRef.current.stopAndUnloadAsync();
-      const uri = recordingRef.current.getURI();
-      recordingRef.current = null;
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
 
       if (!uri) {
         throw new Error("No recording URI available");
@@ -337,15 +355,24 @@ export function VoiceInput({ onTranscription, onError, disabled = false }: Voice
       // Apply medical corrections
       const correctedText = correctMedicalTerms(rawTranscription);
 
+      // Transition to complete state
+      if (!transitionTo("complete")) return;
+
       // Send to parent
       onTranscription(correctedText);
 
-      setRecordingState("idle");
-      setRecordingDuration(0);
+      // Reset to idle after a brief moment
+      setTimeout(() => {
+        if (stateRef.current === "complete") {
+          transitionTo("idle");
+          setRecordingDuration(0);
+        }
+      }, 100);
 
     } catch (error) {
       console.error("Failed to process recording:", error);
       onError?.("Failed to process voice input. Please try again.");
+      stateRef.current = "idle";
       setRecordingState("idle");
       setRecordingDuration(0);
     }
