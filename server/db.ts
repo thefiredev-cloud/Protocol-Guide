@@ -1,6 +1,15 @@
 import { eq, and, like, sql, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, User, users, counties, protocolChunks, queries, feedback, contactSubmissions, auditLogs, InsertCounty, InsertProtocolChunk, InsertQuery, InsertFeedback, InsertContactSubmission, InsertAuditLog, AuditAction } from "../drizzle/schema";
+import {
+  InsertUser, User, users, counties, protocolChunks, queries, feedback,
+  contactSubmissions, auditLogs, InsertCounty, InsertProtocolChunk,
+  InsertQuery, InsertFeedback, InsertContactSubmission, InsertAuditLog, AuditAction,
+  userAuthProviders, InsertUserAuthProvider, UserAuthProvider,
+  userStates, userAgencies, agencies, agencyMembers, protocolVersions, protocolUploads,
+  agencyInvitations,
+  Agency, InsertAgency, AgencyMember, InsertAgencyMember,
+  ProtocolVersion, InsertProtocolVersion, ProtocolUpload, InsertProtocolUpload,
+} from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
