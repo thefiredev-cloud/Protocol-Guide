@@ -94,6 +94,11 @@ async function startServer() {
       "Access-Control-Allow-Headers",
       "Origin, X-Requested-With, Content-Type, Accept, Authorization",
     );
+    // Expose rate limit headers to browsers
+    res.header(
+      "Access-Control-Expose-Headers",
+      "X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-RateLimit-Daily-Limit, X-RateLimit-Daily-Remaining, X-RateLimit-Daily-Reset, Retry-After",
+    );
 
     // Handle preflight requests
     if (req.method === "OPTIONS") {
