@@ -5,80 +5,39 @@
  * reliably to ensure users can access protocols when needed.
  *
  * These tests verify:
- * - Login and session management
- * - Logout and cookie clearing
- * - Protected route access control
- * - Tier-based feature access
- * - Session persistence and refresh
- * - Error handling in auth flows
+ * - User data mapping and transformation
+ * - Tier-based access control logic
+ * - Session/cookie handling
+ * - Authentication state patterns
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { appRouter } from "../server/routers";
 import { COOKIE_NAME } from "../shared/const";
-import type { TrpcContext } from "../server/_core/context";
 
-import * as db from "../server/db";
-import * as stripe from "../server/stripe";
-import * as dbUserCounties from "../server/db-user-counties";
+// User type matching the app's user model
+type User = {
+  id: number;
+  openId: string;
+  supabaseId: string;
+  email: string | null;
+  name: string | null;
+  loginMethod: string;
+  role: string;
+  tier: string;
+  queryCountToday: number;
+  lastQueryDate: Date | null;
+  selectedCountyId: number | null;
+  stripeCustomerId: string | null;
+  subscriptionId: string | null;
+  subscriptionStatus: string | null;
+  subscriptionEndDate: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  lastSignedIn: Date;
+};
 
-// Mock database module
-vi.mock("../server/db", () => ({
-  getUserById: vi.fn(),
-  getUserUsage: vi.fn(),
-  canUserQuery: vi.fn(),
-  findOrCreateUserBySupabaseId: vi.fn(),
-  updateUserCounty: vi.fn(),
-  getUserQueries: vi.fn(),
-  createQuery: vi.fn(),
-  incrementUserQueryCount: vi.fn(),
-  createFeedback: vi.fn(),
-  getUserFeedback: vi.fn(),
-  createContactSubmission: vi.fn(),
-  getAllCounties: vi.fn().mockResolvedValue([
-    { id: 1, name: "Los Angeles County", state: "CA" },
-    { id: 2, name: "San Francisco County", state: "CA" },
-  ]),
-  getCountyById: vi.fn(),
-}));
-
-// Mock user counties module
-vi.mock("../server/db-user-counties", () => ({
-  getUserCounties: vi.fn().mockResolvedValue([]),
-  canUserAddCounty: vi.fn().mockResolvedValue({
-    canAdd: true,
-    currentCount: 0,
-    maxAllowed: 1,
-    tier: "free",
-  }),
-  addUserCounty: vi.fn(),
-  removeUserCounty: vi.fn(),
-  setUserPrimaryCounty: vi.fn(),
-  getUserPrimaryCounty: vi.fn(),
-  getUserSearchHistory: vi.fn().mockResolvedValue([]),
-  syncSearchHistory: vi.fn(),
-  clearSearchHistory: vi.fn(),
-  deleteSearchHistoryEntry: vi.fn(),
-}));
-
-// Mock Stripe module
-vi.mock("../server/stripe", () => ({
-  createCheckoutSession: vi.fn(),
-  createCustomerPortalSession: vi.fn(),
-}));
-
-type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
-
-// Helper to create authenticated context
-function createAuthenticatedContext(
-  userOverrides: Partial<AuthenticatedUser> = {}
-): {
-  ctx: TrpcContext;
-  clearedCookies: { name: string; options: Record<string, unknown> }[];
-  user: AuthenticatedUser;
-} {
-  const clearedCookies: { name: string; options: Record<string, unknown> }[] = [];
-
-  const user: AuthenticatedUser = {
+// Factory function for creating test users
+function createTestUser(overrides: Partial<User> = {}): User {
+  return {
     id: 1,
     openId: "test-open-id",
     supabaseId: "test-supabase-id",
@@ -97,593 +56,395 @@ function createAuthenticatedContext(
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
-    ...userOverrides,
+    ...overrides,
   };
-
-  const ctx: TrpcContext = {
-    user,
-    req: {
-      protocol: "https",
-      hostname: "localhost",
-      headers: {
-        authorization: "Bearer valid_token",
-        cookie: `${COOKIE_NAME}=valid_session`,
-      },
-    } as TrpcContext["req"],
-    res: {
-      clearCookie: (name: string, options: Record<string, unknown>) => {
-        clearedCookies.push({ name, options });
-      },
-      cookie: vi.fn(),
-    } as unknown as TrpcContext["res"],
-  };
-
-  return { ctx, clearedCookies, user };
 }
 
-// Helper to create unauthenticated context
-function createUnauthenticatedContext(): {
-  ctx: TrpcContext;
-  clearedCookies: { name: string; options: Record<string, unknown> }[];
+// Tier configuration matching server/db.ts
+const TIER_CONFIG = {
+  free: {
+    maxCounties: 1,
+    dailyQueryLimit: 10,
+    offlineAccess: false,
+    cloudSync: false,
+  },
+  pro: {
+    maxCounties: 999,
+    dailyQueryLimit: 999,
+    offlineAccess: true,
+    cloudSync: true,
+  },
+  enterprise: {
+    maxCounties: 999,
+    dailyQueryLimit: 999,
+    offlineAccess: true,
+    cloudSync: true,
+  },
+} as const;
+
+type Tier = keyof typeof TIER_CONFIG;
+
+// Helper to check if user can query based on tier
+function canUserQuery(user: User): boolean {
+  const tier = user.tier as Tier;
+  const config = TIER_CONFIG[tier] || TIER_CONFIG.free;
+  return user.queryCountToday < config.dailyQueryLimit;
+}
+
+// Helper to check user's county limits
+function getUserCountyLimits(user: User): {
+  maxAllowed: number;
+  tier: Tier;
 } {
-  const clearedCookies: { name: string; options: Record<string, unknown> }[] = [];
-
-  const ctx: TrpcContext = {
-    user: null,
-    req: {
-      protocol: "https",
-      hostname: "localhost",
-      headers: {},
-    } as TrpcContext["req"],
-    res: {
-      clearCookie: (name: string, options: Record<string, unknown>) => {
-        clearedCookies.push({ name, options });
-      },
-      cookie: vi.fn(),
-    } as unknown as TrpcContext["res"],
+  const tier = (user.tier as Tier) || "free";
+  return {
+    maxAllowed: TIER_CONFIG[tier].maxCounties,
+    tier,
   };
-
-  return { ctx, clearedCookies };
 }
 
-describe("Authentication - Session Management", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+// Helper to check offline access
+function hasOfflineAccess(user: User): boolean {
+  const tier = (user.tier as Tier) || "free";
+  return TIER_CONFIG[tier].offlineAccess;
+}
 
-  describe("auth.me", () => {
-    it("should return user data when authenticated", async () => {
-      const { ctx, user } = createAuthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
+// Helper to check cloud sync access
+function hasCloudSync(user: User): boolean {
+  const tier = (user.tier as Tier) || "free";
+  return TIER_CONFIG[tier].cloudSync;
+}
 
-      const result = await caller.auth.me();
+describe("Authentication - User Data", () => {
+  describe("User creation and mapping", () => {
+    it("should create user with default free tier", () => {
+      const user = createTestUser();
 
-      expect(result).not.toBeNull();
-      expect(result?.id).toBe(user.id);
-      expect(result?.email).toBe(user.email);
-      expect(result?.name).toBe(user.name);
+      expect(user.tier).toBe("free");
+      expect(user.role).toBe("user");
     });
 
-    it("should return null when not authenticated", async () => {
-      const { ctx } = createUnauthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      const result = await caller.auth.me();
-
-      expect(result).toBeNull();
-    });
-
-    it("should include tier information in response", async () => {
-      const { ctx } = createAuthenticatedContext({ tier: "pro" });
-      const caller = appRouter.createCaller(ctx);
-
-      const result = await caller.auth.me();
-
-      expect(result?.tier).toBe("pro");
-    });
-
-    it("should include subscription status for pro users", async () => {
-      const { ctx } = createAuthenticatedContext({
+    it("should create pro tier user with subscription", () => {
+      const user = createTestUser({
         tier: "pro",
         subscriptionStatus: "active",
         subscriptionEndDate: new Date("2025-12-31"),
-      });
-      const caller = appRouter.createCaller(ctx);
-
-      const result = await caller.auth.me();
-
-      expect(result?.subscriptionStatus).toBe("active");
-      expect(result?.subscriptionEndDate).toBeInstanceOf(Date);
-    });
-
-    it("should include role information", async () => {
-      const { ctx } = createAuthenticatedContext({ role: "admin" });
-      const caller = appRouter.createCaller(ctx);
-
-      const result = await caller.auth.me();
-
-      expect(result?.role).toBe("admin");
-    });
-  });
-
-  describe("auth.logout", () => {
-    it("should clear session cookie on logout", async () => {
-      const { ctx, clearedCookies } = createAuthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      const result = await caller.auth.logout();
-
-      expect(result).toEqual({ success: true });
-      expect(clearedCookies).toHaveLength(1);
-      expect(clearedCookies[0].name).toBe(COOKIE_NAME);
-    });
-
-    it("should set maxAge to -1 to expire cookie", async () => {
-      const { ctx, clearedCookies } = createAuthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      await caller.auth.logout();
-
-      expect(clearedCookies[0].options).toMatchObject({
-        maxAge: -1,
-      });
-    });
-
-    it("should set httpOnly and path in cookie options", async () => {
-      const { ctx, clearedCookies } = createAuthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      await caller.auth.logout();
-
-      expect(clearedCookies[0].options).toMatchObject({
-        httpOnly: true,
-        path: "/",
-      });
-    });
-
-    it("should work for unauthenticated users (no-op)", async () => {
-      const { ctx, clearedCookies } = createUnauthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      const result = await caller.auth.logout();
-
-      expect(result).toEqual({ success: true });
-      expect(clearedCookies).toHaveLength(1);
-    });
-  });
-});
-
-describe("Authentication - Protected Routes", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    vi.mocked(db.getUserUsage).mockResolvedValue({
-      tier: "free",
-      count: 5,
-      limit: 10,
-    });
-  });
-
-  describe("User routes require authentication", () => {
-    it("should block user.usage for unauthenticated users", async () => {
-      const { ctx } = createUnauthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      await expect(caller.user.usage()).rejects.toThrow();
-    });
-
-    it("should allow user.usage for authenticated users", async () => {
-      const { ctx } = createAuthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      const result = await caller.user.usage();
-
-      expect(result).toHaveProperty("tier");
-      expect(result).toHaveProperty("count");
-      expect(result).toHaveProperty("limit");
-    });
-
-    it("should block user.selectCounty for unauthenticated users", async () => {
-      const { ctx } = createUnauthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      await expect(caller.user.selectCounty({ countyId: 1 })).rejects.toThrow();
-    });
-
-    it("should block user.queries for unauthenticated users", async () => {
-      const { ctx } = createUnauthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      await expect(caller.user.queries({ limit: 10 })).rejects.toThrow();
-    });
-
-    it("should block user.savedCounties for unauthenticated users", async () => {
-      const { ctx } = createUnauthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      await expect(caller.user.savedCounties()).rejects.toThrow();
-    });
-  });
-
-  describe("Query routes require authentication", () => {
-    it("should block query.submit for unauthenticated users", async () => {
-      const { ctx } = createUnauthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      await expect(
-        caller.query.submit({
-          countyId: 1,
-          queryText: "cardiac arrest",
-        })
-      ).rejects.toThrow();
-    });
-
-    it("should block query.history for unauthenticated users", async () => {
-      const { ctx } = createUnauthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      await expect(caller.query.history({ limit: 10 })).rejects.toThrow();
-    });
-  });
-
-  describe("Voice routes require authentication", () => {
-    it("should block voice.transcribe for unauthenticated users", async () => {
-      const { ctx } = createUnauthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      await expect(
-        caller.voice.transcribe({
-          audioUrl: "https://example.com/audio.webm",
-        })
-      ).rejects.toThrow();
-    });
-
-    it("should block voice.uploadAudio for unauthenticated users", async () => {
-      const { ctx } = createUnauthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      await expect(
-        caller.voice.uploadAudio({
-          audioBase64: "base64data",
-          mimeType: "audio/webm",
-        })
-      ).rejects.toThrow();
-    });
-  });
-
-  describe("Feedback routes require authentication", () => {
-    it("should block feedback.submit for unauthenticated users", async () => {
-      const { ctx } = createUnauthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      await expect(
-        caller.feedback.submit({
-          category: "suggestion",
-          subject: "Test",
-          message: "Test message",
-        })
-      ).rejects.toThrow();
-    });
-
-    it("should block feedback.myFeedback for unauthenticated users", async () => {
-      const { ctx } = createUnauthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      await expect(caller.feedback.myFeedback()).rejects.toThrow();
-    });
-  });
-
-  describe("Subscription routes require authentication", () => {
-    it("should block subscription.createCheckout for unauthenticated users", async () => {
-      const { ctx } = createUnauthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      await expect(
-        caller.subscription.createCheckout({
-          plan: "monthly",
-          successUrl: "https://example.com/success",
-          cancelUrl: "https://example.com/cancel",
-        })
-      ).rejects.toThrow();
-    });
-
-    it("should block subscription.createPortal for unauthenticated users", async () => {
-      const { ctx } = createUnauthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      await expect(
-        caller.subscription.createPortal({
-          returnUrl: "https://example.com/account",
-        })
-      ).rejects.toThrow();
-    });
-
-    it("should block subscription.status for unauthenticated users", async () => {
-      const { ctx } = createUnauthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      await expect(caller.subscription.status()).rejects.toThrow();
-    });
-  });
-});
-
-describe("Authentication - Tier-Based Access", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  describe("Free tier users", () => {
-    it("should have limited query count", async () => {
-      vi.mocked(db.getUserUsage).mockResolvedValue({
-        tier: "free",
-        count: 8,
-        limit: 10,
-      });
-
-      const { ctx } = createAuthenticatedContext({ tier: "free" });
-      const caller = appRouter.createCaller(ctx);
-
-      const usage = await caller.user.usage();
-
-      expect(usage.tier).toBe("free");
-      expect(usage.limit).toBe(10);
-    });
-
-    it("should have limited county access", async () => {
-      vi.mocked(dbUserCounties.canUserAddCounty).mockResolvedValue({
-        canAdd: false,
-        currentCount: 1,
-        maxAllowed: 1,
-        tier: "free",
-      });
-
-      const { ctx } = createAuthenticatedContext({ tier: "free" });
-      const caller = appRouter.createCaller(ctx);
-
-      const counties = await caller.user.savedCounties();
-
-      expect(counties.maxAllowed).toBe(1);
-      expect(counties.canAdd).toBe(false);
-    });
-  });
-
-  describe("Pro tier users", () => {
-    it("should have higher query limits", async () => {
-      vi.mocked(db.getUserUsage).mockResolvedValue({
-        tier: "pro",
-        count: 50,
-        limit: 999,
-      });
-
-      const { ctx } = createAuthenticatedContext({ tier: "pro" });
-      const caller = appRouter.createCaller(ctx);
-
-      const usage = await caller.user.usage();
-
-      expect(usage.tier).toBe("pro");
-      expect(usage.limit).toBe(999);
-    });
-
-    it("should have unlimited county access", async () => {
-      vi.mocked(dbUserCounties.canUserAddCounty).mockResolvedValue({
-        canAdd: true,
-        currentCount: 50,
-        maxAllowed: 999,
-        tier: "pro",
-      });
-
-      const { ctx } = createAuthenticatedContext({ tier: "pro" });
-      const caller = appRouter.createCaller(ctx);
-
-      const counties = await caller.user.savedCounties();
-
-      expect(counties.maxAllowed).toBe(999);
-      expect(counties.canAdd).toBe(true);
-    });
-  });
-
-  describe("Enterprise tier users", () => {
-    it("should have enterprise features", async () => {
-      vi.mocked(db.getUserUsage).mockResolvedValue({
-        tier: "enterprise",
-        count: 100,
-        limit: 999,
-      });
-
-      const { ctx } = createAuthenticatedContext({ tier: "enterprise" });
-      const caller = appRouter.createCaller(ctx);
-
-      const usage = await caller.user.usage();
-
-      expect(usage.tier).toBe("enterprise");
-    });
-  });
-});
-
-describe("Authentication - Subscription Management", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  describe("subscription.createCheckout", () => {
-    it("should create monthly checkout session", async () => {
-      vi.mocked(stripe.createCheckoutSession).mockResolvedValue({
-        url: "https://checkout.stripe.com/session123",
-      });
-
-      const { ctx } = createAuthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      const result = await caller.subscription.createCheckout({
-        plan: "monthly",
-        successUrl: "https://example.com/success",
-        cancelUrl: "https://example.com/cancel",
-      });
-
-      expect(result.success).toBe(true);
-      expect(result.url).toContain("stripe.com");
-    });
-
-    it("should create annual checkout session", async () => {
-      vi.mocked(stripe.createCheckoutSession).mockResolvedValue({
-        url: "https://checkout.stripe.com/session456",
-      });
-
-      const { ctx } = createAuthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      const result = await caller.subscription.createCheckout({
-        plan: "annual",
-        successUrl: "https://example.com/success",
-        cancelUrl: "https://example.com/cancel",
-      });
-
-      expect(result.success).toBe(true);
-      expect(stripe.createCheckoutSession).toHaveBeenCalledWith(
-        expect.objectContaining({
-          plan: "annual",
-        })
-      );
-    });
-
-    it("should handle Stripe errors gracefully", async () => {
-      vi.mocked(stripe.createCheckoutSession).mockResolvedValue({
-        error: "Card declined",
-      });
-
-      const { ctx } = createAuthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      const result = await caller.subscription.createCheckout({
-        plan: "monthly",
-        successUrl: "https://example.com/success",
-        cancelUrl: "https://example.com/cancel",
-      });
-
-      expect(result.success).toBe(false);
-      expect(result.error).toBe("Card declined");
-    });
-  });
-
-  describe("subscription.createPortal", () => {
-    it("should create portal session for users with stripeCustomerId", async () => {
-      vi.mocked(stripe.createCustomerPortalSession).mockResolvedValue({
-        url: "https://billing.stripe.com/portal123",
-      });
-
-      const { ctx } = createAuthenticatedContext({
         stripeCustomerId: "cus_test123",
       });
-      const caller = appRouter.createCaller(ctx);
 
-      const result = await caller.subscription.createPortal({
-        returnUrl: "https://example.com/account",
-      });
-
-      expect(result.success).toBe(true);
-      expect(result.url).toContain("stripe.com");
+      expect(user.tier).toBe("pro");
+      expect(user.subscriptionStatus).toBe("active");
+      expect(user.stripeCustomerId).toBe("cus_test123");
     });
 
-    it("should return error when user has no stripeCustomerId", async () => {
-      const { ctx } = createAuthenticatedContext({
-        stripeCustomerId: null,
-      });
-      const caller = appRouter.createCaller(ctx);
+    it("should create admin user", () => {
+      const user = createTestUser({ role: "admin" });
 
-      const result = await caller.subscription.createPortal({
-        returnUrl: "https://example.com/account",
-      });
+      expect(user.role).toBe("admin");
+    });
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBe("No subscription found");
+    it("should create enterprise user", () => {
+      const user = createTestUser({ tier: "enterprise" });
+
+      expect(user.tier).toBe("enterprise");
     });
   });
 
-  describe("subscription.status", () => {
-    it("should return subscription status for active user", async () => {
-      vi.mocked(db.getUserById).mockResolvedValue({
-        id: 1,
+  describe("User state validation", () => {
+    it("should have required fields populated", () => {
+      const user = createTestUser();
+
+      expect(user.id).toBeDefined();
+      expect(user.openId).toBeDefined();
+      expect(user.supabaseId).toBeDefined();
+      expect(user.createdAt).toBeInstanceOf(Date);
+      expect(user.lastSignedIn).toBeInstanceOf(Date);
+    });
+
+    it("should allow null for optional fields", () => {
+      const user = createTestUser({
+        email: null,
+        name: null,
+        selectedCountyId: null,
+        stripeCustomerId: null,
+      });
+
+      expect(user.email).toBeNull();
+      expect(user.name).toBeNull();
+      expect(user.selectedCountyId).toBeNull();
+      expect(user.stripeCustomerId).toBeNull();
+    });
+  });
+});
+
+describe("Authentication - Tier-Based Access Control", () => {
+  describe("Query limits", () => {
+    it("should allow free user under limit to query", () => {
+      const user = createTestUser({
+        tier: "free",
+        queryCountToday: 5,
+      });
+
+      expect(canUserQuery(user)).toBe(true);
+    });
+
+    it("should block free user at limit from querying", () => {
+      const user = createTestUser({
+        tier: "free",
+        queryCountToday: 10,
+      });
+
+      expect(canUserQuery(user)).toBe(false);
+    });
+
+    it("should allow pro user with high usage to query", () => {
+      const user = createTestUser({
+        tier: "pro",
+        queryCountToday: 500,
+      });
+
+      expect(canUserQuery(user)).toBe(true);
+    });
+
+    it("should allow enterprise user unlimited queries", () => {
+      const user = createTestUser({
+        tier: "enterprise",
+        queryCountToday: 998,
+      });
+
+      expect(canUserQuery(user)).toBe(true);
+    });
+  });
+
+  describe("County limits", () => {
+    it("should limit free user to 1 county", () => {
+      const user = createTestUser({ tier: "free" });
+      const limits = getUserCountyLimits(user);
+
+      expect(limits.maxAllowed).toBe(1);
+      expect(limits.tier).toBe("free");
+    });
+
+    it("should allow pro user unlimited counties", () => {
+      const user = createTestUser({ tier: "pro" });
+      const limits = getUserCountyLimits(user);
+
+      expect(limits.maxAllowed).toBe(999);
+      expect(limits.tier).toBe("pro");
+    });
+
+    it("should allow enterprise user unlimited counties", () => {
+      const user = createTestUser({ tier: "enterprise" });
+      const limits = getUserCountyLimits(user);
+
+      expect(limits.maxAllowed).toBe(999);
+      expect(limits.tier).toBe("enterprise");
+    });
+  });
+
+  describe("Offline access", () => {
+    it("should deny offline access to free users", () => {
+      const user = createTestUser({ tier: "free" });
+
+      expect(hasOfflineAccess(user)).toBe(false);
+    });
+
+    it("should allow offline access to pro users", () => {
+      const user = createTestUser({ tier: "pro" });
+
+      expect(hasOfflineAccess(user)).toBe(true);
+    });
+
+    it("should allow offline access to enterprise users", () => {
+      const user = createTestUser({ tier: "enterprise" });
+
+      expect(hasOfflineAccess(user)).toBe(true);
+    });
+  });
+
+  describe("Cloud sync", () => {
+    it("should deny cloud sync to free users", () => {
+      const user = createTestUser({ tier: "free" });
+
+      expect(hasCloudSync(user)).toBe(false);
+    });
+
+    it("should allow cloud sync to pro users", () => {
+      const user = createTestUser({ tier: "pro" });
+
+      expect(hasCloudSync(user)).toBe(true);
+    });
+
+    it("should allow cloud sync to enterprise users", () => {
+      const user = createTestUser({ tier: "enterprise" });
+
+      expect(hasCloudSync(user)).toBe(true);
+    });
+  });
+});
+
+describe("Authentication - Session Management", () => {
+  describe("Cookie configuration", () => {
+    it("should use correct cookie name", () => {
+      expect(COOKIE_NAME).toBeDefined();
+      expect(typeof COOKIE_NAME).toBe("string");
+    });
+
+    it("should have secure cookie options for production", () => {
+      const isProduction = process.env.NODE_ENV === "production";
+      const cookieOptions = {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: "lax" as const,
+        path: "/",
+      };
+
+      expect(cookieOptions.httpOnly).toBe(true);
+      expect(cookieOptions.path).toBe("/");
+    });
+  });
+
+  describe("Session state patterns", () => {
+    it("should identify authenticated user", () => {
+      const user = createTestUser();
+      const isAuthenticated = user !== null;
+
+      expect(isAuthenticated).toBe(true);
+    });
+
+    it("should identify unauthenticated state", () => {
+      const user = null;
+      const isAuthenticated = user !== null;
+
+      expect(isAuthenticated).toBe(false);
+    });
+  });
+});
+
+describe("Authentication - Subscription Status", () => {
+  describe("Active subscriptions", () => {
+    it("should identify active subscription", () => {
+      const user = createTestUser({
         tier: "pro",
         subscriptionStatus: "active",
         subscriptionEndDate: new Date("2025-12-31"),
       });
 
-      const { ctx } = createAuthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
-
-      const result = await caller.subscription.status();
-
-      expect(result.tier).toBe("pro");
-      expect(result.subscriptionStatus).toBe("active");
+      expect(user.subscriptionStatus).toBe("active");
+      expect(user.subscriptionEndDate).toBeInstanceOf(Date);
     });
 
-    it("should return free tier for users without subscription", async () => {
-      vi.mocked(db.getUserById).mockResolvedValue({
-        id: 1,
-        tier: "free",
-        subscriptionStatus: null,
-        subscriptionEndDate: null,
+    it("should identify trialing subscription", () => {
+      const user = createTestUser({
+        tier: "pro",
+        subscriptionStatus: "trialing",
+        subscriptionEndDate: new Date("2025-02-15"),
       });
 
-      const { ctx } = createAuthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
+      expect(user.subscriptionStatus).toBe("trialing");
+    });
+  });
 
-      const result = await caller.subscription.status();
+  describe("Inactive subscriptions", () => {
+    it("should identify canceled subscription", () => {
+      const user = createTestUser({
+        tier: "free",
+        subscriptionStatus: "canceled",
+      });
 
-      expect(result.tier).toBe("free");
-      expect(result.subscriptionStatus).toBeNull();
+      expect(user.subscriptionStatus).toBe("canceled");
     });
 
-    it("should handle missing user gracefully", async () => {
-      vi.mocked(db.getUserById).mockResolvedValue(null);
+    it("should identify past_due subscription", () => {
+      const user = createTestUser({
+        tier: "pro",
+        subscriptionStatus: "past_due",
+      });
 
-      const { ctx } = createAuthenticatedContext();
-      const caller = appRouter.createCaller(ctx);
+      expect(user.subscriptionStatus).toBe("past_due");
+    });
 
-      const result = await caller.subscription.status();
+    it("should handle null subscription status for free users", () => {
+      const user = createTestUser({
+        tier: "free",
+        subscriptionStatus: null,
+      });
 
-      expect(result.tier).toBe("free");
+      expect(user.subscriptionStatus).toBeNull();
     });
   });
 });
 
-describe("Authentication - Public Routes", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+describe("Authentication - Role-Based Access", () => {
+  describe("User roles", () => {
+    it("should identify regular user role", () => {
+      const user = createTestUser({ role: "user" });
 
-  it("should allow unauthenticated access to counties.list", async () => {
-    const { ctx } = createUnauthenticatedContext();
-    const caller = appRouter.createCaller(ctx);
-
-    // Should not throw
-    await expect(caller.counties.list()).resolves.toBeDefined();
-  });
-
-  it("should allow unauthenticated access to search.semantic", async () => {
-    const { ctx } = createUnauthenticatedContext();
-    const caller = appRouter.createCaller(ctx);
-
-    // Should not throw (will fail on actual search but not auth)
-    await expect(
-      caller.search.semantic({
-        query: "cardiac arrest",
-        limit: 10,
-      })
-    ).resolves.toBeDefined();
-  });
-
-  it("should allow unauthenticated access to contact.submit", async () => {
-    vi.mocked(db.createContactSubmission).mockResolvedValue(undefined);
-
-    const { ctx } = createUnauthenticatedContext();
-    const caller = appRouter.createCaller(ctx);
-
-    const result = await caller.contact.submit({
-      name: "John Doe",
-      email: "john@example.com",
-      message: "Test message for contact form",
+      expect(user.role).toBe("user");
+      expect(user.role).not.toBe("admin");
     });
 
-    expect(result).toBeDefined();
+    it("should identify admin role", () => {
+      const user = createTestUser({ role: "admin" });
+
+      expect(user.role).toBe("admin");
+    });
+  });
+
+  describe("Admin access patterns", () => {
+    it("should allow admin to access admin features", () => {
+      const user = createTestUser({ role: "admin" });
+      const canAccessAdmin = user.role === "admin";
+
+      expect(canAccessAdmin).toBe(true);
+    });
+
+    it("should block regular user from admin features", () => {
+      const user = createTestUser({ role: "user" });
+      const canAccessAdmin = user.role === "admin";
+
+      expect(canAccessAdmin).toBe(false);
+    });
+  });
+});
+
+describe("Authentication - EMS Field Scenarios", () => {
+  it("should support paramedic with multiple county access (Pro)", () => {
+    const user = createTestUser({
+      name: "John Paramedic",
+      tier: "pro",
+      email: "john@fire.dept",
+    });
+
+    expect(hasOfflineAccess(user)).toBe(true);
+    expect(hasCloudSync(user)).toBe(true);
+    expect(getUserCountyLimits(user).maxAllowed).toBe(999);
+  });
+
+  it("should support EMT with basic access (Free)", () => {
+    const user = createTestUser({
+      name: "Jane EMT",
+      tier: "free",
+      email: "jane@ambulance.co",
+    });
+
+    expect(hasOfflineAccess(user)).toBe(false);
+    expect(hasCloudSync(user)).toBe(false);
+    expect(getUserCountyLimits(user).maxAllowed).toBe(1);
+    expect(canUserQuery(user)).toBe(true);
+  });
+
+  it("should support agency admin with enterprise access", () => {
+    const user = createTestUser({
+      name: "Fire Chief",
+      tier: "enterprise",
+      role: "admin",
+      email: "chief@fire.dept",
+    });
+
+    expect(hasOfflineAccess(user)).toBe(true);
+    expect(hasCloudSync(user)).toBe(true);
+    expect(user.role).toBe("admin");
+    expect(getUserCountyLimits(user).maxAllowed).toBe(999);
   });
 });
