@@ -586,16 +586,3 @@ export async function optimizedSearch(
   };
 }
 
-// ============================================================================
-// EXPORTS
-// ============================================================================
-
-export {
-  RAG_CONFIG,
-  selectSimilarityThreshold,
-  selectResultLimit,
-  rerankResults,
-  selectModel,
-  QueryCache,
-  LatencyMonitor,
-};
