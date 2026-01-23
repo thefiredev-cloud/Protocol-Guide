@@ -682,8 +682,9 @@ describe("Referral Router", () => {
     });
 
     it("should validate referral code format", () => {
-      const validCodes = ["CREW-ABC123", "CREW-XYZ789", "CREW-234567"];
-      const invalidCodes = ["INVALID", "ABC123", "crew-abc", "CREW-AB"];
+      // Valid codes use only A-Z and 2-9 (excludes 0, 1, I, O for clarity)
+      const validCodes = ["CREW-ABC234", "CREW-XYZ789", "CREW-234567"];
+      const invalidCodes = ["INVALID", "ABC234", "crew-abc", "CREW-AB", "CREW-A0B1C2"];
 
       validCodes.forEach((code) => {
         expect(code).toMatch(/^CREW-[A-Z2-9]{6}$/);

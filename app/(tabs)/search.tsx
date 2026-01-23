@@ -116,11 +116,6 @@ export default function SearchScreen() {
     }, 100);
   }, [handleSearch]);
 
-  // Handle voice input error
-  const handleVoiceError = useCallback((error: string) => {
-    setSearchError(error);
-  }, []);
-
   const handleStateSelect = useCallback((state: string | null) => {
     setSelectedState(state);
     setShowStateFilter(false);
