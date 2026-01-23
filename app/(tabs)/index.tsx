@@ -476,12 +476,37 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Input */}
-      <ChatInput
-        onSend={handleSendMessage}
-        disabled={isLoading}
-        placeholder="cardiac arrest adult..."
-      />
+      {/* Voice Error Banner */}
+      {voiceError && (
+        <View
+          className="mx-4 mb-2 px-3 py-2 rounded-lg"
+          style={{ backgroundColor: colors.error + "20" }}
+        >
+          <Text className="text-sm text-center" style={{ color: colors.error }}>
+            {voiceError}
+          </Text>
+        </View>
+      )}
+
+      {/* Input with Voice Search */}
+      <View className="flex-row items-end px-4 pb-2 gap-2">
+        {/* Voice Search Button */}
+        <VoiceSearchButton
+          onTranscription={handleVoiceTranscription}
+          onError={handleVoiceError}
+          disabled={isLoading}
+          size="medium"
+        />
+
+        {/* Text Input */}
+        <View className="flex-1">
+          <ChatInput
+            onSend={handleSendMessage}
+            disabled={isLoading}
+            placeholder="cardiac arrest adult..."
+          />
+        </View>
+      </View>
 
       {/* State Modal */}
       <Modal
