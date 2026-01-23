@@ -53,9 +53,14 @@ interface StateCoverage {
 
 export default function HomeScreen() {
   const colors = useColors();
+  const { isAuthenticated } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const flatListRef = useRef<FlatList>(null);
+
+  // P0 CRITICAL: Medical Disclaimer State
+  const [showDisclaimerModal, setShowDisclaimerModal] = useState(false);
+  const [disclaimerAcknowledged, setDisclaimerAcknowledged] = useState(false);
 
   // Voice search state
   const [voiceError, setVoiceError] = useState<string | null>(null);
