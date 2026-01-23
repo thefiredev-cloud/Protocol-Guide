@@ -610,12 +610,88 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
           </AnimatedPressable>
         </Animated.View>
 
+        {/* Testimonial Quote */}
+        <Animated.View
+          style={{
+            opacity: testimonialOpacity,
+            transform: [{ translateY: testimonialTranslateY }],
+            marginTop: isMobile ? 32 : isTablet ? 40 : 48,
+            maxWidth: isMobile ? 340 : isTablet ? 500 : 600,
+          }}
+        >
+          <View
+            style={{
+              alignItems: "center",
+              paddingHorizontal: isMobile ? 16 : 24,
+            }}
+          >
+            <Text
+              style={{
+                color: COLORS.textMuted,
+                fontSize: isMobile ? 15 : isTablet ? 16 : 17,
+                fontStyle: "italic",
+                textAlign: "center",
+                lineHeight: isMobile ? 24 : isTablet ? 26 : 28,
+                letterSpacing: 0.1,
+              }}
+            >
+              {"\u201C"}Found the STEMI protocol in under 3 seconds during a critical call.
+              This app has genuinely changed how our crews operate.{"\u201D"}
+            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", marginTop: 12, gap: 8 }}>
+              <View
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  backgroundColor: COLORS.bgSurface,
+                  borderWidth: 1,
+                  borderColor: COLORS.border,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text style={{ color: COLORS.textWhite, fontSize: 12, fontWeight: "600" }}>JM</Text>
+              </View>
+              <View>
+                <Text style={{ color: COLORS.textWhite, fontSize: 13, fontWeight: "600" }}>
+                  James Mitchell, Paramedic
+                </Text>
+                <Text style={{ color: COLORS.textMuted, fontSize: 12 }}>
+                  Austin-Travis County EMS
+                </Text>
+              </View>
+            </View>
+          </View>
+        </Animated.View>
+
+        {/* Department Usage Indicator */}
+        <Animated.View
+          style={{
+            opacity: testimonialOpacity,
+            marginTop: isMobile ? 24 : 32,
+          }}
+        >
+          <Text
+            style={{
+              color: COLORS.textMuted,
+              fontSize: isMobile ? 12 : 13,
+              fontWeight: "500",
+              textAlign: "center",
+              letterSpacing: 0.5,
+              textTransform: "uppercase",
+            }}
+          >
+            Used by departments across 50 states
+          </Text>
+        </Animated.View>
+
         {/* Trust Badges - Social Proof */}
         <Animated.View
           style={{
             opacity: badgesOpacity,
             transform: [{ translateY: badgesTranslateY }],
-            marginTop: isMobile ? 40 : isTablet ? 48 : 56,
+            marginTop: isMobile ? 24 : isTablet ? 28 : 32,
           }}
         >
           <View

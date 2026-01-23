@@ -10,9 +10,14 @@
  * Parameters:
  *   agency_id    - ImageTrend agency identifier (e.g., "la-county-fd")
  *   search_term  - Protocol search query (e.g., "cardiac arrest")
- *   user_age     - Patient age for age-specific protocols
- *   impression   - Clinical impression code
+ *   user_age     - Patient age for age-specific protocols (NOT LOGGED - PHI)
+ *   impression   - Clinical impression code (NOT LOGGED - PHI)
  *   return_url   - URL to return to after protocol lookup (e.g., "elite://back")
+ *
+ * HIPAA COMPLIANCE:
+ * This endpoint handles PHI parameters (user_age, impression) but does NOT log them.
+ * Only operational data (agency_id, response time) is persisted for analytics.
+ * Search terms may be logged but should not contain patient-identifying information.
  */
 
 import { Request, Response } from "express";
@@ -20,6 +25,16 @@ import { createClient } from "@supabase/supabase-js";
 import { getFlags } from "../../lib/feature-flags";
 import { getDb } from "../db";
 import { integrationLogs } from "../../drizzle/schema";
+
+/**
+ * Generates a unique request ID for log correlation without exposing PHI.
+ * Format: it-timestamp-random (e.g., "it-1706054400000-abc123")
+ */
+function generateRequestId(): string {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 8);
+  return `it-${timestamp}-${random}`;
+}
 
 // Supabase client for agency lookup
 const supabaseUrl = process.env.SUPABASE_URL || "";

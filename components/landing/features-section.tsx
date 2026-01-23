@@ -296,11 +296,18 @@ function FeatureCard({ feature, index, isVisible, isMobile, isTablet = false }: 
     }
   };
 
+  // Calculate card width for tablet (2-col) vs desktop (3-col) layout
+  const getCardStyle = () => {
+    if (isMobile) return { width: "100%" };
+    if (isTablet) return { width: "47%", minWidth: 260, maxWidth: 340 };
+    return { flex: 1, minWidth: 280, maxWidth: 320 };
+  };
+
   return (
     <Pressable
       onHoverIn={handleHoverIn}
       onHoverOut={handleHoverOut}
-      style={isMobile ? { width: "100%" } : { flex: 1, minWidth: 280, maxWidth: 320 }}
+      style={getCardStyle()}
       accessibilityLabel={`${feature.title}: ${feature.description}`}
     >
       <Animated.View

@@ -69,7 +69,7 @@ export const searchRouter = router({
       limit: z.number().min(1).max(50).default(10),
       stateFilter: z.string().optional(),
     }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const searchStartTime = Date.now();
 
       // Step 1: Normalize the EMS query (expand abbreviations, fix typos)

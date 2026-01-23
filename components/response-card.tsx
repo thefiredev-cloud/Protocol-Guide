@@ -153,6 +153,9 @@ export function ResponseCard({ text, protocolRefs, timestamp }: ResponseCardProp
           )}
         </View>
       )}
+
+      {/* Medical Disclaimer - Required for legal compliance */}
+      <MedicalDisclaimer variant="inline" />
     </Animated.View>
   );
 }
