@@ -50,7 +50,7 @@ export default function TermsOfServiceScreen() {
 
         <Section title="4. Subscription and Payment">
           <BulletPoint>Free Tier: Limited to 5 protocol queries per day and 1 county.</BulletPoint>
-          <BulletPoint>Pro Subscription: $4.99/month or $39/year for unlimited queries and all features.</BulletPoint>
+          <BulletPoint>Pro Subscription: $9.99/month or $89/year for unlimited queries and all features.</BulletPoint>
           <BulletPoint>Payments are processed through Stripe and are non-refundable except as required by law.</BulletPoint>
           <BulletPoint>Subscriptions automatically renew unless cancelled before the renewal date.</BulletPoint>
           <BulletPoint>We reserve the right to change pricing with 30 days notice to existing subscribers.</BulletPoint>

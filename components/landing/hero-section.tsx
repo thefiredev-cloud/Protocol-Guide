@@ -276,7 +276,7 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
               }}
               pressScale={0.95}
             >
-              <Text style={{ color: "#FFFFFF", fontSize: 14, fontWeight: "600" }}>
+              <Text style={{ color: COLORS.bgDark, fontSize: 14, fontWeight: "600" }}>
                 Request Access
               </Text>
             </AnimatedPressable>
@@ -345,7 +345,7 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
               }}
               pressScale={0.97}
             >
-              <Text style={{ color: "#FFFFFF", fontSize: 16, fontWeight: "600" }}>
+              <Text style={{ color: COLORS.bgDark, fontSize: 16, fontWeight: "600" }}>
                 Request Access
               </Text>
             </AnimatedPressable>

@@ -248,7 +248,14 @@ export function SimulationSection() {
 
           {/* Manual Search Bar */}
           <View style={styles.barSection}>
-            <Text style={styles.barLabel}>Manual Search</Text>
+            <View style={styles.barLabelRow}>
+              <Text style={styles.barLabel}>Manual Search</Text>
+              {state !== "idle" && (
+                <Text style={styles.elapsedTime}>
+                  {manualElapsedTime.toFixed(1)}s
+                </Text>
+              )}
+            </View>
             <View style={styles.barTrack}>
               <Animated.View
                 style={[
@@ -267,7 +274,37 @@ export function SimulationSection() {
 
           {/* Protocol Guide Bar */}
           <View style={styles.barSection}>
-            <Text style={styles.barLabel}>Protocol Guide</Text>
+            <View style={styles.barLabelRow}>
+              <Text style={styles.barLabel}>Protocol Guide</Text>
+              <View style={styles.protocolStatusRow}>
+                {state !== "idle" && (
+                  <Text style={styles.elapsedTimeProtocol}>
+                    {protocolElapsedTime.toFixed(1)}s
+                  </Text>
+                )}
+                {protocolComplete && (
+                  <Animated.View
+                    style={[
+                      styles.protocolFoundBadge,
+                      {
+                        transform: [
+                          { scale: protocolFoundScale },
+                          {
+                            rotate: checkmarkRotate.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: ["-15deg", "0deg"],
+                            }),
+                          },
+                        ],
+                      },
+                    ]}
+                  >
+                    <Text style={styles.protocolFoundText}>Protocol Found</Text>
+                    <Text style={styles.checkmark}>{" \u2713"}</Text>
+                  </Animated.View>
+                )}
+              </View>
+            </View>
             <View style={styles.barTrack}>
               <Animated.View
                 style={[
