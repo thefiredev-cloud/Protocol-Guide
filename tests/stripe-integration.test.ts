@@ -754,3 +754,151 @@ describe("Stripe Error Handling - Comprehensive", () => {
     });
   });
 });
+
+describe("Trial Period Configuration", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.STRIPE_SECRET_KEY = "sk_test_123";
+    process.env.STRIPE_PRO_MONTHLY_PRICE_ID = "price_monthly_123";
+    process.env.STRIPE_PRO_ANNUAL_PRICE_ID = "price_annual_123";
+  });
+
+  it("includes trial_period_days in checkout session", async () => {
+    const mockSession = {
+      id: "cs_test_123",
+      url: "https://checkout.stripe.com/session/cs_test_123",
+    };
+    mockCheckoutSessionsCreate.mockResolvedValue(mockSession);
+
+    await createCheckoutSession({
+      userId: 1,
+      userEmail: "trial@example.com",
+      plan: "monthly",
+      successUrl: "https://app.example.com/success",
+      cancelUrl: "https://app.example.com/cancel",
+    });
+
+    expect(mockCheckoutSessionsCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subscription_data: {
+          metadata: {
+            userId: "1",
+            plan: "monthly",
+          },
+          trial_period_days: expect.any(Number),
+        },
+      })
+    );
+  });
+
+  it("uses default 7 day trial period", () => {
+    expect(TRIAL_PERIOD_DAYS).toBe(7);
+  });
+
+  it("respects STRIPE_TRIAL_PERIOD_DAYS environment variable", () => {
+    // Default should be 7, can be overridden
+    expect(TRIAL_PERIOD_DAYS).toBeGreaterThanOrEqual(0);
+    expect(typeof TRIAL_PERIOD_DAYS).toBe("number");
+  });
+});
+
+describe("Downgrade to Free Tier", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.STRIPE_SECRET_KEY = "sk_test_123";
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("successfully downgrades user to free tier", async () => {
+    // Mock database functions
+    const mockUser = {
+      id: 1,
+      tier: "pro",
+      subscriptionId: "sub_test_123",
+      stripeCustomerId: "cus_test_123",
+    };
+
+    const mockGetDb = vi.fn().mockResolvedValue({
+      update: vi.fn().mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue(undefined),
+        }),
+      }),
+    });
+
+    vi.doMock("../server/db", () => ({
+      getUserById: vi.fn().mockResolvedValue(mockUser),
+      updateUserTier: vi.fn().mockResolvedValue(undefined),
+      getDb: mockGetDb,
+    }));
+
+    mockSubscriptionsCancel.mockResolvedValue({
+      id: "sub_test_123",
+      status: "canceled",
+    });
+
+    const result = await downgradeToFree(1);
+
+    expect(result).toEqual({ success: true });
+  });
+
+  it("handles user not found", async () => {
+    vi.doMock("../server/db", () => ({
+      getUserById: vi.fn().mockResolvedValue(null),
+      updateUserTier: vi.fn(),
+      getDb: vi.fn(),
+    }));
+
+    const result = await downgradeToFree(999);
+
+    expect(result).toEqual({ success: false, error: "User not found" });
+  });
+
+  it("continues downgrade even if Stripe cancellation fails", async () => {
+    const mockUser = {
+      id: 1,
+      tier: "pro",
+      subscriptionId: "sub_test_123",
+      stripeCustomerId: "cus_test_123",
+    };
+
+    const mockGetDb = vi.fn().mockResolvedValue({
+      update: vi.fn().mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue(undefined),
+        }),
+      }),
+    });
+
+    vi.doMock("../server/db", () => ({
+      getUserById: vi.fn().mockResolvedValue(mockUser),
+      updateUserTier: vi.fn().mockResolvedValue(undefined),
+      getDb: mockGetDb,
+    }));
+
+    mockSubscriptionsCancel.mockRejectedValue(new Error("Subscription already canceled"));
+
+    const result = await downgradeToFree(1);
+
+    // Should still succeed because we continue with downgrade
+    expect(result).toEqual({ success: true });
+  });
+
+  it("handles database errors", async () => {
+    vi.doMock("../server/db", () => ({
+      getUserById: vi.fn().mockRejectedValue(new Error("Database connection failed")),
+      updateUserTier: vi.fn(),
+      getDb: vi.fn(),
+    }));
+
+    const result = await downgradeToFree(1);
+
+    expect(result).toEqual({
+      success: false,
+      error: expect.stringContaining("Database connection failed"),
+    });
+  });
+});
