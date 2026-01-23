@@ -171,8 +171,8 @@ export function VoiceSearchModal({
     transform: [{ scale: micScale.value }],
   }));
 
-  // Cleanup function - defined early so it can be used in useEffects
-  const cleanupRecording = useCallback(() => {
+  // Clear only timeouts/intervals (safe to call anytime)
+  const clearTimers = useCallback(() => {
     if (silenceTimeoutRef.current) {
       clearTimeout(silenceTimeoutRef.current);
       silenceTimeoutRef.current = null;
@@ -185,11 +185,16 @@ export function VoiceSearchModal({
       clearInterval(durationIntervalRef.current);
       durationIntervalRef.current = null;
     }
+  }, []);
+
+  // Full cleanup function - stops recording AND clears timers (for unmount/cancel)
+  const cleanupRecording = useCallback(() => {
+    clearTimers();
     if (recordingRef.current) {
       recordingRef.current.stopAndUnloadAsync().catch(() => {});
       recordingRef.current = null;
     }
-  }, []);
+  }, [clearTimers]);
 
   // Start pulsing animation
   const startPulseAnimation = useCallback(() => {

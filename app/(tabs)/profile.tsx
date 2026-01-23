@@ -13,6 +13,12 @@ import { useFavorites, FavoriteProtocol } from "@/hooks/use-favorites";
 import { signInWithGoogle, signInWithApple } from "@/lib/supabase";
 import { GoogleLogo, AppleLogo } from "@/components/icons";
 import { Modal } from "@/components/ui/Modal";
+import {
+  SkeletonProfileHeader,
+  SkeletonSubscriptionCard,
+  SkeletonUsageCard,
+  SkeletonRecentQueries,
+} from "@/components/ui/Skeleton";
 
 export default function ProfileScreen() {
   const { user, isAuthenticated, logout } = useAuth();

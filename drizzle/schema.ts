@@ -286,7 +286,18 @@ export type InsertUser = typeof users.$inferInsert;
 
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type InsertAuditLog = typeof auditLogs.$inferInsert;
-export type AuditAction = "create" | "update" | "delete" | "login" | "logout" | "view" | "search";
+export type AuditAction =
+  | "create"
+  | "update"
+  | "delete"
+  | "login"
+  | "logout"
+  | "view"
+  | "search"
+  | "FEEDBACK_STATUS_CHANGED"
+  | "USER_ROLE_CHANGED"
+  | "CONTACT_STATUS_CHANGED"
+  | "PROTOCOL_MODIFIED";
 
 export type UserAuthProvider = typeof userAuthProviders.$inferSelect;
 export type InsertUserAuthProvider = typeof userAuthProviders.$inferInsert;
