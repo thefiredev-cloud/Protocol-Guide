@@ -95,6 +95,24 @@ export async function handleStripeWebhook(req: Request, res: Response) {
         break;
       }
 
+      case "charge.dispute.created": {
+        const dispute = event.data.object as Stripe.Dispute;
+        await handleDisputeCreated(dispute);
+        break;
+      }
+
+      case "charge.dispute.closed": {
+        const dispute = event.data.object as Stripe.Dispute;
+        await handleDisputeClosed(dispute);
+        break;
+      }
+
+      case "customer.deleted": {
+        const customer = event.data.object as Stripe.Customer;
+        await handleCustomerDeleted(customer);
+        break;
+      }
+
       default:
         console.log(`[Stripe Webhook] Unhandled event type: ${event.type}`);
     }
