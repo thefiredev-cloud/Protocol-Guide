@@ -1,11 +1,16 @@
-/// <reference lib="deno.ns" />
-
 /**
  * CORS headers for edge functions
  *
  * SECURITY: Uses origin whitelist instead of wildcard to prevent CSRF attacks.
  * Only whitelisted origins can make cross-origin requests with credentials.
  */
+
+// Deno global type declaration for Supabase Edge Functions
+declare const Deno: {
+  env: {
+    get(key: string): string | undefined;
+  };
+};
 
 // Allowed origins - add production domains here
 const ALLOWED_ORIGINS = [
@@ -44,7 +49,8 @@ function isAllowedOrigin(origin: string | null): boolean {
   }
 
   // Allow development origins in non-production
-  const isProduction = Deno.env.get("DENO_DEPLOYMENT_ID") !== undefined;
+  // DENO_DEPLOYMENT_ID is set automatically by Supabase Edge Functions in production
+  const isProduction = typeof Deno !== "undefined" && Deno.env.get("DENO_DEPLOYMENT_ID") !== undefined;
   if (!isProduction && DEV_ORIGINS.includes(origin)) {
     return true;
   }
