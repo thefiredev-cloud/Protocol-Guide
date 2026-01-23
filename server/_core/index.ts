@@ -148,6 +148,17 @@ async function startServer() {
   app.get("/api/ready", readyHandler);  // Kubernetes readiness probe
   app.get("/api/live", liveHandler);    // Kubernetes liveness probe
 
+  // Resilience status endpoint - for monitoring circuit breakers and fallbacks
+  app.get("/api/resilience", publicLimiter, (_req, res) => {
+    const stats = ServiceRegistry.getStats();
+    const redisStats = resilientRedis.getStats();
+    res.json({
+      ...stats,
+      redis: redisStats,
+      timestamp: new Date().toISOString(),
+    });
+  });
+
   // AI endpoint - stricter rate limiting (10 req/min)
   app.post("/api/summarize", aiLimiter, summarizeHandler);
 
