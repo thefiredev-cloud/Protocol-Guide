@@ -98,7 +98,7 @@ export default function PrivacyPolicyScreen() {
           We retain your data for as long as your account is active or as needed to provide the Service. You may request deletion of your account and associated data at any time by contacting us.
         </Section>
 
-        <Section title="7. Your Rights">
+        <Section title="8. Your Rights">
           Depending on your location, you may have rights to:
           <BulletPoint>Access your personal data</BulletPoint>
           <BulletPoint>Correct inaccurate data</BulletPoint>
@@ -108,7 +108,7 @@ export default function PrivacyPolicyScreen() {
           <BulletPoint>Withdraw consent</BulletPoint>
         </Section>
 
-        <Section title="8. Children's Privacy">
+        <Section title="9. Children's Privacy">
           The Service is not intended for users under 18 years of age. We do not knowingly collect personal information from children under 18.
         </Section>
 
