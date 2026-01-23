@@ -64,7 +64,6 @@ export const EMS_ABBREVIATIONS: Record<string, string> = {
   'sob': 'shortness of breath',
   'dyspnea': 'difficulty breathing',
   'copd': 'chronic obstructive pulmonary disease',
-  'chf': 'congestive heart failure',
   'pe': 'pulmonary embolism',
   'pneumo': 'pneumothorax',
   'ptx': 'pneumothorax',
