@@ -449,6 +449,7 @@ export default function SearchScreen() {
             </View>
           )}
         />
+        </ProtocolViewerErrorBoundary>
       </ScreenContainer>
     );
   }

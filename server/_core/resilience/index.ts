@@ -5,6 +5,7 @@
  * - Circuit breakers for external services
  * - In-memory cache fallbacks
  * - Service health registry
+ * - Resilient wrappers for Redis, AI, and Database
  */
 
 export {
@@ -35,3 +36,30 @@ export {
   type ServiceStatus,
   type ServiceRegistryStats,
 } from './service-registry';
+
+export {
+  ResilientRedis,
+  getResilientRedis,
+  initResilientRedis,
+  type ResilientRedisConfig,
+} from './resilient-redis';
+
+export {
+  ResilientAIService,
+  getResilientAI,
+  initResilientAI,
+  type AIQueryParams,
+  type AIResponse,
+  type FallbackConfig,
+} from './resilient-ai';
+
+export {
+  ResilientDatabase,
+  getResilientDb,
+  initResilientDb,
+  withResilience,
+  DatabaseTimeoutError,
+  DatabaseUnavailableError,
+  type QueryOptions,
+  type SlowQueryConfig,
+} from './resilient-db';

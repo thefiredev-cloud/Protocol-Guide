@@ -170,7 +170,7 @@ export async function addUserCounty(
   if (isPrimary) {
     await db
       .update(userCounties)
-      .set({ isPrimary: false })
+      .set({ isPrimary: 0 })
       .where(eq(userCounties.userId, userId));
   }
 
@@ -181,7 +181,7 @@ export async function addUserCounty(
   const [result] = await db.insert(userCounties).values({
     userId,
     countyId,
-    isPrimary: shouldBePrimary,
+    isPrimary: shouldBePrimary ? 1 : 0,
   }).$returningId();
 
   const savedCounty: SavedCounty = {
