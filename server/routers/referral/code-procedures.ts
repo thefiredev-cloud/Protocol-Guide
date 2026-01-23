@@ -9,7 +9,7 @@ import { router, protectedProcedure, publicProcedure } from "../../_core/trpc";
 import { getDb } from "../../db";
 import { sql } from "drizzle-orm";
 
-export const codeProcedures = createTRPCRouter({
+export const codeProcedures = router({
   /**
    * Validate a referral code (public - for signup flow)
    */
