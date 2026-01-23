@@ -49,7 +49,6 @@ export interface StateCoverage {
  */
 export async function getProtocolCoverageByState(): Promise<StateCoverage[]> {
   const db = await getDb();
-  if (!db) return [];
 
   // State name to code mapping
   const stateCodeMap: Record<string, string> = {
