@@ -667,8 +667,7 @@ export function VoiceSearchModal({
             {recordingState === "idle" && !errorType && (
               <View style={styles.tipsContainer}>
                 <Text style={[styles.tipsText, { color: colors.muted }]}>
-                  Speak naturally, for example:{"\n"}
-                  "pediatric asthma treatment" or "vtach protocol"
+                  {"Speak naturally, for example:\n\"pediatric asthma treatment\" or \"vtach protocol\""}
                 </Text>
               </View>
             )}

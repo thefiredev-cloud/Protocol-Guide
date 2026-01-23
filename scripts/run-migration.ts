@@ -2,9 +2,9 @@
  * Script to manually run SQL migrations against the database
  */
 
-import mysql from "mysql2/promise";
-import fs from "fs/promises";
-import path from "path";
+import * as mysql from "mysql2/promise";
+import * as fs from "fs/promises";
+import * as path from "path";
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {

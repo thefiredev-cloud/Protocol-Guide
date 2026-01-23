@@ -30,6 +30,19 @@ This document outlines optimizations for the Protocol Guide RAG (Retrieval-Augme
 
 ## Optimization Implementations
 
+### Overview of Integrated Optimizations
+
+The RAG pipeline now includes the following optimizations:
+
+| Optimization | Description | When Enabled |
+|--------------|-------------|--------------|
+| **Query Normalization** | Expands EMS abbreviations, corrects typos | Always |
+| **Adaptive Thresholds** | Adjusts similarity threshold by query intent | Always |
+| **Advanced Re-ranking** | Term frequency, position, semantic signals | Always |
+| **Multi-Query Fusion** | Searches with query variations, merges via RRF | Complex/medication queries |
+| **Context Boosting** | Boosts results matching user's agency/state | When agency/state specified |
+| **Reciprocal Rank Fusion** | Better merging of semantic + keyword results | Multi-query mode |
+
 ### 1. EMS Query Normalizer (`ems-query-normalizer.ts`)
 
 **Problem**: Field medics use abbreviations and rushed queries that reduce retrieval accuracy.
