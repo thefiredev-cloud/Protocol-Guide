@@ -131,6 +131,9 @@ async function startServer() {
   // AI endpoint - stricter rate limiting (10 req/min)
   app.post("/api/summarize", aiLimiter, summarizeHandler);
 
+  // Client error reporting endpoint - for ErrorBoundary/Sentry
+  app.post("/api/client-error", publicLimiter, clientErrorHandler);
+
   // ImageTrend integration endpoints
   app.get("/api/imagetrend/launch", publicLimiter, imageTrendLaunchHandler);
   app.get("/api/imagetrend/health", publicLimiter, imageTrendHealthHandler);

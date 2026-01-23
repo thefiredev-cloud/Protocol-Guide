@@ -30,16 +30,6 @@ const getRedirectUri = () => {
 };
 
 /**
- * Generate a random state parameter for OAuth
- */
-async function generateState(): Promise<string> {
-  const randomBytes = await Crypto.getRandomBytesAsync(32);
-  return Array.from(randomBytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-/**
  * Sign in with Google on mobile
  * Uses Supabase OAuth with Expo AuthSession
  */
