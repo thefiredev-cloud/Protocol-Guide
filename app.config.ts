@@ -31,16 +31,109 @@ const config: ExpoConfig = {
   scheme: env.scheme,
   userInterfaceStyle: "light",  // Light theme only for field use
   newArchEnabled: true,
+
+  // EAS Project Configuration
+  owner: "protocol-guide",  // Update with your Expo account username
+  extra: {
+    eas: {
+      projectId: "REPLACE_WITH_EAS_PROJECT_ID"  // From `eas project:init`
+    }
+  },
+
+  // Update configuration for OTA updates
+  updates: {
+    enabled: true,
+    url: "https://u.expo.dev/REPLACE_WITH_EAS_PROJECT_ID",
+    fallbackToCacheTimeout: 30000,
+    checkAutomatically: "ON_LOAD",
+  },
+
+  // Runtime version for updates compatibility
+  runtimeVersion: {
+    policy: "appVersion"
+  },
+
   ios: {
     supportsTablet: true,
     bundleIdentifier: env.iosBundleId,
+    buildNumber: "1",
+
+    // iOS Permissions - Required for App Store approval
     infoPlist: {
-      NSMicrophoneUsageDescription: "Protocol Guide uses the microphone for voice-activated protocol search",
-      NSSpeechRecognitionUsageDescription: "Protocol Guide uses speech recognition for hands-free protocol lookup",
+      // Microphone for voice search
+      NSMicrophoneUsageDescription: "Protocol Guide uses the microphone for voice-activated protocol search, allowing hands-free lookup during emergencies.",
+
+      // Speech recognition for voice commands
+      NSSpeechRecognitionUsageDescription: "Protocol Guide uses speech recognition for hands-free protocol lookup, enabling voice commands while your hands are occupied with patient care.",
+
+      // Camera (if scanning QR codes or documents)
+      NSCameraUsageDescription: "Protocol Guide uses the camera to scan QR codes for quick protocol access and to capture images for documentation.",
+
+      // Photo library access
+      NSPhotoLibraryUsageDescription: "Protocol Guide accesses your photos to attach images to patient documentation and reports.",
+
+      // Location for regional protocols (optional)
+      NSLocationWhenInUseUsageDescription: "Protocol Guide uses your location to automatically select regional protocols and provide location-specific emergency procedures.",
+
+      // Face ID for secure access (optional)
+      NSFaceIDUsageDescription: "Protocol Guide uses Face ID for secure, quick access to the app and protected patient information.",
+
+      // Background audio for voice guidance
+      UIBackgroundModes: ["audio", "fetch"],
+
+      // App Transport Security - Allow connections to your API
+      NSAppTransportSecurity: {
+        NSAllowsArbitraryLoads: false,
+        NSExceptionDomains: {
+          "protocol-guide.com": {
+            NSIncludesSubdomains: true,
+            NSExceptionAllowsInsecureHTTPLoads: false,
+            NSExceptionRequiresForwardSecrecy: true,
+            NSExceptionMinimumTLSVersion: "TLSv1.2"
+          }
+        }
+      },
+
+      // Siri integration for quick access
+      NSSiriUsageDescription: "Protocol Guide integrates with Siri for quick voice-activated protocol searches.",
+
+      // iTunes file sharing (for protocol exports)
+      UIFileSharingEnabled: false,
+      LSSupportsOpeningDocumentsInPlace: true,
+
+      // Privacy manifest requirements (iOS 17+)
+      NSPrivacyAccessedAPITypes: [
+        {
+          NSPrivacyAccessedAPIType: "NSPrivacyAccessedAPICategoryUserDefaults",
+          NSPrivacyAccessedAPITypeReasons: ["CA92.1"]  // App functionality
+        }
+      ]
     },
+
+    // Associated domains for universal links
+    associatedDomains: [
+      "applinks:protocol-guide.com",
+      "applinks:*.protocol-guide.com"
+    ],
+
+    // Entitlements
+    entitlements: {
+      "com.apple.developer.siri": true,
+      "aps-environment": "production"
+    },
+
+    // Privacy manifest
+    privacyManifests: {
+      NSPrivacyAccessedAPITypes: [
+        {
+          NSPrivacyAccessedAPIType: "NSPrivacyAccessedAPICategoryUserDefaults",
+          NSPrivacyAccessedAPITypeReasons: ["CA92.1"]
+        }
+      ]
+    }
   },
+
   android: {
-    // Android config kept for potential future native builds
     adaptiveIcon: {
       backgroundColor: "#C41E3A",
       foregroundImage: "./assets/images/android-icon-foreground.png",
@@ -49,7 +142,47 @@ const config: ExpoConfig = {
     },
     edgeToEdgeEnabled: true,
     package: env.androidPackage,
+    versionCode: 1,
+
+    // Android Permissions
+    permissions: [
+      "android.permission.RECORD_AUDIO",           // Voice search
+      "android.permission.INTERNET",               // Network access
+      "android.permission.ACCESS_NETWORK_STATE",   // Network status
+      "android.permission.CAMERA",                 // QR scanning, photos
+      "android.permission.READ_EXTERNAL_STORAGE",  // File access
+      "android.permission.WRITE_EXTERNAL_STORAGE", // Save files
+      "android.permission.VIBRATE",                // Haptic feedback
+      "android.permission.WAKE_LOCK",              // Keep screen on
+      "android.permission.FOREGROUND_SERVICE",     // Background tasks
+      "android.permission.RECEIVE_BOOT_COMPLETED", // Auto-start
+      "android.permission.USE_BIOMETRIC",          // Biometric auth
+      "android.permission.ACCESS_FINE_LOCATION",   // Location (optional)
+      "android.permission.ACCESS_COARSE_LOCATION"  // Approximate location
+    ],
+
+    // Intent filters for deep linking
+    intentFilters: [
+      {
+        action: "VIEW",
+        autoVerify: true,
+        data: [
+          {
+            scheme: "https",
+            host: "protocol-guide.com",
+            pathPrefix: "/protocol"
+          },
+          {
+            scheme: "https",
+            host: "*.protocol-guide.com",
+            pathPrefix: "/protocol"
+          }
+        ],
+        category: ["BROWSABLE", "DEFAULT"]
+      }
+    ]
   },
+
   web: {
     bundler: "metro",
     output: "single",  // Changed from "static" to fix JSX runtime error
@@ -83,11 +216,36 @@ const config: ExpoConfig = {
       categories: ["medical", "health", "productivity"],
     },
   },
+
   plugins: [
     "expo-router",
-    // Native-only plugins removed for web-only PWA:
-    // - expo-apple-authentication (uses Supabase OAuth instead)
-    // - expo-audio (uses Web Audio API wrapper instead)
+
+    // Build properties for native configuration
+    [
+      "expo-build-properties",
+      {
+        ios: {
+          deploymentTarget: "14.0",
+          useFrameworks: "static",
+          // Enable microphone and speech recognition capabilities
+          newArchEnabled: true,
+          flipper: false  // Disable Flipper for production builds
+        },
+        android: {
+          compileSdkVersion: 34,
+          targetSdkVersion: 34,
+          minSdkVersion: 24,
+          buildToolsVersion: "34.0.0",
+          kotlinVersion: "1.9.22",
+          newArchEnabled: true,
+          // Enable Proguard for release builds
+          enableProguardInReleaseBuilds: true,
+          enableShrinkResourcesInReleaseBuilds: true
+        }
+      }
+    ],
+
+    // Video player with background support
     [
       "expo-video",
       {
@@ -95,6 +253,8 @@ const config: ExpoConfig = {
         supportsPictureInPicture: true,
       },
     ],
+
+    // Splash screen configuration
     [
       "expo-splash-screen",
       {
@@ -105,6 +265,7 @@ const config: ExpoConfig = {
       },
     ],
   ],
+
   experiments: {
     typedRoutes: true,
     reactCompiler: false,  // Disabled - causes JSX runtime issues with NativeWind

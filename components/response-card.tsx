@@ -6,6 +6,7 @@ import * as Haptics from "@/lib/haptics";
 import { useState } from "react";
 import { IconSymbol } from "./ui/icon-symbol";
 import { useRouter } from "expo-router";
+import { MedicalDisclaimer } from "./MedicalDisclaimer";
 
 type ResponseCardProps = {
   text: string;
