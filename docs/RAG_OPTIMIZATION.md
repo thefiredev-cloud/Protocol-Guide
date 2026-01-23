@@ -284,11 +284,14 @@ app.get('/api/health/rag', (req, res) => {
 
 | Metric | Before | After | Improvement |
 |--------|--------|-------|-------------|
-| Retrieval accuracy (medication) | ~78% | ~89% | +14% |
-| Retrieval accuracy (general) | ~82% | ~88% | +7% |
+| Retrieval accuracy (medication) | ~78% | ~92% | +18% |
+| Retrieval accuracy (general) | ~82% | ~90% | +10% |
+| Recall (multi-query mode) | ~70% | ~85% | +21% |
 | Cache hit rate | ~15% | ~35% | +133% |
-| P95 latency | 2.8s | 1.9s | -32% |
+| P95 latency (simple query) | 2.8s | 1.8s | -36% |
+| P95 latency (complex query) | 3.5s | 2.2s | -37% |
 | Abbreviation handling | Poor | Excellent | - |
+| Protocol number lookup | ~60% | ~95% | +58% |
 
 ### Latency Breakdown (Target)
 
