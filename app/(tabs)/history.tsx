@@ -25,7 +25,7 @@ export default function HistoryScreen() {
   const { isAuthenticated } = useAuth();
   const colors = useColors();
   const router = useRouter();
-  const { cachedProtocols, removeFromCache } = useOfflineCache();
+  const { cachedProtocols, removeFromCache, isLoading: cacheLoading } = useOfflineCache();
   const { hasOfflineAccess, tier } = useOfflineAccess();
   const { addMessage } = useAppContext();
 
@@ -35,6 +35,9 @@ export default function HistoryScreen() {
 
   // Check if user is on free tier (no offline access)
   const isFreeTier = tier === "free";
+
+  // Check if history is loading
+  const isHistoryLoading = cacheLoading && cachedProtocols.length === 0;
 
   // Get unique counties from cached protocols
   const uniqueCounties = useMemo(() => {
