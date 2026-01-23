@@ -18,6 +18,7 @@ import { View, Text, Animated, useWindowDimensions, Platform } from "react-nativ
 import { ProtocolGuideLogo } from "@/components/icons/protocol-guide-logo";
 import { AnimatedPressable, AnimatedNavLink } from "./animated-pressable";
 import { injectSmoothScrollCSS, scrollToElement } from "./animation-utils";
+import { StarRating, TrustedBadge, TestimonialQuote, DepartmentUsage } from "./social-proof";
 
 const COLORS = {
   primaryRed: "#EF4444",
@@ -28,47 +29,8 @@ const COLORS = {
   textMuted: "#94A3B8",
   focusRing: "#3B82F6",
   border: "#334155",
-  gold: "#FBBF24",
-  goldMuted: "#F59E0B",
+  green: "#22C55E",
 };
-
-/** Star icon component for rating display */
-function StarIcon({ filled, size = 16 }: { filled: boolean; size?: number }) {
-  return (
-    <Text
-      style={{
-        color: filled ? COLORS.gold : COLORS.border,
-        fontSize: size,
-        lineHeight: size + 2,
-      }}
-    >
-      {"\u2605"}
-    </Text>
-  );
-}
-
-/** Star rating display component */
-function StarRating({ rating, reviewCount }: { rating: number; reviewCount: number }) {
-  const fullStars = Math.floor(rating);
-  const stars = Array(5).fill(0).map((_, i) => i < fullStars);
-
-  return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-      <View style={{ flexDirection: "row", gap: 2 }}>
-        {stars.map((filled, i) => (
-          <StarIcon key={i} filled={filled} size={14} />
-        ))}
-      </View>
-      <Text style={{ color: COLORS.textMuted, fontSize: 13, fontWeight: "500" }}>
-        {rating.toFixed(1)}
-      </Text>
-      <Text style={{ color: COLORS.border, fontSize: 13 }}>|</Text>
-      <Text style={{ color: COLORS.textMuted, fontSize: 13, fontWeight: "500" }}>
-        {reviewCount.toLocaleString()} reviews
-      </Text>
-    </View>
-  );
-}
 
 /** Inject CSS keyframes for subtle gradient animation (web only) */
 function injectGradientStyles() {

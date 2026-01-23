@@ -16,8 +16,8 @@ import {
   Pressable,
   useWindowDimensions,
 } from "react-native";
-import { SimulationTimer } from "./simulation";
-import { useSimulationTimer } from "@/hooks/useSimulationTimer";
+import { SimulationTimer } from "./simulation/simulation-timer";
+import { useSimulationTimer } from "../../hooks/useSimulationTimer";
 
 // Color Palette - Dark Theme
 const COLORS = {
