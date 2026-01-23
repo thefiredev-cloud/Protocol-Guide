@@ -83,8 +83,11 @@ export const subscriptionRouter = router({
       cancelUrl: z.string().url(),
     }))
     .mutation(async ({ ctx, input }) => {
-      // TODO: Verify user has permission to manage this agency
-      // This would check if ctx.user.id is an owner/admin of the agency
+      // Verify user has permission to manage this agency
+      const isAdmin = await db.isUserAgencyAdmin(ctx.user.id, input.agencyId);
+      if (!isAdmin) {
+        return { success: false, error: "Not authorized to manage this agency", url: null };
+      }
 
       // Get agency details
       const dbInstance = await db.getDb();

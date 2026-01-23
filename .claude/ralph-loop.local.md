@@ -1,19 +1,15 @@
 ---
 active: true
-iteration: 2
+iteration: 3
 max_iterations: 50
-completion_promise: "Protocol Guide is production-ready with all features working"
+completion_promise: "All critical security issues fixed and deployed"
 started_at: "2026-01-23T19:41:04Z"
 ---
 
-## Iteration 1 Summary (Completed)
-- Fixed 9 missing Drizzle schema table exports
-- Fixed missing impact-section scroll target
-- Deployed to Netlify (live at https://protocol-guide.com)
-- Verified all pages: homepage, privacy, terms, contact
-- Mobile responsive confirmed
-- No Sentry errors in production
-- Stripe products/prices configured correctly
-- 14 env vars configured in Netlify
+## Iteration 3 Focus: Security Fixes
+1. Add authorization check to createDepartmentCheckout
+2. Add URL validation to voice transcription (SSRF fix)
+3. Add file size limits to voice/PDF uploads
+4. Reduce JSON body limit from 50MB to 10MB
 
-Continuously develop Protocol Guide: 1) Use puppeteer to view https://protocol-guide.com and screenshot issues 2) Fix bugs and improve UI/UX 3) Run parallel agents for backend/frontend/testing 4) Push changes to GitHub triggering Netlify deploys 5) Iterate until site is production-ready
+Continuously fix security issues identified in audit, deploy to Netlify, verify fixes.
