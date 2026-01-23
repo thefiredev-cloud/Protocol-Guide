@@ -409,6 +409,10 @@ export const integrationPartnerEnum = mysqlEnum("integration_partner", [
  * Integration access logs
  * Tracks when integration partners access Protocol Guide
  * Used for analytics and partnership reporting
+ *
+ * HIPAA COMPLIANCE NOTE (Migration 0011):
+ * userAge and impression fields were REMOVED as they constitute PHI
+ * when combined with timestamps. Do NOT re-add patient data fields.
  */
 export const integrationLogs = mysqlTable("integration_logs", {
   id: int("id").autoincrement().primaryKey(),
@@ -416,8 +420,7 @@ export const integrationLogs = mysqlTable("integration_logs", {
   agencyId: varchar("agencyId", { length: 100 }), // Partner's agency identifier
   agencyName: varchar("agencyName", { length: 255 }),
   searchTerm: varchar("searchTerm", { length: 500 }),
-  userAge: int("userAge"), // Patient age if provided
-  impression: varchar("impression", { length: 255 }), // Clinical impression
+  // PHI REMOVED for HIPAA compliance - see migration 0011_remove_phi_fields.sql
   responseTimeMs: int("responseTimeMs"),
   resultCount: int("resultCount"),
   ipAddress: varchar("ipAddress", { length: 45 }),

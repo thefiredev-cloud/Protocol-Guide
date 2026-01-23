@@ -486,6 +486,15 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     marginLeft: -24,
   },
+  nativeSlider: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 64,
+    minHeight: 48, // Ensures 48px touch target for accessibility
+  },
   scaleLabels: {
     flexDirection: "row",
     justifyContent: "space-between",
