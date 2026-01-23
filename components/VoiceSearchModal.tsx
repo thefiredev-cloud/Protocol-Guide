@@ -45,8 +45,18 @@ import Animated, {
   SlideOutDown,
 } from "react-native-reanimated";
 
-// Recording state types
-type RecordingState = "idle" | "permission_required" | "recording" | "processing" | "error";
+// Recording state types - proper state machine
+type RecordingState = "idle" | "permission_required" | "recording" | "processing" | "complete" | "error";
+
+// Valid state transitions - prevents invalid state changes
+const VALID_TRANSITIONS: Record<RecordingState, RecordingState[]> = {
+  idle: ["recording", "permission_required"],
+  permission_required: ["idle", "error"],
+  recording: ["processing", "error", "idle"], // idle for cancel
+  processing: ["complete", "error"],
+  complete: ["idle"],
+  error: ["idle", "recording"],
+};
 
 // Error types for better UX messaging
 type VoiceError =
