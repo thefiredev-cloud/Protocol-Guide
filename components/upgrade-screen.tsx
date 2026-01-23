@@ -197,7 +197,7 @@ export function UpgradeScreen({
           ]}
         >
           <Text style={styles.ctaText}>
-            {selectedPlan === "annual" ? "Get Pro for $39/year" : "Get Pro for $4.99/month"}
+            {selectedPlan === "annual" ? "Get Pro for $89/year" : "Get Pro for $9.99/month"}
           </Text>
         </Pressable>
 
