@@ -315,7 +315,7 @@ function FeatureCard({ feature, index, isVisible, isMobile, isTablet = false }: 
           {
             backgroundColor: COLORS.bgSurface,
             borderRadius: 20,
-            padding: isMobile ? 20 : 28,
+            padding: isMobile ? 20 : isTablet ? 24 : 28,
             shadowColor: COLORS.shadowColor,
             shadowOpacity: 0.08,
             shadowRadius: 2,
