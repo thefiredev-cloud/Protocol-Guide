@@ -125,7 +125,7 @@ serve(async (req) => {
 
     if (error) {
       console.error("[ProtocolLookup] Query error:", error);
-      return errorResponse("Failed to fetch protocols", 500);
+      return errorResponse("Failed to fetch protocols", 500, req);
     }
 
     // Cache results for 5 minutes
@@ -137,9 +137,9 @@ serve(async (req) => {
       results: data || [],
       cached: false,
       count: data?.length || 0,
-    });
+    }, 200, req);
   } catch (error) {
     console.error("[ProtocolLookup] Error:", error);
-    return errorResponse("Internal server error", 500);
+    return errorResponse("Internal server error", 500, req);
   }
 });
