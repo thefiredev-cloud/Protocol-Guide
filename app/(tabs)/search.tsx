@@ -169,6 +169,10 @@ export default function SearchScreen() {
           borderLeftWidth: 4,
           borderLeftColor: getScoreColor(item.relevanceScore),
         }}
+        accessible={true}
+        accessibilityRole="button"
+        accessibilityLabel={`Protocol: ${item.protocolTitle}. Relevance: ${getScoreLabel(item.relevanceScore)}. ${item.protocolNumber && item.protocolNumber !== "N/A" ? `Number ${item.protocolNumber}.` : ""}`}
+        accessibilityHint="Double tap to view full protocol details"
       >
         <View className="flex-row items-start justify-between mb-2">
           <View className="flex-1 mr-2">

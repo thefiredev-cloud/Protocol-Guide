@@ -469,6 +469,12 @@ export function VoiceSearchModal({
 
   // Start recording
   const startRecording = useCallback(async () => {
+    // Guard: Only allow starting from idle or error state
+    if (stateRef.current !== "idle" && stateRef.current !== "error") {
+      console.warn(`startRecording called in invalid state: ${stateRef.current}`);
+      return;
+    }
+
     try {
       // Haptic feedback
       if (Platform.OS !== "web") {
@@ -479,11 +485,23 @@ export function VoiceSearchModal({
       const hasPermission = await checkPermissions();
       if (!hasPermission) return;
 
+      // Verify state hasn't changed during async permission check
+      if (stateRef.current !== "idle" && stateRef.current !== "error") {
+        console.warn("State changed during permission check, aborting startRecording");
+        return;
+      }
+
       // Configure audio session
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
       });
+
+      // Verify state again after async audio setup
+      if (stateRef.current !== "idle" && stateRef.current !== "error") {
+        console.warn("State changed during audio setup, aborting startRecording");
+        return;
+      }
 
       // Start recording
       const { recording } = await Audio.Recording.createAsync(
@@ -491,7 +509,15 @@ export function VoiceSearchModal({
       );
 
       recordingRef.current = recording;
-      setRecordingState("recording");
+
+      // Transition to recording state
+      if (!transitionTo("recording")) {
+        // If transition failed, clean up the recording we just created
+        recording.stopAndUnloadAsync().catch(() => {});
+        recordingRef.current = null;
+        return;
+      }
+
       setTranscriptionPreview("");
       setRecordingDuration(0);
       startPulseAnimation();
@@ -506,16 +532,17 @@ export function VoiceSearchModal({
 
       // Set up max duration timeout
       maxDurationTimeoutRef.current = setTimeout(() => {
-        if (recordingRef.current) {
+        // Only stop if we're still recording
+        if (stateRef.current === "recording" && recordingRef.current) {
           stopRecording();
         }
       }, MAX_RECORDING_DURATION_MS);
     } catch (error) {
       console.error("Failed to start recording:", error);
-      setRecordingState("error");
+      transitionTo("error");
       setErrorType("recording_failed");
     }
-  }, [checkPermissions, startPulseAnimation, resetSilenceTimeout, stopRecording]);
+  }, [checkPermissions, transitionTo, startPulseAnimation, resetSilenceTimeout, stopRecording]);
 
   // Handle tap on microphone
   const handleMicPress = useCallback(() => {

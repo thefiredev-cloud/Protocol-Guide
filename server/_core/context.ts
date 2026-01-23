@@ -2,7 +2,7 @@ import type { CreateExpressContextOptions } from "@trpc/server/adapters/express"
 import type { User } from "../../drizzle/schema";
 import { createClient } from "@supabase/supabase-js";
 import * as db from "../db";
-import type { RateLimitInfo } from "./trpc";
+import type { RateLimitInfo } from "./types/rateLimit";
 import {
   type TraceContext,
   createTraceContext,
