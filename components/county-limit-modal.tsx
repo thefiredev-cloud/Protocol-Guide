@@ -115,9 +115,9 @@ export function CountyLimitModal({
         {/* Pricing hint */}
         <View style={[styles.pricingHint, { backgroundColor: colors.surface }]}>
           <Text style={[styles.pricingText, { color: colors.foreground }]}>
-            Starting at <Text style={[styles.pricingAmount, { color: colors.primary }]}>$4.99/mo</Text> or{" "}
-            <Text style={[styles.pricingAmount, { color: colors.primary }]}>$39/year</Text>
-            <Text style={[styles.savingsText, { color: colors.success }]}> (save 35%)</Text>
+            Starting at <Text style={[styles.pricingAmount, { color: colors.primary }]}>$9.99/mo</Text> or{" "}
+            <Text style={[styles.pricingAmount, { color: colors.primary }]}>$89/year</Text>
+            <Text style={[styles.savingsText, { color: colors.success }]}> (save 25%)</Text>
           </Text>
         </View>
       </View>
