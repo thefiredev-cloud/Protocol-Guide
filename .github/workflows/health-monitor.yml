@@ -1,0 +1,188 @@
+# Protocol Guide Health Check Monitoring
+# Periodically checks the health of production services
+
+name: Health Monitor
+
+on:
+  # Run every 15 minutes
+  schedule:
+    - cron: '*/15 * * * *'
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to check'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+jobs:
+  health-check:
+    name: Health Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check production health endpoint
+        id: health
+        run: |
+          # Get the health check URL from secrets or use default
+          HEALTH_URL="${HEALTH_CHECK_URL:-https://protocol-guide.netlify.app/api/health}"
+
+          echo "Checking health endpoint: ${HEALTH_URL}"
+
+          # Make the request and capture response
+          HTTP_RESPONSE=$(curl -s -w "\n%{http_code}" --connect-timeout 10 --max-time 30 "${HEALTH_URL}" || echo -e "\n000")
+
+          # Split response body and status code
+          HTTP_BODY=$(echo "${HTTP_RESPONSE}" | head -n -1)
+          HTTP_STATUS=$(echo "${HTTP_RESPONSE}" | tail -n 1)
+
+          echo "HTTP Status: ${HTTP_STATUS}"
+          echo "Response: ${HTTP_BODY}"
+
+          # Set outputs for other steps
+          echo "status=${HTTP_STATUS}" >> $GITHUB_OUTPUT
+          echo "body<<EOF" >> $GITHUB_OUTPUT
+          echo "${HTTP_BODY}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          # Check if healthy
+          if [ "${HTTP_STATUS}" -ge 200 ] && [ "${HTTP_STATUS}" -lt 300 ]; then
+            echo "Health check passed"
+            echo "healthy=true" >> $GITHUB_OUTPUT
+          else
+            echo "Health check failed"
+            echo "healthy=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          HEALTH_CHECK_URL: ${{ secrets.HEALTH_CHECK_URL }}
+
+      - name: Check liveness endpoint
+        id: liveness
+        run: |
+          LIVE_URL="${LIVENESS_URL:-https://protocol-guide.netlify.app/api/live}"
+
+          echo "Checking liveness endpoint: ${LIVE_URL}"
+
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 10 "${LIVE_URL}" || echo "000")
+
+          echo "HTTP Status: ${HTTP_STATUS}"
+
+          if [ "${HTTP_STATUS}" = "200" ]; then
+            echo "Liveness check passed"
+            echo "alive=true" >> $GITHUB_OUTPUT
+          else
+            echo "Liveness check failed"
+            echo "alive=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          LIVENESS_URL: ${{ secrets.LIVENESS_URL }}
+
+      - name: Create health check summary
+        env:
+          HEALTH_STATUS: ${{ steps.health.outputs.status }}
+          HEALTH_BODY: ${{ steps.health.outputs.body }}
+          HEALTH_HEALTHY: ${{ steps.health.outputs.healthy }}
+          LIVENESS_ALIVE: ${{ steps.liveness.outputs.alive }}
+        run: |
+          echo "## Health Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${HEALTH_HEALTHY}" = "true" ]; then
+            echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+            echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Health Endpoint | Passed |" >> $GITHUB_STEP_SUMMARY
+            if [ "${LIVENESS_ALIVE}" = "true" ]; then
+              echo "| Liveness Endpoint | Passed |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| Liveness Endpoint | Failed |" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "### Health Check Failed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "HTTP Status: ${HEALTH_STATUS}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo '```json' >> $GITHUB_STEP_SUMMARY
+            echo "${HEALTH_BODY}" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Fail if unhealthy
+        if: steps.health.outputs.healthy != 'true'
+        env:
+          HEALTH_STATUS: ${{ steps.health.outputs.status }}
+        run: |
+          echo "Health check failed - service may be down or degraded"
+          echo "Status: ${HEALTH_STATUS}"
+          exit 1
+
+  notify-on-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [health-check]
+    if: failure()
+
+    steps:
+      - name: Create failure issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `Health Check Failed - ${new Date().toISOString()}`;
+            const body = `
+            ## Production Health Check Failed
+
+            **Time:** ${new Date().toISOString()}
+            **Workflow Run:** [View Details](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID})
+
+            ### Action Required
+
+            Please investigate the production environment health:
+
+            1. Check the health endpoint manually
+            2. Review recent deployments
+            3. Check server logs for errors
+            4. Verify database connectivity
+            5. Check external service dependencies
+
+            ### Runbook
+
+            - [Health Check Documentation](docs/runbook/health-checks.md)
+            - [Incident Response](docs/runbook/incident-response.md)
+
+            ---
+            *This issue was automatically created by the health monitoring workflow.*
+            `;
+
+            // Check for existing open health check issues
+            const existingIssues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'health-check-failure'
+            });
+
+            if (existingIssues.data.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['health-check-failure', 'priority:high', 'automated']
+              });
+              console.log('Created new health check failure issue');
+            } else {
+              // Add comment to existing issue
+              const issue = existingIssues.data[0];
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `### Health check failed again\n\n**Time:** ${new Date().toISOString()}\n**Run:** [View Details](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID})`
+              });
+              console.log(`Added comment to existing issue #${issue.number}`);
+            }
