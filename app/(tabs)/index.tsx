@@ -88,6 +88,12 @@ export default function HomeScreen() {
     incrementCountyCount,
   } = useCountyRestriction(selectedAgency ? 1 : 0);
 
+  // P0 CRITICAL: Check disclaimer acknowledgment status
+  const { data: disclaimerStatus, refetch: refetchDisclaimerStatus } = trpc.user.hasAcknowledgedDisclaimer.useQuery(
+    undefined,
+    { enabled: isAuthenticated }
+  );
+
   // tRPC queries
   const { data: coverageData, isLoading: coverageLoading } = trpc.search.coverageByState.useQuery();
   const { data: statsData } = trpc.search.totalStats.useQuery();
