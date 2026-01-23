@@ -34,6 +34,11 @@ vi.mock("../server/db", () => ({
   createFeedback: vi.fn(),
   getUserFeedback: vi.fn(),
   createContactSubmission: vi.fn(),
+  getAllCounties: vi.fn().mockResolvedValue([
+    { id: 1, name: "Los Angeles County", state: "CA" },
+    { id: 2, name: "San Francisco County", state: "CA" },
+  ]),
+  getCountyById: vi.fn(),
 }));
 
 // Mock user counties module

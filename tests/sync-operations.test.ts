@@ -13,6 +13,10 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+// Import after mocking
+import * as dbUserCounties from "../server/db-user-counties";
+import * as db from "../server/db";
+
 // Mock drizzle-orm first
 vi.mock("drizzle-orm", () => ({
   eq: vi.fn((a, b) => ({ type: "eq", a, b })),
@@ -48,10 +52,6 @@ vi.mock("../server/db", () => {
     getUserById: vi.fn(),
   };
 });
-
-// Import after mocking
-import * as dbUserCounties from "../server/db-user-counties";
-import * as db from "../server/db";
 
 describe("Sync Operations - Search History", () => {
   beforeEach(() => {
