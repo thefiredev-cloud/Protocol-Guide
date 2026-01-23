@@ -229,7 +229,7 @@ export function SimulationSection() {
         </Text>
 
         {/* Chart Card */}
-        <View style={styles.chartCard}>
+        <View style={[styles.chartCard, isMobile && { padding: 16 }, isTablet && { padding: 20 }]}>
           {/* Celebration Effect */}
           <CelebrationEffect visible={showCelebration} />
 

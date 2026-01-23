@@ -377,8 +377,13 @@ export const searchRouter = router({
         latencyMs,
       };
 
-      // Cache results
+      // Cache results (1 hour TTL)
       await cacheSearchResults(cacheKey, response);
+
+      // Set cache headers for cache miss
+      if (ctx.res) {
+        setSearchCacheHeaders(ctx.res, false);
+      }
 
       console.log(`[Search:Agency] Completed in ${latencyMs}ms`);
 
