@@ -1,6 +1,15 @@
 /**
  * Integration Router
  * Handles integration partner tracking and analytics
+ *
+ * HIPAA COMPLIANCE:
+ * This router intentionally does NOT log or store any PHI (Protected Health Information).
+ * The following fields are explicitly excluded from logging:
+ * - Patient age (userAge)
+ * - Clinical impressions (impression)
+ * - Any patient identifiers
+ *
+ * Only non-PHI operational data is stored for analytics purposes.
  */
 
 import { z } from "zod";
@@ -17,10 +26,25 @@ import {
 // Valid integration partners
 const integrationPartners = ["imagetrend", "esos", "zoll", "emscloud"] as const;
 
+/**
+ * Generates a unique request ID for correlation in logs without exposing PHI.
+ * Format: partner-timestamp-random (e.g., "imagetrend-1706054400000-abc123")
+ */
+function generateRequestId(partner: string): string {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 8);
+  return `${partner}-${timestamp}-${random}`;
+}
+
 export const integrationRouter = router({
   /**
    * Log an integration access event
    * Called when a partner (e.g., ImageTrend) accesses Protocol Guide
+   *
+   * HIPAA COMPLIANCE:
+   * - userAge and impression parameters are IGNORED and NOT stored
+   * - Only operational metrics are logged (partner, agency, response time)
+   * - No patient-identifying information is persisted
    */
   logAccess: publicProcedure
     .input(
@@ -29,6 +53,7 @@ export const integrationRouter = router({
         agencyId: z.string().max(100).optional(),
         agencyName: z.string().max(255).optional(),
         searchTerm: z.string().max(500).optional(),
+        // PHI fields - accepted for API compatibility but NOT stored (HIPAA compliance)
         userAge: z.number().int().min(0).max(150).optional(),
         impression: z.string().max(255).optional(),
         responseTimeMs: z.number().int().optional(),
@@ -36,10 +61,13 @@ export const integrationRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const requestId = generateRequestId(input.partner);
       const db = await getDb();
+
       if (!db) {
-        console.warn("[Integration] Database not available for logging");
-        return { success: true, logged: false };
+        // Safe log: no PHI, only request ID
+        console.warn(`[Integration] Database unavailable - requestId=${requestId}`);
+        return { success: true, logged: false, requestId };
       }
 
       try {
@@ -50,24 +78,27 @@ export const integrationRouter = router({
           null;
         const userAgent = ctx.req.headers["user-agent"] || null;
 
+        // HIPAA COMPLIANCE: Only store non-PHI operational data
+        // userAge and impression are intentionally NOT stored
         await db.insert(integrationLogs).values({
           partner: input.partner,
           agencyId: input.agencyId || null,
           agencyName: input.agencyName || null,
           searchTerm: input.searchTerm || null,
-          userAge: input.userAge || null,
-          impression: input.impression || null,
+          // PHI fields explicitly omitted - DO NOT ADD userAge or impression
           responseTimeMs: input.responseTimeMs || null,
           resultCount: input.resultCount || null,
           ipAddress,
           userAgent,
         });
 
-        return { success: true, logged: true };
+        return { success: true, logged: true, requestId };
       } catch (error) {
-        console.error("[Integration] Failed to log access:", error);
+        // Safe error logging: only log error type and request ID, not full error which may contain PHI
+        const errorType = error instanceof Error ? error.name : "UnknownError";
+        console.error(`[Integration] Log failed - requestId=${requestId}, errorType=${errorType}`);
         // Don't fail the request if logging fails
-        return { success: true, logged: false };
+        return { success: true, logged: false, requestId };
       }
     }),
 

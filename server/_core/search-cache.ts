@@ -28,6 +28,8 @@ export interface SearchCacheParams {
   agencyId?: number | null;
   agencyName?: string | null;
   stateCode?: string | null;
+  /** Alias for stateCode - supports both naming conventions */
+  stateFilter?: string | null;
   limit?: number;
 }
 
