@@ -1050,12 +1050,9 @@ describe("Stripe Webhook Handler - Dispute Events", () => {
     consoleLogSpy.mockRestore();
   });
 
-  it("handles charge.dispute.created with customer downgrade", async () => {
+  it("handles charge.dispute.created with customer info", async () => {
     const req = createMockRequest("raw body", "sig_test_123");
     const res = createMockResponse();
-
-    // Set env var to enable downgrade on dispute
-    process.env.STRIPE_DOWNGRADE_ON_DISPUTE = "true";
 
     const mockEvent = {
       id: "evt_dispute_456",
@@ -1092,7 +1089,6 @@ describe("Stripe Webhook Handler - Dispute Events", () => {
     expect(consoleLogSpy).toHaveBeenCalled();
 
     consoleLogSpy.mockRestore();
-    delete process.env.STRIPE_DOWNGRADE_ON_DISPUTE;
   });
 
   it("handles charge.dispute.closed - won", async () => {
