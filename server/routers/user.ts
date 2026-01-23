@@ -14,6 +14,25 @@ export const userRouter = router({
     return db.getUserUsage(ctx.user.id);
   }),
 
+  /**
+   * P0 CRITICAL: Medical Disclaimer Acknowledgment
+   * Records timestamp when user acknowledges medical disclaimer
+   * Required for legal compliance before accessing protocol search
+   */
+  acknowledgeDisclaimer: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      return db.acknowledgeDisclaimer(ctx.user.id);
+    }),
+
+  /**
+   * Check if user has acknowledged the medical disclaimer
+   */
+  hasAcknowledgedDisclaimer: protectedProcedure
+    .query(async ({ ctx }) => {
+      const hasAcknowledged = await db.hasAcknowledgedDisclaimer(ctx.user.id);
+      return { hasAcknowledged };
+    }),
+
   selectCounty: protectedProcedure
     .input(z.object({ countyId: z.number() }))
     .mutation(async ({ ctx, input }) => {
