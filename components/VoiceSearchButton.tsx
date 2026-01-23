@@ -34,6 +34,11 @@ import Animated, {
   withSequence,
   cancelAnimation,
 } from "react-native-reanimated";
+import {
+  createButtonA11y,
+  announceForAccessibility,
+  MEDICAL_A11Y_LABELS,
+} from "@/lib/accessibility";
 
 // EMS terminology corrections for common voice recognition errors
 const EMS_TERMINOLOGY: Record<string, string> = {
