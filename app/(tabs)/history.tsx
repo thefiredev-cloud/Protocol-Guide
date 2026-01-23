@@ -336,10 +336,17 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 12,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   title: {
     fontSize: 28,
     fontWeight: '700',
-    marginBottom: 16,
+  },
+  listWrapper: {
+    flex: 1,
   },
   searchBar: {
     flexDirection: 'row',
