@@ -8,7 +8,7 @@
  * - analytics-procedures: Leaderboard and event tracking
  */
 
-import { createTRPCRouter } from "../../_core/trpc";
+import { router } from "../../_core/trpc";
 import { userProcedures } from "./user-procedures";
 import { codeProcedures } from "./code-procedures";
 import { analyticsProcedures } from "./analytics-procedures";
