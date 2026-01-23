@@ -9,7 +9,6 @@
  */
 
 import * as React from "react";
-const { useState, useCallback } = React;
 import {
   View,
   Text,
@@ -21,6 +20,7 @@ import {
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { trpc } from "@/lib/trpc";
+const { useState, useCallback } = React;
 
 // ============ Constants ============
 
