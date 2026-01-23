@@ -22,6 +22,7 @@ const MAPPING: Record<string, MaterialIconName> = {
   "checkmark": "check",
   "person.fill": "person",
   "mic.fill": "mic",
+  "stop.fill": "stop",
   "doc.text.fill": "description",
   "heart.fill": "favorite",
   "brain.head.profile": "psychology",
