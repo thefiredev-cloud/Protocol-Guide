@@ -126,6 +126,8 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
   const subheadTranslateY = useRef(new Animated.Value(20)).current;
   const ctaOpacity = useRef(new Animated.Value(0)).current;
   const ctaScale = useRef(new Animated.Value(0.95)).current;
+  const badgesOpacity = useRef(new Animated.Value(0)).current;
+  const badgesTranslateY = useRef(new Animated.Value(15)).current;
   const menuHeight = useRef(new Animated.Value(0)).current;
 
   // Inject gradient styles, smooth scroll CSS, and run staggered entrance animation on mount

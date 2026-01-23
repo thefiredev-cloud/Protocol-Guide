@@ -302,15 +302,28 @@ export default function HomeScreen() {
         </View>
         
         {/* Summary - THE MAIN OUTPUT */}
-        <View 
+        <View
           className="px-3 py-3 rounded-b-lg border-l border-r border-b"
           style={{ borderColor: colors.border, backgroundColor: colors.surface }}
         >
-          <Text 
+          <Text
             className="text-base text-foreground"
             style={{ lineHeight: 24, letterSpacing: 0.2 }}
           >
             {msg.text}
+          </Text>
+
+          {/* Medical Disclaimer */}
+          <Text
+            className="mt-3"
+            style={{
+              fontSize: 12,
+              color: colors.muted,
+              fontStyle: 'italic',
+              lineHeight: 16,
+            }}
+          >
+            Consult medical director for patient-specific guidance. Follow your local protocols.
           </Text>
         </View>
       </View>
