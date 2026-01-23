@@ -402,6 +402,7 @@ export const appRouter = router({
       }),
     
     // Search by specific agency using Voyage AI + pgvector
+    // Optimized with query normalization and Redis caching
     searchByAgency: publicProcedure
       .input(z.object({
         query: z.string().min(1).max(500),
@@ -409,6 +410,50 @@ export const appRouter = router({
         limit: z.number().min(1).max(50).default(10),
       }))
       .query(async ({ input }) => {
+        const searchStartTime = Date.now();
+
+        // Step 1: Normalize the EMS query
+        const normalized = normalizeEmsQuery(input.query);
+
+        if (normalized.normalized !== normalized.original.toLowerCase()) {
+          console.log(`[Search:Agency] "${normalized.original}" -> "${normalized.normalized}"`);
+        }
+
+        // Step 2: Check Redis cache
+        const cacheKey = generateSearchCacheKey({
+          query: normalized.normalized,
+          agencyId: input.agencyId,
+        });
+
+        type AgencyCachedResult = {
+          results: {
+            id: number;
+            protocolNumber: string;
+            protocolTitle: string;
+            section: string | null;
+            content: string;
+            fullContent: string;
+            sourcePdfUrl: null;
+            relevanceScore: number;
+            countyId: number;
+            protocolEffectiveDate: null;
+            lastVerifiedAt: null;
+            protocolYear: null;
+          }[];
+          totalFound: number;
+          query: string;
+          normalizedQuery: string;
+          fromCache: boolean;
+          latencyMs: number;
+        };
+
+        const cachedResults = await getCachedSearchResults<AgencyCachedResult>(cacheKey);
+        if (cachedResults) {
+          const latencyMs = Date.now() - searchStartTime;
+          latencyMonitor.record('totalRetrieval', latencyMs);
+          return { ...cachedResults, fromCache: true, latencyMs };
+        }
+
         // Map MySQL county ID -> Supabase agency_id
         const supabaseAgencyId = await mapCountyIdToAgencyId(input.agencyId);
 
@@ -417,35 +462,70 @@ export const appRouter = router({
         const agencyName = agency?.name || null;
         const stateCode = agency?.state_code || null;
 
-        console.log(`[Search] Agency search - MySQL ${input.agencyId} -> Supabase ${supabaseAgencyId}`);
+        console.log(`[Search:Agency] MySQL ${input.agencyId} -> Supabase ${supabaseAgencyId}`);
 
-        const results = await semanticSearchProtocols({
-          query: input.query,
-          agencyId: supabaseAgencyId,
-          agencyName,
-          stateCode,
-          limit: input.limit,
-          threshold: 0.3,
-        });
+        // Step 3: Execute optimized search
+        const optimizedResult = await optimizedSearch(
+          {
+            query: normalized.normalized,
+            agencyId: supabaseAgencyId,
+            agencyName,
+            stateCode,
+            limit: input.limit,
+          },
+          async (params) => {
+            const searchResults = await semanticSearchProtocols({
+              query: params.query,
+              agencyId: params.agencyId,
+              agencyName: params.agencyName,
+              stateCode: params.stateCode,
+              limit: params.limit,
+              threshold: params.threshold,
+            });
 
-        return {
-          results: results.map(r => ({
+            return searchResults.map(r => ({
+              id: r.id,
+              protocolNumber: r.protocol_number,
+              protocolTitle: r.protocol_title,
+              section: r.section,
+              content: r.content,
+              similarity: r.similarity,
+              imageUrls: r.image_urls,
+            }));
+          }
+        );
+
+        const latencyMs = Date.now() - searchStartTime;
+        latencyMonitor.record('totalRetrieval', latencyMs);
+
+        const response = {
+          results: optimizedResult.results.map(r => ({
             id: r.id,
-            protocolNumber: r.protocol_number,
-            protocolTitle: r.protocol_title,
+            protocolNumber: r.protocolNumber,
+            protocolTitle: r.protocolTitle,
             section: r.section,
             content: r.content.substring(0, 500) + (r.content.length > 500 ? '...' : ''),
             fullContent: r.content,
             sourcePdfUrl: null,
-            relevanceScore: r.similarity,
-            countyId: r.agency_id,
+            relevanceScore: r.rerankedScore ?? r.similarity,
+            countyId: supabaseAgencyId ?? 0,
             protocolEffectiveDate: null,
             lastVerifiedAt: null,
             protocolYear: null,
           })),
-          totalFound: results.length,
+          totalFound: optimizedResult.results.length,
           query: input.query,
+          normalizedQuery: normalized.normalized,
+          fromCache: false,
+          latencyMs,
         };
+
+        // Cache results
+        await cacheSearchResults(cacheKey, response);
+
+        console.log(`[Search:Agency] Completed in ${latencyMs}ms`);
+
+        return response;
       }),
   }),
 
