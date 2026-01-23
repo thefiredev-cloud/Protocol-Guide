@@ -23,6 +23,7 @@ import {
   ActivityIndicator,
   Platform,
   Pressable,
+  StyleSheet,
 } from "react-native";
 import { Audio, Recording } from "@/lib/audio";
 import { IconSymbol } from "@/components/ui/icon-symbol";
@@ -43,7 +44,6 @@ import Animated, {
   SlideInDown,
   SlideOutDown,
 } from "react-native-reanimated";
-// Note: expo-blur not installed, using simple overlay instead
 
 // Recording state types
 type RecordingState = "idle" | "permission_required" | "recording" | "processing" | "error";
@@ -143,6 +143,26 @@ export function VoiceSearchModal({
     transform: [{ scale: micScale.value }],
   }));
 
+  // Cleanup function - defined early so it can be used in useEffects
+  const cleanupRecording = useCallback(() => {
+    if (silenceTimeoutRef.current) {
+      clearTimeout(silenceTimeoutRef.current);
+      silenceTimeoutRef.current = null;
+    }
+    if (maxDurationTimeoutRef.current) {
+      clearTimeout(maxDurationTimeoutRef.current);
+      maxDurationTimeoutRef.current = null;
+    }
+    if (durationIntervalRef.current) {
+      clearInterval(durationIntervalRef.current);
+      durationIntervalRef.current = null;
+    }
+    if (recordingRef.current) {
+      recordingRef.current.stopAndUnloadAsync().catch(() => {});
+      recordingRef.current = null;
+    }
+  }, []);
+
   // Start pulsing animation
   const startPulseAnimation = useCallback(() => {
     // Ripple 1
@@ -240,14 +260,14 @@ export function VoiceSearchModal({
     micScale.value = 1;
   }, [pulseScale1, pulseScale2, pulseScale3, pulseOpacity1, pulseOpacity2, pulseOpacity3, micScale]);
 
-  // Cleanup on unmount or close
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       cleanupRecording();
     };
   }, [cleanupRecording]);
 
-  // Reset state when modal opens
+  // Reset state when modal opens/closes
   useEffect(() => {
     if (visible) {
       setRecordingState("idle");
@@ -258,30 +278,10 @@ export function VoiceSearchModal({
       cleanupRecording();
       stopPulseAnimation();
     }
-  }, [visible, stopPulseAnimation]);
-
-  // Cleanup function
-  const cleanupRecording = useCallback(() => {
-    if (silenceTimeoutRef.current) {
-      clearTimeout(silenceTimeoutRef.current);
-      silenceTimeoutRef.current = null;
-    }
-    if (maxDurationTimeoutRef.current) {
-      clearTimeout(maxDurationTimeoutRef.current);
-      maxDurationTimeoutRef.current = null;
-    }
-    if (durationIntervalRef.current) {
-      clearInterval(durationIntervalRef.current);
-      durationIntervalRef.current = null;
-    }
-    if (recordingRef.current) {
-      recordingRef.current.stopAndUnloadAsync().catch(() => {});
-      recordingRef.current = null;
-    }
-  }, []);
+  }, [visible, cleanupRecording, stopPulseAnimation]);
 
   // Check and request permissions
-  const checkPermissions = async (): Promise<boolean> => {
+  const checkPermissions = useCallback(async (): Promise<boolean> => {
     try {
       const { granted } = await Audio.requestPermissionsAsync();
       if (!granted) {
@@ -295,72 +295,22 @@ export function VoiceSearchModal({
       setErrorType("permission_unavailable");
       return false;
     }
-  };
+  }, []);
 
-  // Start recording
-  const startRecording = async () => {
-    try {
-      // Haptic feedback
-      if (Platform.OS !== "web") {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      }
-
-      // Check permissions
-      const hasPermission = await checkPermissions();
-      if (!hasPermission) return;
-
-      // Configure audio session
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-      });
-
-      // Start recording
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
-
-      recordingRef.current = recording;
-      setRecordingState("recording");
-      setTranscriptionPreview("");
-      setRecordingDuration(0);
-      startPulseAnimation();
-
-      // Track duration
-      durationIntervalRef.current = setInterval(() => {
-        setRecordingDuration((prev) => prev + 1);
-      }, 1000);
-
-      // Set up silence detection timeout
-      resetSilenceTimeout();
-
-      // Set up max duration timeout
-      maxDurationTimeoutRef.current = setTimeout(() => {
-        if (recordingRef.current) {
-          stopRecording();
-        }
-      }, MAX_RECORDING_DURATION_MS);
-    } catch (error) {
-      console.error("Failed to start recording:", error);
-      setRecordingState("error");
-      setErrorType("recording_failed");
-    }
-  };
-
-  // Reset silence timeout (called on each detected audio)
+  // Reset silence timeout
   const resetSilenceTimeout = useCallback(() => {
     if (silenceTimeoutRef.current) {
       clearTimeout(silenceTimeoutRef.current);
     }
     silenceTimeoutRef.current = setTimeout(() => {
-      if (recordingRef.current && recordingState === "recording") {
-        stopRecording();
+      if (recordingRef.current) {
+        // Will be handled by stopRecording
       }
     }, SILENCE_THRESHOLD_MS);
-  }, [recordingState]);
+  }, []);
 
   // Stop recording and process
-  const stopRecording = async () => {
+  const stopRecording = useCallback(async () => {
     try {
       if (!recordingRef.current) return;
 
@@ -462,7 +412,57 @@ export function VoiceSearchModal({
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
     }
-  };
+  }, [cleanupRecording, stopPulseAnimation, uploadMutation, transcribeMutation, onTranscription, onClose]);
+
+  // Start recording
+  const startRecording = useCallback(async () => {
+    try {
+      // Haptic feedback
+      if (Platform.OS !== "web") {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      }
+
+      // Check permissions
+      const hasPermission = await checkPermissions();
+      if (!hasPermission) return;
+
+      // Configure audio session
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+
+      // Start recording
+      const { recording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+
+      recordingRef.current = recording;
+      setRecordingState("recording");
+      setTranscriptionPreview("");
+      setRecordingDuration(0);
+      startPulseAnimation();
+
+      // Track duration
+      durationIntervalRef.current = setInterval(() => {
+        setRecordingDuration((prev) => prev + 1);
+      }, 1000);
+
+      // Set up silence detection timeout
+      resetSilenceTimeout();
+
+      // Set up max duration timeout
+      maxDurationTimeoutRef.current = setTimeout(() => {
+        if (recordingRef.current) {
+          stopRecording();
+        }
+      }, MAX_RECORDING_DURATION_MS);
+    } catch (error) {
+      console.error("Failed to start recording:", error);
+      setRecordingState("error");
+      setErrorType("recording_failed");
+    }
+  }, [checkPermissions, startPulseAnimation, resetSilenceTimeout, stopRecording]);
 
   // Handle tap on microphone
   const handleMicPress = useCallback(() => {
@@ -472,7 +472,7 @@ export function VoiceSearchModal({
     } else if (recordingState === "recording") {
       stopRecording();
     }
-  }, [recordingState]);
+  }, [recordingState, startRecording, stopRecording]);
 
   // Format duration for display
   const formatDuration = (seconds: number): string => {
@@ -505,17 +505,10 @@ export function VoiceSearchModal({
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <View className="flex-1">
-        {/* Blur background */}
-        <BlurView
-          intensity={Platform.OS === "ios" ? 80 : 100}
-          tint="dark"
-          className="absolute inset-0"
-        />
-
-        {/* Dark overlay */}
+      <View style={styles.container}>
+        {/* Dark overlay background */}
         <Pressable
-          className="absolute inset-0 bg-black/40"
+          style={[styles.overlay, { backgroundColor: "rgba(0, 0, 0, 0.85)" }]}
           onPress={onClose}
         />
 
@@ -523,13 +516,12 @@ export function VoiceSearchModal({
         <Animated.View
           entering={SlideInDown.springify().damping(15)}
           exiting={SlideOutDown.springify().damping(15)}
-          className="flex-1 items-center justify-center px-8"
+          style={styles.content}
         >
           {/* Close button */}
           <TouchableOpacity
             onPress={onClose}
-            className="absolute top-16 right-6 p-3 rounded-full"
-            style={{ backgroundColor: colors.surface + "80" }}
+            style={[styles.closeButton, { backgroundColor: colors.surface + "80" }]}
             accessibilityLabel="Close voice search"
             accessibilityRole="button"
           >
@@ -537,57 +529,39 @@ export function VoiceSearchModal({
           </TouchableOpacity>
 
           {/* Main content card */}
-          <View
-            className="w-full max-w-sm rounded-3xl p-8 items-center"
-            style={{ backgroundColor: colors.surface }}
-          >
+          <View style={[styles.card, { backgroundColor: colors.surface }]}>
             {/* Title */}
-            <Text className="text-xl font-bold text-foreground mb-2">
+            <Text style={[styles.title, { color: colors.foreground }]}>
               Voice Search
             </Text>
-            <Text className="text-sm text-muted text-center mb-8">
+            <Text style={[styles.subtitle, { color: colors.muted }]}>
               {getStatusText()}
             </Text>
 
             {/* Microphone button with pulse rings */}
-            <View className="relative items-center justify-center mb-8" style={{ width: 160, height: 160 }}>
+            <View style={styles.micContainer}>
               {/* Pulse rings (only when recording) */}
               {recordingState === "recording" && (
                 <>
                   <Animated.View
                     style={[
                       pulseStyle1,
-                      {
-                        position: "absolute",
-                        width: 80,
-                        height: 80,
-                        borderRadius: 40,
-                        backgroundColor: colors.error,
-                      },
+                      styles.pulseRing,
+                      { backgroundColor: colors.error },
                     ]}
                   />
                   <Animated.View
                     style={[
                       pulseStyle2,
-                      {
-                        position: "absolute",
-                        width: 80,
-                        height: 80,
-                        borderRadius: 40,
-                        backgroundColor: colors.error,
-                      },
+                      styles.pulseRing,
+                      { backgroundColor: colors.error },
                     ]}
                   />
                   <Animated.View
                     style={[
                       pulseStyle3,
-                      {
-                        position: "absolute",
-                        width: 80,
-                        height: 80,
-                        borderRadius: 40,
-                        backgroundColor: colors.error,
-                      },
+                      styles.pulseRing,
+                      { backgroundColor: colors.error },
                     ]}
                   />
                 </>
@@ -609,10 +583,8 @@ export function VoiceSearchModal({
                 <Animated.View
                   style={[
                     micAnimatedStyle,
+                    styles.micButton,
                     {
-                      width: 80,
-                      height: 80,
-                      borderRadius: 40,
                       backgroundColor:
                         recordingState === "recording"
                           ? colors.error
@@ -621,13 +593,6 @@ export function VoiceSearchModal({
                           : recordingState === "error"
                           ? colors.warning
                           : colors.primary,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      shadowColor: "#000",
-                      shadowOffset: { width: 0, height: 4 },
-                      shadowOpacity: 0.2,
-                      shadowRadius: 8,
-                      elevation: 5,
                     },
                   ]}
                 >
@@ -649,13 +614,10 @@ export function VoiceSearchModal({
               <Animated.View
                 entering={FadeIn.duration(200)}
                 exiting={FadeOut.duration(200)}
-                className="flex-row items-center mb-4"
+                style={styles.durationContainer}
               >
-                <View
-                  className="w-2 h-2 rounded-full mr-2"
-                  style={{ backgroundColor: colors.error }}
-                />
-                <Text className="text-lg font-semibold" style={{ color: colors.error }}>
+                <View style={[styles.recordingDot, { backgroundColor: colors.error }]} />
+                <Text style={[styles.durationText, { color: colors.error }]}>
                   {formatDuration(recordingDuration)}
                 </Text>
               </Animated.View>
@@ -666,11 +628,15 @@ export function VoiceSearchModal({
               <Animated.View
                 entering={FadeIn.duration(200)}
                 exiting={FadeOut.duration(200)}
-                className="w-full p-4 rounded-xl mb-4"
-                style={{ backgroundColor: colors.background }}
+                style={[styles.transcriptionBox, { backgroundColor: colors.background }]}
               >
-                <Text className="text-sm text-muted mb-1">Transcription:</Text>
-                <Text className="text-base text-foreground" numberOfLines={3}>
+                <Text style={[styles.transcriptionLabel, { color: colors.muted }]}>
+                  Transcription:
+                </Text>
+                <Text
+                  style={[styles.transcriptionText, { color: colors.foreground }]}
+                  numberOfLines={3}
+                >
                   {transcriptionPreview}
                 </Text>
               </Animated.View>
@@ -680,34 +646,27 @@ export function VoiceSearchModal({
             {recordingState === "error" && errorType && (
               <Animated.View
                 entering={FadeIn.duration(200)}
-                className="w-full p-4 rounded-xl"
-                style={{ backgroundColor: colors.error + "15" }}
+                style={[styles.errorBox, { backgroundColor: colors.error + "15" }]}
               >
-                <Text
-                  className="text-sm font-semibold mb-1"
-                  style={{ color: colors.error }}
-                >
+                <Text style={[styles.errorTitle, { color: colors.error }]}>
                   {ERROR_MESSAGES[errorType].title}
                 </Text>
-                <Text className="text-xs text-muted">
+                <Text style={[styles.errorMessage, { color: colors.muted }]}>
                   {ERROR_MESSAGES[errorType].message}
                 </Text>
                 <TouchableOpacity
                   onPress={handleMicPress}
-                  className="mt-3 py-2 px-4 rounded-lg self-start"
-                  style={{ backgroundColor: colors.error }}
+                  style={[styles.retryButton, { backgroundColor: colors.error }]}
                 >
-                  <Text className="text-sm font-medium text-white">
-                    Try Again
-                  </Text>
+                  <Text style={styles.retryButtonText}>Try Again</Text>
                 </TouchableOpacity>
               </Animated.View>
             )}
 
             {/* Tips (shown in idle state) */}
             {recordingState === "idle" && !errorType && (
-              <View className="w-full">
-                <Text className="text-xs text-muted text-center">
+              <View style={styles.tipsContainer}>
+                <Text style={[styles.tipsText, { color: colors.muted }]}>
                   Speak naturally, for example:{"\n"}
                   "pediatric asthma treatment" or "vtach protocol"
                 </Text>
@@ -716,7 +675,7 @@ export function VoiceSearchModal({
           </View>
 
           {/* Bottom hint */}
-          <Text className="text-xs text-white/60 mt-6 text-center">
+          <Text style={styles.bottomHint}>
             {recordingState === "recording"
               ? "Recording stops automatically after 2.5s of silence"
               : "Tap anywhere outside to cancel"}
@@ -726,5 +685,140 @@ export function VoiceSearchModal({
     </Modal>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  content: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 32,
+  },
+  closeButton: {
+    position: "absolute",
+    top: 64,
+    right: 24,
+    padding: 12,
+    borderRadius: 24,
+  },
+  card: {
+    width: "100%",
+    maxWidth: 340,
+    borderRadius: 24,
+    padding: 32,
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 14,
+    textAlign: "center",
+    marginBottom: 32,
+  },
+  micContainer: {
+    position: "relative",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 160,
+    height: 160,
+    marginBottom: 32,
+  },
+  pulseRing: {
+    position: "absolute",
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+  micButton: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  durationContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  recordingDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  durationText: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  transcriptionBox: {
+    width: "100%",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  transcriptionLabel: {
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  transcriptionText: {
+    fontSize: 16,
+  },
+  errorBox: {
+    width: "100%",
+    padding: 16,
+    borderRadius: 12,
+  },
+  errorTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  errorMessage: {
+    fontSize: 12,
+  },
+  retryButton: {
+    marginTop: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignSelf: "flex-start",
+  },
+  retryButtonText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#FFFFFF",
+  },
+  tipsContainer: {
+    width: "100%",
+  },
+  tipsText: {
+    fontSize: 12,
+    textAlign: "center",
+  },
+  bottomHint: {
+    fontSize: 12,
+    color: "rgba(255, 255, 255, 0.6)",
+    marginTop: 24,
+    textAlign: "center",
+  },
+});
 
 export default VoiceSearchModal;

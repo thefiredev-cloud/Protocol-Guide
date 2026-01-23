@@ -361,7 +361,7 @@ describe("Search Cache", () => {
       expect(result).toBeNull();
     });
 
-    it("should use 5 minute TTL by default", async () => {
+    it("should use 1 hour TTL by default", async () => {
       const key = "search:ttl123";
 
       await cacheSearchResults(key, {
@@ -372,7 +372,7 @@ describe("Search Cache", () => {
 
       expect(mockRedis.setex).toHaveBeenCalledWith(
         key,
-        300, // 300 seconds = 5 minutes
+        3600, // 3600 seconds = 1 hour
         expect.any(String)
       );
     });

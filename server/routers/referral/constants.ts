@@ -25,7 +25,7 @@ export type ReferralTier = keyof typeof REFERRAL_TIERS;
 export function generateReferralCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Exclude confusing chars (0,O,1,I)
   const randomPart = Array.from(crypto.randomBytes(6))
-    .map((byte) => chars[byte % chars.length])
+    .map((byte: number) => chars[byte % chars.length])
     .join("");
   return `CREW-${randomPart}`;
 }

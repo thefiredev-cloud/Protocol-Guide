@@ -61,7 +61,29 @@ export const queryRouter = router({
         const suggestedModel = selectModel(normalized, userTier);
         console.log(`[Query] Model selection: ${suggestedModel} (tier: ${userTier}, complex: ${normalized.isComplex}, intent: ${normalized.intent})`);
 
-        // Step 3: Execute optimized search with normalized query
+        // Step 3: Determine optimization options based on query type and user tier
+        const isMedicationQuery = normalized.intent === 'medication_dosing' ||
+          normalized.intent === 'contraindication_check' ||
+          normalized.extractedMedications.length > 0;
+
+        // Pro users get enhanced accuracy for all queries
+        // Free users get enhanced accuracy only for medication/safety queries
+        const useEnhancedAccuracy = userTier !== 'free' || isMedicationQuery || normalized.isEmergent;
+
+        const searchOptions: OptimizedSearchOptions = {
+          // Multi-query fusion for better recall on critical queries
+          enableMultiQueryFusion: useEnhancedAccuracy || normalized.isComplex,
+          // Always use advanced re-ranking for query submissions
+          enableAdvancedRerank: true,
+          // Enable context boost when agency is specified
+          enableContextBoost: agencyName !== 'Unknown Agency',
+        };
+
+        console.log(`[Query] Search options: multi-query=${searchOptions.enableMultiQueryFusion}, ` +
+          `advanced-rerank=${searchOptions.enableAdvancedRerank}, ` +
+          `context-boost=${searchOptions.enableContextBoost}`);
+
+        // Step 4: Execute optimized search with normalized query
         const optimizedResult = await optimizedSearch(
           {
             query: normalized.normalized,
@@ -86,7 +108,8 @@ export const queryRouter = router({
               similarity: r.similarity,
               imageUrls: r.image_urls,
             }));
-          }
+          },
+          searchOptions
         );
 
         if (optimizedResult.results.length === 0) {
