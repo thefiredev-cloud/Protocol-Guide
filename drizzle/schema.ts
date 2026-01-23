@@ -161,3 +161,35 @@ export const auditLogs = mysqlTable("audit_logs", {
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type InsertAuditLog = typeof auditLogs.$inferInsert;
 export type AuditAction = "USER_ROLE_CHANGED" | "USER_TIER_CHANGED" | "FEEDBACK_STATUS_CHANGED" | "CONTACT_STATUS_CHANGED" | "USER_DELETED" | "PROTOCOL_MODIFIED";
+
+/**
+ * User saved counties - tracks which counties/agencies a user has saved
+ * Free users can save 1 county, Pro users can save unlimited
+ */
+export const userCounties = mysqlTable("user_counties", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  countyId: int("countyId").notNull(),
+  isPrimary: boolean("isPrimary").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type UserCounty = typeof userCounties.$inferSelect;
+export type InsertUserCounty = typeof userCounties.$inferInsert;
+
+/**
+ * Search history for cloud sync - stores individual search queries for Pro users
+ * Enables cross-device sync and search history persistence
+ */
+export const searchHistory = mysqlTable("search_history", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  queryText: varchar("queryText", { length: 500 }).notNull(),
+  countyId: int("countyId"),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  deviceId: varchar("deviceId", { length: 64 }), // Optional device identifier for sync tracking
+  synced: boolean("synced").default(true).notNull(), // Whether this was synced from a local device
+});
+
+export type SearchHistory = typeof searchHistory.$inferSelect;
+export type InsertSearchHistory = typeof searchHistory.$inferInsert;
