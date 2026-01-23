@@ -220,4 +220,7 @@ const enforceRateLimit = t.middleware(async (opts) => {
   });
 });
 
-export const rateLimitedProcedure = t.procedure.use(enforceRateLimit);
+/**
+ * Rate-limited procedure with tracing - enforces daily query limits
+ */
+export const rateLimitedProcedure = publicProcedure.use(enforceRateLimit);
