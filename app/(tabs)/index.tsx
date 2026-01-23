@@ -102,7 +102,7 @@ export default function HomeScreen() {
   );
 
   // tRPC queries
-  const { data: coverageData, isLoading: coverageLoading } = trpc.search.coverageByState.useQuery();
+  const { data: coverageData, isLoading: coverageLoading, error: coverageError } = trpc.search.coverageByState.useQuery();
   const { data: statsData } = trpc.search.totalStats.useQuery();
   const { data: agenciesResult, isLoading: agenciesQueryLoading } = trpc.search.agenciesByState.useQuery(
     { state: selectedState || '' },
