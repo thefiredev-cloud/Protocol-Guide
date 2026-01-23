@@ -496,15 +496,17 @@ export default function HomeScreen() {
           <RecentSearches onSelectSearch={handleSendMessage} />
         </View>
       ) : (
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          renderItem={renderMessage}
-          keyExtractor={(item) => item.id}
-          className="flex-1 px-4"
-          contentContainerStyle={{ paddingVertical: 8 }}
-          showsVerticalScrollIndicator={false}
-        />
+        <SearchResultsErrorBoundary>
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            renderItem={renderMessage}
+            keyExtractor={(item) => item.id}
+            className="flex-1 px-4"
+            contentContainerStyle={{ paddingVertical: 8 }}
+            showsVerticalScrollIndicator={false}
+          />
+        </SearchResultsErrorBoundary>
       )}
 
       {/* Loading */}
