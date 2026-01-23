@@ -365,9 +365,9 @@ export async function getUserSearchHistory(
  */
 export async function addSearchHistory(
   userId: number,
-  queryText: string,
+  searchQuery: string,
   countyId?: number,
-  deviceId?: string
+  resultsCount?: number
 ): Promise<{ success: boolean; id?: number }> {
   const db = await getDb();
   if (!db) {
@@ -376,10 +376,9 @@ export async function addSearchHistory(
 
   const [result] = await db.insert(searchHistory).values({
     userId,
-    queryText,
-    countyId: countyId || null,
-    deviceId: deviceId || null,
-    synced: true,
+    searchQuery,
+    countyId: countyId ?? null,
+    resultsCount: resultsCount ?? null,
   }).$returningId();
 
   return { success: true, id: result.id };
