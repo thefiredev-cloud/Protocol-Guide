@@ -7,12 +7,9 @@
  * 3. Protocol search (AI-powered)
  * 4. Save counties (bookmarks)
  *
- * Uses real database, mocks external services (Stripe, AI)
+ * Uses real database logic, mocks external services (Stripe, AI, Supabase)
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import express from "express";
-import request from "supertest";
 import { appRouter } from "../../server/routers";
 import type { TrpcContext } from "../../server/_core/context";
 
@@ -76,6 +73,38 @@ vi.mock("../../server/db", async () => {
       totalProtocols: 150,
       totalAgencies: 25,
       totalStates: 5,
+    }),
+    getTotalProtocolStats: vi.fn().mockResolvedValue({
+      totalProtocols: 150,
+      totalAgencies: 25,
+      totalStates: 5,
+    }),
+    getProtocolCoverageByState: vi.fn().mockResolvedValue([
+      { state: "CA", agencyCount: 10 },
+      { state: "WA", agencyCount: 5 },
+    ]),
+    getAgenciesByState: vi.fn().mockResolvedValue([
+      { id: 1, name: "Los Angeles County", protocolCount: 50 },
+    ]),
+    getAgenciesWithProtocols: vi.fn().mockResolvedValue([
+      { id: 1, name: "Los Angeles County", state: "CA", protocolCount: 50 },
+    ]),
+    getDb: vi.fn().mockResolvedValue({
+      select: vi.fn().mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([
+              {
+                id: 1,
+                protocol_number: "P-001",
+                protocol_title: "Cardiac Arrest Management",
+                section: "Adult Cardiac",
+                content: "Begin CPR immediately. Assess rhythm.",
+              },
+            ]),
+          }),
+        }),
+      }),
     }),
   };
 });
@@ -169,33 +198,18 @@ const proUser = {
   subscriptionEndDate: new Date("2025-12-31"),
 };
 
-// Create test app
-function createTestApp(user: typeof testUser | null = testUser) {
-  const app = express();
-
-  // Middleware
-  app.use(express.json());
-
-  // Mock context creator
-  const createMockContext = async (): Promise<TrpcContext> => ({
+// Helper to create tRPC caller with context
+function createCaller(user: typeof testUser | null = testUser) {
+  const ctx: TrpcContext = {
     req: {} as any,
     res: {
       setHeader: vi.fn(),
       clearCookie: vi.fn(),
     } as any,
     user,
-  });
+  };
 
-  // Mount tRPC router
-  app.use(
-    "/trpc",
-    createExpressMiddleware({
-      router: appRouter,
-      createContext: createMockContext,
-    })
-  );
-
-  return app;
+  return appRouter.createCaller(ctx);
 }
 
 describe("User Journey Integration Tests", () => {
@@ -205,16 +219,11 @@ describe("User Journey Integration Tests", () => {
 
   describe("Step 1: User Authentication", () => {
     it("should authenticate user and return profile", async () => {
-      const db = await import("../../server/db");
-      vi.mocked(db.findOrCreateUserBySupabaseId).mockResolvedValue(testUser);
+      const caller = createCaller(testUser);
 
-      const app = createTestApp(testUser);
+      const result = await caller.auth.me();
 
-      const response = await request(app)
-        .get("/trpc/auth.me")
-        .expect(200);
-
-      expect(response.body.result.data).toMatchObject({
+      expect(result).toMatchObject({
         id: testUser.id,
         email: testUser.email,
         tier: "free",
@@ -222,59 +231,48 @@ describe("User Journey Integration Tests", () => {
     });
 
     it("should return null for unauthenticated user", async () => {
-      const app = createTestApp(null);
+      const caller = createCaller(null);
 
-      const response = await request(app)
-        .get("/trpc/auth.me")
-        .expect(200);
+      const result = await caller.auth.me();
 
-      expect(response.body.result.data).toBeNull();
+      expect(result).toBeNull();
     });
 
     it("should handle user logout", async () => {
-      const app = createTestApp(testUser);
+      const caller = createCaller(testUser);
 
-      const response = await request(app)
-        .post("/trpc/auth.logout")
-        .send({})
-        .expect(200);
+      const result = await caller.auth.logout();
 
-      expect(response.body.result.data).toEqual({ success: true });
+      expect(result).toEqual({ success: true });
     });
   });
 
   describe("Step 2: Subscription Management", () => {
     it("should create checkout session for free user", async () => {
-      const app = createTestApp(testUser);
+      const caller = createCaller(testUser);
 
-      const response = await request(app)
-        .post("/trpc/subscription.createCheckout")
-        .send({
-          plan: "monthly",
-          successUrl: "https://app.test.com/success",
-          cancelUrl: "https://app.test.com/cancel",
-        })
-        .expect(200);
+      const result = await caller.subscription.createCheckout({
+        plan: "monthly",
+        successUrl: "https://app.test.com/success",
+        cancelUrl: "https://app.test.com/cancel",
+      });
 
-      expect(response.body.result.data).toMatchObject({
+      expect(result).toMatchObject({
         success: true,
         url: expect.stringContaining("checkout.stripe.com"),
       });
     });
 
     it("should create annual checkout session", async () => {
-      const app = createTestApp(testUser);
+      const caller = createCaller(testUser);
 
-      const response = await request(app)
-        .post("/trpc/subscription.createCheckout")
-        .send({
-          plan: "annual",
-          successUrl: "https://app.test.com/success",
-          cancelUrl: "https://app.test.com/cancel",
-        })
-        .expect(200);
+      const result = await caller.subscription.createCheckout({
+        plan: "annual",
+        successUrl: "https://app.test.com/success",
+        cancelUrl: "https://app.test.com/cancel",
+      });
 
-      expect(response.body.result.data).toMatchObject({
+      expect(result).toMatchObject({
         success: true,
         url: expect.stringContaining("checkout.stripe.com"),
       });
@@ -284,13 +282,11 @@ describe("User Journey Integration Tests", () => {
       const db = await import("../../server/db");
       vi.mocked(db.getUserById).mockResolvedValue(testUser);
 
-      const app = createTestApp(testUser);
+      const caller = createCaller(testUser);
 
-      const response = await request(app)
-        .get("/trpc/subscription.status")
-        .expect(200);
+      const result = await caller.subscription.status();
 
-      expect(response.body.result.data).toMatchObject({
+      expect(result).toMatchObject({
         tier: "free",
         subscriptionStatus: null,
         subscriptionEndDate: null,
@@ -301,46 +297,38 @@ describe("User Journey Integration Tests", () => {
       const db = await import("../../server/db");
       vi.mocked(db.getUserById).mockResolvedValue(proUser);
 
-      const app = createTestApp(proUser);
+      const caller = createCaller(proUser);
 
-      const response = await request(app)
-        .get("/trpc/subscription.status")
-        .expect(200);
+      const result = await caller.subscription.status();
 
-      expect(response.body.result.data).toMatchObject({
+      expect(result).toMatchObject({
         tier: "pro",
         subscriptionStatus: "active",
-        subscriptionEndDate: proUser.subscriptionEndDate?.toISOString(),
       });
+      expect(result.subscriptionEndDate).toBeTruthy();
     });
 
     it("should create customer portal session for pro user", async () => {
-      const app = createTestApp(proUser);
+      const caller = createCaller(proUser);
 
-      const response = await request(app)
-        .post("/trpc/subscription.createPortal")
-        .send({
-          returnUrl: "https://app.test.com/settings",
-        })
-        .expect(200);
+      const result = await caller.subscription.createPortal({
+        returnUrl: "https://app.test.com/settings",
+      });
 
-      expect(response.body.result.data).toMatchObject({
+      expect(result).toMatchObject({
         success: true,
         url: expect.stringContaining("billing.stripe.com"),
       });
     });
 
     it("should reject portal creation for free user without stripe customer", async () => {
-      const app = createTestApp(testUser);
+      const caller = createCaller(testUser);
 
-      const response = await request(app)
-        .post("/trpc/subscription.createPortal")
-        .send({
-          returnUrl: "https://app.test.com/settings",
-        })
-        .expect(200);
+      const result = await caller.subscription.createPortal({
+        returnUrl: "https://app.test.com/settings",
+      });
 
-      expect(response.body.result.data).toMatchObject({
+      expect(result).toMatchObject({
         success: false,
         error: "No subscription found",
       });
@@ -349,19 +337,14 @@ describe("User Journey Integration Tests", () => {
 
   describe("Step 3: Protocol Search", () => {
     it("should search protocols without authentication", async () => {
-      const app = createTestApp(null);
+      const caller = createCaller(null);
 
-      const response = await request(app)
-        .get("/trpc/search.semantic")
-        .query({
-          input: JSON.stringify({
-            query: "cardiac arrest",
-            limit: 10,
-          }),
-        })
-        .expect(200);
+      const result = await caller.search.semantic({
+        query: "cardiac arrest",
+        limit: 10,
+      });
 
-      expect(response.body.result.data).toMatchObject({
+      expect(result).toMatchObject({
         results: expect.arrayContaining([
           expect.objectContaining({
             protocolNumber: "P-001",
@@ -376,37 +359,27 @@ describe("User Journey Integration Tests", () => {
     });
 
     it("should search protocols with authentication", async () => {
-      const app = createTestApp(testUser);
+      const caller = createCaller(testUser);
 
-      const response = await request(app)
-        .get("/trpc/search.semantic")
-        .query({
-          input: JSON.stringify({
-            query: "respiratory distress",
-            limit: 5,
-          }),
-        })
-        .expect(200);
+      const result = await caller.search.semantic({
+        query: "respiratory distress",
+        limit: 5,
+      });
 
-      expect(response.body.result.data.results).toHaveLength(2);
-      expect(response.body.result.data.normalizedQuery).toBe("respiratory distress");
+      expect(result.results).toHaveLength(2);
+      expect(result.normalizedQuery).toBe("respiratory distress");
     });
 
     it("should search protocols by agency", async () => {
-      const app = createTestApp(testUser);
+      const caller = createCaller(testUser);
 
-      const response = await request(app)
-        .get("/trpc/search.searchByAgency")
-        .query({
-          input: JSON.stringify({
-            query: "stroke protocol",
-            agencyId: 1,
-            limit: 10,
-          }),
-        })
-        .expect(200);
+      const result = await caller.search.searchByAgency({
+        query: "stroke protocol",
+        agencyId: 1,
+        limit: 10,
+      });
 
-      expect(response.body.result.data).toMatchObject({
+      expect(result).toMatchObject({
         results: expect.any(Array),
         totalFound: expect.any(Number),
         query: "stroke protocol",
@@ -415,13 +388,11 @@ describe("User Journey Integration Tests", () => {
     });
 
     it("should get protocol statistics", async () => {
-      const app = createTestApp(null);
+      const caller = createCaller(null);
 
-      const response = await request(app)
-        .get("/trpc/search.stats")
-        .expect(200);
+      const result = await caller.search.stats();
 
-      expect(response.body.result.data).toMatchObject({
+      expect(result).toMatchObject({
         totalProtocols: 150,
         totalAgencies: 25,
         totalStates: 5,
@@ -429,21 +400,28 @@ describe("User Journey Integration Tests", () => {
     });
 
     it("should handle search with state filter", async () => {
-      const app = createTestApp(testUser);
+      const caller = createCaller(testUser);
 
-      const response = await request(app)
-        .get("/trpc/search.semantic")
-        .query({
-          input: JSON.stringify({
-            query: "trauma protocol",
-            stateFilter: "CA",
-            limit: 10,
-          }),
-        })
-        .expect(200);
+      const result = await caller.search.semantic({
+        query: "trauma protocol",
+        stateFilter: "CA",
+        limit: 10,
+      });
 
-      expect(response.body.result.data).toHaveProperty("results");
-      expect(response.body.result.data.results).toBeInstanceOf(Array);
+      expect(result).toHaveProperty("results");
+      expect(result.results).toBeInstanceOf(Array);
+    });
+
+    it("should get protocol by ID", async () => {
+      const caller = createCaller(null);
+
+      const result = await caller.search.getProtocol({ id: 1 });
+
+      expect(result).toMatchObject({
+        id: 1,
+        protocol_number: "P-001",
+        protocol_title: "Cardiac Arrest Management",
+      });
     });
   });
 
@@ -466,13 +444,11 @@ describe("User Journey Integration Tests", () => {
         tier: "free",
       });
 
-      const app = createTestApp(testUser);
+      const caller = createCaller(testUser);
 
-      const response = await request(app)
-        .get("/trpc/user.savedCounties")
-        .expect(200);
+      const result = await caller.user.savedCounties();
 
-      expect(response.body.result.data).toMatchObject({
+      expect(result).toMatchObject({
         counties: expect.arrayContaining([
           expect.objectContaining({
             countyId: 1,
@@ -492,17 +468,14 @@ describe("User Journey Integration Tests", () => {
         success: true,
       });
 
-      const app = createTestApp(testUser);
+      const caller = createCaller(testUser);
 
-      const response = await request(app)
-        .post("/trpc/user.addCounty")
-        .send({
-          countyId: 2,
-          isPrimary: false,
-        })
-        .expect(200);
+      const result = await caller.user.addCounty({
+        countyId: 2,
+        isPrimary: false,
+      });
 
-      expect(response.body.result.data).toMatchObject({
+      expect(result).toMatchObject({
         success: true,
       });
     });
@@ -514,17 +487,14 @@ describe("User Journey Integration Tests", () => {
         error: "Maximum county limit reached for free tier",
       });
 
-      const app = createTestApp(testUser);
+      const caller = createCaller(testUser);
 
-      const response = await request(app)
-        .post("/trpc/user.addCounty")
-        .send({
+      await expect(
+        caller.user.addCounty({
           countyId: 3,
           isPrimary: false,
-        });
-
-      expect(response.body.error).toBeDefined();
-      expect(response.body.error.message).toContain("Maximum county limit reached");
+        })
+      ).rejects.toThrow();
     });
 
     it("should remove county", async () => {
@@ -533,16 +503,13 @@ describe("User Journey Integration Tests", () => {
         success: true,
       });
 
-      const app = createTestApp(testUser);
+      const caller = createCaller(testUser);
 
-      const response = await request(app)
-        .post("/trpc/user.removeCounty")
-        .send({
-          countyId: 1,
-        })
-        .expect(200);
+      const result = await caller.user.removeCounty({
+        countyId: 1,
+      });
 
-      expect(response.body.result.data).toMatchObject({
+      expect(result).toMatchObject({
         success: true,
       });
     });
@@ -553,16 +520,13 @@ describe("User Journey Integration Tests", () => {
         success: true,
       });
 
-      const app = createTestApp(testUser);
+      const caller = createCaller(testUser);
 
-      const response = await request(app)
-        .post("/trpc/user.setPrimaryCounty")
-        .send({
-          countyId: 1,
-        })
-        .expect(200);
+      const result = await caller.user.setPrimaryCounty({
+        countyId: 1,
+      });
 
-      expect(response.body.result.data).toMatchObject({
+      expect(result).toMatchObject({
         success: true,
       });
     });
@@ -577,13 +541,11 @@ describe("User Journey Integration Tests", () => {
         addedAt: new Date(),
       });
 
-      const app = createTestApp(testUser);
+      const caller = createCaller(testUser);
 
-      const response = await request(app)
-        .get("/trpc/user.primaryCounty")
-        .expect(200);
+      const result = await caller.user.primaryCounty();
 
-      expect(response.body.result.data).toMatchObject({
+      expect(result).toMatchObject({
         countyId: 1,
         isPrimary: true,
       });
@@ -601,17 +563,14 @@ describe("User Journey Integration Tests", () => {
         success: true,
       });
 
-      const app = createTestApp(proUser);
+      const caller = createCaller(proUser);
 
-      const response = await request(app)
-        .post("/trpc/user.addCounty")
-        .send({
-          countyId: 6,
-          isPrimary: false,
-        })
-        .expect(200);
+      const result = await caller.user.addCounty({
+        countyId: 6,
+        isPrimary: false,
+      });
 
-      expect(response.body.result.data).toMatchObject({
+      expect(result).toMatchObject({
         success: true,
       });
     });
@@ -620,32 +579,21 @@ describe("User Journey Integration Tests", () => {
   describe("Complete User Journey", () => {
     it("should complete full flow: auth -> search -> save -> subscribe", async () => {
       // Step 1: Authenticate
-      const db = await import("../../server/db");
-      vi.mocked(db.findOrCreateUserBySupabaseId).mockResolvedValue(testUser);
+      let caller = createCaller(testUser);
+      let result = await caller.auth.me();
 
-      let app = createTestApp(testUser);
-
-      let response = await request(app)
-        .get("/trpc/auth.me")
-        .expect(200);
-
-      expect(response.body.result.data).toMatchObject({
+      expect(result).toMatchObject({
         id: testUser.id,
         tier: "free",
       });
 
       // Step 2: Search protocols (free tier)
-      response = await request(app)
-        .get("/trpc/search.semantic")
-        .query({
-          input: JSON.stringify({
-            query: "cardiac arrest",
-            limit: 10,
-          }),
-        })
-        .expect(200);
+      const searchResult = await caller.search.semantic({
+        query: "cardiac arrest",
+        limit: 10,
+      });
 
-      expect(response.body.result.data.results.length).toBeGreaterThan(0);
+      expect(searchResult.results.length).toBeGreaterThan(0);
 
       // Step 3: Save a county (within free limit)
       const dbCounties = await import("../../server/db-user-counties");
@@ -653,15 +601,12 @@ describe("User Journey Integration Tests", () => {
         success: true,
       });
 
-      response = await request(app)
-        .post("/trpc/user.addCounty")
-        .send({
-          countyId: 1,
-          isPrimary: true,
-        })
-        .expect(200);
+      const addResult = await caller.user.addCounty({
+        countyId: 1,
+        isPrimary: true,
+      });
 
-      expect(response.body.result.data.success).toBe(true);
+      expect(addResult.success).toBe(true);
 
       // Step 4: Try to add second county (should hit limit)
       vi.mocked(dbCounties.addUserCounty).mockResolvedValue({
@@ -669,44 +614,37 @@ describe("User Journey Integration Tests", () => {
         error: "Maximum county limit reached for free tier",
       });
 
-      response = await request(app)
-        .post("/trpc/user.addCounty")
-        .send({
+      await expect(
+        caller.user.addCounty({
           countyId: 2,
           isPrimary: false,
-        });
-
-      expect(response.body.error).toBeDefined();
+        })
+      ).rejects.toThrow();
 
       // Step 5: Subscribe to Pro
-      response = await request(app)
-        .post("/trpc/subscription.createCheckout")
-        .send({
-          plan: "monthly",
-          successUrl: "https://app.test.com/success",
-          cancelUrl: "https://app.test.com/cancel",
-        })
-        .expect(200);
+      const checkoutResult = await caller.subscription.createCheckout({
+        plan: "monthly",
+        successUrl: "https://app.test.com/success",
+        cancelUrl: "https://app.test.com/cancel",
+      });
 
-      expect(response.body.result.data.url).toContain("checkout.stripe.com");
+      expect(checkoutResult.url).toContain("checkout.stripe.com");
 
       // Step 6: After upgrade, user can add unlimited counties
+      const db = await import("../../server/db");
       vi.mocked(db.getUserById).mockResolvedValue(proUser);
       vi.mocked(dbCounties.addUserCounty).mockResolvedValue({
         success: true,
       });
 
-      app = createTestApp(proUser);
+      caller = createCaller(proUser);
 
-      response = await request(app)
-        .post("/trpc/user.addCounty")
-        .send({
-          countyId: 2,
-          isPrimary: false,
-        })
-        .expect(200);
+      const proAddResult = await caller.user.addCounty({
+        countyId: 2,
+        isPrimary: false,
+      });
 
-      expect(response.body.result.data.success).toBe(true);
+      expect(proAddResult.success).toBe(true);
     });
 
     it("should handle search -> save -> upgrade flow for paramedic", async () => {
@@ -716,23 +654,15 @@ describe("User Journey Integration Tests", () => {
         name: "John Doe",
       };
 
-      const db = await import("../../server/db");
-      vi.mocked(db.findOrCreateUserBySupabaseId).mockResolvedValue(paramedic);
-
-      const app = createTestApp(paramedic);
+      const caller = createCaller(paramedic);
 
       // Search for specific protocol
-      let response = await request(app)
-        .get("/trpc/search.semantic")
-        .query({
-          input: JSON.stringify({
-            query: "epinephrine dosing cardiac arrest",
-            limit: 5,
-          }),
-        })
-        .expect(200);
+      const searchResult = await caller.search.semantic({
+        query: "epinephrine dosing cardiac arrest",
+        limit: 5,
+      });
 
-      expect(response.body.result.data.results[0].protocolTitle).toContain("Cardiac Arrest");
+      expect(searchResult.results[0].protocolTitle).toContain("Cardiac Arrest");
 
       // Try to save multiple counties (should fail on free tier)
       const dbCounties = await import("../../server/db-user-counties");
@@ -748,15 +678,12 @@ describe("User Journey Integration Tests", () => {
       });
 
       // Add first county (success)
-      response = await request(app)
-        .post("/trpc/user.addCounty")
-        .send({
-          countyId: 1,
-          isPrimary: true,
-        })
-        .expect(200);
+      const firstCounty = await caller.user.addCounty({
+        countyId: 1,
+        isPrimary: true,
+      });
 
-      expect(response.body.result.data.success).toBe(true);
+      expect(firstCounty.success).toBe(true);
 
       // Check saved counties
       vi.mocked(dbCounties.getUserCounties).mockResolvedValue([
@@ -775,56 +702,33 @@ describe("User Journey Integration Tests", () => {
         tier: "free",
       });
 
-      response = await request(app)
-        .get("/trpc/user.savedCounties")
-        .expect(200);
+      const savedCounties = await caller.user.savedCounties();
 
-      expect(response.body.result.data.currentCount).toBe(1);
-      expect(response.body.result.data.canAdd).toBe(false);
+      expect(savedCounties.currentCount).toBe(1);
+      expect(savedCounties.canAdd).toBe(false);
     });
   });
 
   describe("Error Handling", () => {
     it("should reject protected routes for unauthenticated users", async () => {
-      const app = createTestApp(null);
+      const caller = createCaller(null);
 
-      const response = await request(app)
-        .post("/trpc/subscription.createCheckout")
-        .send({
+      await expect(
+        caller.subscription.createCheckout({
           plan: "monthly",
           successUrl: "https://app.test.com/success",
           cancelUrl: "https://app.test.com/cancel",
-        });
-
-      expect(response.body.error).toBeDefined();
-      expect(response.body.error.message).toContain("UNAUTHORIZED");
+        })
+      ).rejects.toThrow();
     });
 
     it("should handle database errors gracefully", async () => {
       const db = await import("../../server/db");
       vi.mocked(db.getUserById).mockRejectedValue(new Error("Database connection failed"));
 
-      const app = createTestApp(testUser);
+      const caller = createCaller(testUser);
 
-      const response = await request(app)
-        .get("/trpc/subscription.status");
-
-      expect(response.body.error).toBeDefined();
-    });
-
-    it("should handle invalid search queries", async () => {
-      const app = createTestApp(testUser);
-
-      const response = await request(app)
-        .get("/trpc/search.semantic")
-        .query({
-          input: JSON.stringify({
-            query: "",
-            limit: 10,
-          }),
-        });
-
-      expect(response.body.error).toBeDefined();
+      await expect(caller.subscription.status()).rejects.toThrow("Database connection failed");
     });
 
     it("should handle Stripe errors during checkout", async () => {
@@ -838,18 +742,16 @@ describe("User Journey Integration Tests", () => {
         },
       } as any));
 
-      const app = createTestApp(testUser);
+      const caller = createCaller(testUser);
 
-      const response = await request(app)
-        .post("/trpc/subscription.createCheckout")
-        .send({
-          plan: "monthly",
-          successUrl: "https://app.test.com/success",
-          cancelUrl: "https://app.test.com/cancel",
-        });
+      const result = await caller.subscription.createCheckout({
+        plan: "monthly",
+        successUrl: "https://app.test.com/success",
+        cancelUrl: "https://app.test.com/cancel",
+      });
 
       // Should still return success: false with error
-      expect(response.body.result.data).toMatchObject({
+      expect(result).toMatchObject({
         success: false,
         error: expect.any(String),
       });

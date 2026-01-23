@@ -299,11 +299,9 @@ export const searchRouter = router({
         return { ...cachedResults, fromCache: true, latencyMs };
       }
 
-      // Map MySQL county ID -> Supabase agency_id
-      const supabaseAgencyId = await mapCountyIdToAgencyId(input.agencyId);
-
-      // Get agency details
-      const agency = await getAgencyByCountyId(input.agencyId);
+      // Get agency details (OPTIMIZED - single query)
+      const agency = await getAgencyByCountyIdOptimized(input.agencyId);
+      const supabaseAgencyId = agency?.id || null;
       const agencyName = agency?.name || null;
       const stateCode = agency?.state_code || null;
 
