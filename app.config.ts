@@ -43,7 +43,7 @@ const config: ExpoConfig = {
   // Update configuration for OTA updates
   updates: {
     enabled: true,
-    url: "https://u.expo.dev/9ab928c4-ba00-4c6e-affc-0a827b869942"
+    url: "https://u.expo.dev/9ab928c4-ba00-4c6e-affc-0a827b869942",
     fallbackToCacheTimeout: 30000,
     checkAutomatically: "ON_LOAD",
   },
