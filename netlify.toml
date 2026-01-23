@@ -5,7 +5,8 @@
   # Install dependencies and build both web app and server
   # Build server, export web app, inject PWA meta tags, copy PWA assets
   # Note: pnpm check removed - RN Web has known type mismatches with accessibility props
-  command = "pnpm install && pnpm build && pnpm build:web"
+  # Note: NODE_ENV not set globally - install needs devDeps for NativeWind cache generation
+  command = "pnpm install && NODE_ENV=production pnpm build && NODE_ENV=production pnpm build:web"
   # Expo web export outputs to dist/ by default
   publish = "dist"
 
