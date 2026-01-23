@@ -131,7 +131,6 @@ export interface AgencyInfo {
  */
 export async function getAgenciesByState(state: string): Promise<AgencyInfo[]> {
   const db = await getDb();
-  if (!db) return [];
 
   const results = await db.execute(sql`
     SELECT
