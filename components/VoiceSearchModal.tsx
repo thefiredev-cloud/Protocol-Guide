@@ -417,7 +417,7 @@ export function VoiceSearchModal({
       if (!transcriptionResult.success || !transcriptionResult.text) {
         // Check for specific errors
         if (transcriptionResult.error?.includes("no speech")) {
-          setRecordingState("error");
+          transitionTo("error");
           setErrorType("no_speech_detected");
           return;
         }
@@ -427,12 +427,15 @@ export function VoiceSearchModal({
       const transcribedText = transcriptionResult.text.trim();
 
       if (!transcribedText) {
-        setRecordingState("error");
+        transitionTo("error");
         setErrorType("no_speech_detected");
         return;
       }
 
-      // Success - show transcription preview
+      // Transition to complete state
+      if (!transitionTo("complete")) return;
+
+      // Show transcription preview
       setTranscriptionPreview(transcribedText);
 
       // Success haptic
@@ -450,10 +453,10 @@ export function VoiceSearchModal({
 
       // Check for network errors
       if (error instanceof Error && error.message.includes("network")) {
-        setRecordingState("error");
+        transitionTo("error");
         setErrorType("network_error");
       } else {
-        setRecordingState("error");
+        transitionTo("error");
         setErrorType("transcription_failed");
       }
 
@@ -462,7 +465,7 @@ export function VoiceSearchModal({
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
     }
-  }, [cleanupRecording, stopPulseAnimation, uploadMutation, transcribeMutation, onTranscription, onClose]);
+  }, [clearTimers, stopPulseAnimation, transitionTo, uploadMutation, transcribeMutation, onTranscription, onClose]);
 
   // Start recording
   const startRecording = useCallback(async () => {

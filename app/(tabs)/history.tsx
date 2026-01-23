@@ -17,6 +17,7 @@ import { useAppContext } from "@/lib/app-context";
 import { useRouter } from "expo-router";
 import * as Haptics from "@/lib/haptics";
 import { ProFeatureLock, ProBadge } from "@/components/pro-feature-lock";
+import { SkeletonHistoryList, Skeleton } from "@/components/ui/Skeleton";
 
 type FilterOption = "all" | "today" | "week" | "month";
 

@@ -33,14 +33,14 @@ serve(async (req) => {
     const limit = Math.min(parseInt(url.searchParams.get("limit") || "20"), 100);
 
     if (!protocolNumber && !agencyId && !stateCode) {
-      return errorResponse("Must provide protocol_number, agency_id, or state_code", 400);
+      return errorResponse("Must provide protocol_number, agency_id, or state_code", 400, req);
     }
 
     // Check cache first
     const cacheKey = `protocol:${protocolNumber || ""}:${agencyId || ""}:${stateCode || ""}:${limit}`;
     const cached = await cacheGet<ProtocolResult[]>(cacheKey);
     if (cached) {
-      return jsonResponse({ results: cached, cached: true });
+      return jsonResponse({ results: cached, cached: true }, 200, req);
     }
 
     // Get user access level if authenticated

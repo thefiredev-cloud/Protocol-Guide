@@ -84,6 +84,9 @@ export default function SearchScreen() {
     setIsSearching(true);
     setSearchError(null);
 
+    // Announce search start for screen readers
+    announceForAccessibility(`Searching for ${query}`);
+
     try {
       const result = await trpcUtils.search.semantic.fetch({
         query,
@@ -93,13 +96,22 @@ export default function SearchScreen() {
 
       if (result && result.results) {
         setSearchResults(result.results);
+        // Announce results
+        const resultCount = result.results.length;
+        announceForAccessibility(
+          resultCount === 0
+            ? "No results found"
+            : `Found ${resultCount} ${resultCount === 1 ? "result" : "results"}`
+        );
       } else {
         setSearchResults([]);
+        announceForAccessibility("No results found");
       }
     } catch (error) {
       console.error("Search error:", error);
       setSearchError("Search failed. Please check your connection and try again.");
       setSearchResults([]);
+      announceForAccessibility("Search failed. Please check your connection and try again.");
     } finally {
       setIsSearching(false);
     }
