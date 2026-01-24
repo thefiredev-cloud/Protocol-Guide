@@ -181,8 +181,8 @@ export async function addUserCounty(
   const [result] = await db.insert(userCounties).values({
     userId,
     countyId,
-    isPrimary: shouldBePrimary ? 1 : 0,
-  }).$returningId();
+    isPrimary: shouldBePrimary,
+  }).returning({ id: userCounties.id });
 
   const savedCounty: SavedCounty = {
     id: result.id,
