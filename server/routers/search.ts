@@ -157,7 +157,7 @@ export const searchRouter = router({
           agencyId,
           agencyName,
           stateCode,
-          limit: input.limit,
+          limit: effectiveLimit,
         },
         async (params) => {
           const searchResults = await semanticSearchProtocols({
