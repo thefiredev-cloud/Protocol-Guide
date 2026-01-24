@@ -287,9 +287,9 @@ export default function SearchScreen() {
 
   // Format protocol date for display
   const formatProtocolDate = (
-    effectiveDate: string | null, 
-    protocolYear: number | null, 
-    lastVerifiedAt: Date | null
+    effectiveDate: string | null,
+    protocolYear: number | null,
+    lastVerifiedAt: string | null
   ): string => {
     if (effectiveDate) {
       return `Effective: ${effectiveDate}`;
