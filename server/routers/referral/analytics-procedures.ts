@@ -45,7 +45,7 @@ export const analyticsProcedures = router({
         LIMIT ${input.limit}
       `);
 
-      const leaderboard = ((result[0] as any[]) || []).map((row, index) => ({
+      const leaderboard = (result.rows || []).map((row: any, index: number) => ({
         rank: index + 1,
         userId: row.userId,
         userName: row.userName || "Anonymous",
