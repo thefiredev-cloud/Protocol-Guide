@@ -124,8 +124,8 @@ function validateSchemas(): { valid: boolean; errors: string[]; warnings: string
   const pgTableNames = new Set(allPgTables.map((t) => t.name));
   const mysqlTableNames = new Set(mysqlTables.map((t) => t.name));
 
-  const missingInMysql = [...pgTableNames].filter((t) => !mysqlTableNames.has(t));
-  const extraInMysql = [...mysqlTableNames].filter((t) => !pgTableNames.has(t));
+  const missingInMysql = Array.from(pgTableNames).filter((t) => !mysqlTableNames.has(t));
+  const extraInMysql = Array.from(mysqlTableNames).filter((t) => !pgTableNames.has(t));
 
   if (missingInMysql.length > 0) {
     warnings.push("Tables in PostgreSQL but missing in MySQL: " + missingInMysql.join(", "));
