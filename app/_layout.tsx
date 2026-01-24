@@ -37,7 +37,8 @@ export default function RootLayout() {
   // Register service worker for PWA
   useEffect(() => {
     if (Platform.OS === "web") {
-      registerServiceWorker();
+      const cleanup = registerServiceWorker();
+      return cleanup;
     }
   }, []);
 
