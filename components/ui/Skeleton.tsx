@@ -557,12 +557,12 @@ export const SkeletonUsageCard = memo(function SkeletonUsageCard({
       testID={testID}
     >
       {/* Header row */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.lg }}>
+      <View style={[skeletonStyles.rowAligned, skeletonStyles.marginBottomLg]}>
         <Skeleton
           variant="circle"
           width={36}
           height={36}
-          style={{ marginRight: spacing.md }}
+          style={skeletonStyles.marginRightMd}
         />
         <Skeleton variant="text" width={100} height={17} />
       </View>
@@ -572,7 +572,7 @@ export const SkeletonUsageCard = memo(function SkeletonUsageCard({
         width="100%"
         height={8}
         borderRadius={radii.sm}
-        style={{ marginBottom: spacing.sm }}
+        style={skeletonStyles.marginBottomSm}
       />
 
       {/* Usage text */}
