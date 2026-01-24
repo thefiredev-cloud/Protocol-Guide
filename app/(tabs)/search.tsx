@@ -169,7 +169,7 @@ export default function SearchScreen() {
           padding: 16,
           marginBottom: 12,
           borderLeftWidth: 4,
-          borderLeftColor: getScoreColor(item.relevanceScore),
+          borderLeftColor: getScoreColor(item.relevanceScore, colors),
         }}
         accessible={true}
         accessibilityRole="button"
@@ -187,41 +187,41 @@ export default function SearchScreen() {
               </Text>
             )}
           </View>
-          <View 
+          <View
             className="px-2 py-1 rounded-full"
-            style={{ backgroundColor: getScoreColor(item.relevanceScore) + "20" }}
+            style={{ backgroundColor: getScoreColor(item.relevanceScore, colors) + "20" }}
           >
-            <Text 
+            <Text
               className="text-xs font-medium"
-              style={{ color: getScoreColor(item.relevanceScore) }}
+              style={{ color: getScoreColor(item.relevanceScore, colors) }}
             >
               {getScoreLabel(item.relevanceScore)}
             </Text>
           </View>
         </View>
-        
+
         {item.section && (
           <View className="flex-row items-center mb-2">
             <IconSymbol name="doc.text.fill" size={14} color={colors.muted} />
             <Text className="text-xs text-muted ml-1">{item.section}</Text>
           </View>
         )}
-        
+
         <Text className="text-sm text-muted" numberOfLines={3}>
           {item.content}
         </Text>
-        
+
         {/* Protocol Currency Info */}
         <View className="flex-row items-center mt-3 flex-wrap gap-2">
           {(item.protocolEffectiveDate || item.protocolYear || item.lastVerifiedAt) && (
-            <View 
+            <View
               className="flex-row items-center px-2 py-1 rounded-full"
-              style={{ backgroundColor: getDateColor(item.protocolYear, item.lastVerifiedAt) + "15" }}
+              style={{ backgroundColor: getDateColor(item.protocolYear, item.lastVerifiedAt, colors) + "15" }}
             >
-              <IconSymbol name="clock.fill" size={12} color={getDateColor(item.protocolYear, item.lastVerifiedAt)} />
-              <Text 
+              <IconSymbol name="clock.fill" size={12} color={getDateColor(item.protocolYear, item.lastVerifiedAt, colors)} />
+              <Text
                 className="text-xs ml-1"
-                style={{ color: getDateColor(item.protocolYear, item.lastVerifiedAt) }}
+                style={{ color: getDateColor(item.protocolYear, item.lastVerifiedAt, colors) }}
               >
                 {formatProtocolDate(item.protocolEffectiveDate, item.protocolYear, item.lastVerifiedAt)}
               </Text>
