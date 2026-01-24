@@ -118,7 +118,7 @@ export const users = mysqlTable("users", {
 	role: mysqlEnum(['user','admin']).default('user').notNull(),
 	createdAt: timestamp({ mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
-	lastSignedIn: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
+	lastSignedIn: timestamp({ mode: 'string' }).defaultNow().notNull(),
 	tier: mysqlEnum(['free','pro','enterprise']).default('free').notNull(),
 	queryCountToday: int().notNull(),
 	lastQueryDate: varchar({ length: 10 }),
@@ -280,7 +280,7 @@ export const userStates = mysqlTable("user_states", {
 	userId: int().notNull(),
 	stateCode: varchar({ length: 2 }).notNull(),
 	accessLevel: mysqlEnum(['view','contribute','admin']).default('view'),
-	subscribedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP'),
+	subscribedAt: timestamp({ mode: 'string' }).defaultNow(),
 	expiresAt: timestamp({ mode: 'string' }),
 },
 (table) => [
@@ -296,7 +296,7 @@ export const userAgencies = mysqlTable("user_agencies", {
 	isPrimary: tinyint().default(0),
 	role: varchar({ length: 100 }),
 	verifiedAt: timestamp({ mode: 'string' }),
-	subscribedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP'),
+	subscribedAt: timestamp({ mode: 'string' }).defaultNow(),
 	expiresAt: timestamp({ mode: 'string' }),
 },
 (table) => [
