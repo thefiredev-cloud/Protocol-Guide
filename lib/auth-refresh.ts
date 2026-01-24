@@ -10,16 +10,21 @@ const REFRESH_BUFFER_MINUTES = 5; // Refresh when less than 5 minutes until expi
 const CHECK_INTERVAL_MS = 60000; // Check every 60 seconds
 
 interface RefreshStatus {
-  isRefreshing: boolean;
   lastRefresh: number | null;
   consecutiveFailures: number;
 }
 
 const refreshStatus: RefreshStatus = {
-  isRefreshing: false,
   lastRefresh: null,
   consecutiveFailures: 0,
 };
+
+// Promise-based locking to prevent race conditions
+let refreshPromise: Promise<{
+  success: boolean;
+  session: Session | null;
+  error?: string;
+}> | null = null;
 
 /**
  * Calculate minutes until token expires
