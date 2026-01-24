@@ -110,6 +110,34 @@ export const userRouter = router({
   primaryCounty: protectedProcedure.query(async ({ ctx }) => {
     return dbUserCounties.getUserPrimaryCounty(ctx.user.id);
   }),
+
+  savePushToken: protectedProcedure
+    .input(z.object({
+      token: z.string(),
+      platform: z.enum(['ios', 'android']).optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { token, platform } = input;
+      const userId = ctx.user.id;
+
+      // Upsert - update lastUsedAt if exists, insert if new
+      const existing = await ctx.db
+        .select()
+        .from(pushTokens)
+        .where(and(eq(pushTokens.userId, userId), eq(pushTokens.token, token)))
+        .limit(1);
+
+      if (existing.length > 0) {
+        await ctx.db
+          .update(pushTokens)
+          .set({ lastUsedAt: sql`CURRENT_TIMESTAMP` })
+          .where(eq(pushTokens.id, existing[0].id));
+      } else {
+        await ctx.db.insert(pushTokens).values({ userId, token, platform });
+      }
+
+      return { success: true };
+    }),
 });
 
 export type UserRouter = typeof userRouter;
