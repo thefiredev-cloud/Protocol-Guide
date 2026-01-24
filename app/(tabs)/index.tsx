@@ -64,6 +64,7 @@ export default function HomeScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const flatListRef = useRef<FlatList>(null);
+  const voiceErrorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // P0 CRITICAL: Medical Disclaimer State
   const [showDisclaimerModal, setShowDisclaimerModal] = useState(false);
