@@ -11,6 +11,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 
+// Import after mocks
+import { useFocusTrap } from "@/lib/accessibility";
+
 // Mock React Native
 vi.mock("react-native", () => ({
   Platform: {
@@ -23,9 +26,6 @@ vi.mock("react-native", () => ({
   },
   findNodeHandle: vi.fn((ref) => ref),
 }));
-
-// Import after mocks
-import { useFocusTrap } from "@/lib/accessibility";
 
 describe("Focus Trap - WCAG 2.4.3 Compliance", () => {
   let container: HTMLDivElement;
