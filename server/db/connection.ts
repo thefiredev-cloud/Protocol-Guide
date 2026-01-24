@@ -61,9 +61,31 @@ function getPoolConfig() {
 /**
  * Lazily create the drizzle instance with connection pooling.
  * Pool configuration provides 40-60% performance improvement over single connections.
+ *
+ * Race condition protection: Uses promise-based mutex to ensure only one pool
+ * instance is created even with concurrent requests.
  */
 export async function getDb() {
-  if (!_pool && process.env.DATABASE_URL) {
+  // Return existing pool
+  if (_db && _pool) {
+    return _db;
+  }
+
+  // Wait for in-progress initialization (prevents race condition)
+  if (_poolPromise) {
+    await _poolPromise;
+    if (!_db) {
+      throw new Error("DATABASE_URL not configured");
+    }
+    return _db;
+  }
+
+  if (!process.env.DATABASE_URL) {
+    throw new Error("DATABASE_URL not configured");
+  }
+
+  // Create initialization promise (mutex)
+  _poolPromise = (async () => {
     try {
       const poolConfig = getPoolConfig();
 
@@ -82,6 +104,7 @@ export async function getDb() {
         console.error("[Database] Initial connection test failed:", pingError);
         await _pool.end();
         _pool = null;
+        _poolPromise = null; // Allow retry on failure
         throw new Error("Database connection test failed");
       }
 
@@ -107,9 +130,13 @@ export async function getDb() {
 
     } catch (error) {
       console.error("[Database] Connection pool creation failed:", error);
+      _poolPromise = null; // Allow retry on failure
       throw new Error("Database connection failed");
     }
-  }
+  })();
+
+  await _poolPromise;
+
   if (!_db) {
     throw new Error("DATABASE_URL not configured");
   }
