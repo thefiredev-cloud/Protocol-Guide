@@ -243,7 +243,7 @@ export function VoiceSearchButton({
     return corrected.trim();
   }, []);
 
-  const startRecording = async () => {
+  const startRecording = useCallback(async () => {
     try {
       // Haptic feedback
       if (Platform.OS !== "web") {
@@ -277,10 +277,9 @@ export function VoiceSearchButton({
       startPulseAnimation();
 
       // Set up silence detection (auto-stop after 2s of no input)
-      // Note: True silence detection requires audio analysis which is complex
-      // For now, we use a simple timeout that resets on user tap
+      // Use ref to avoid stale closure in setTimeout
       silenceTimeoutRef.current = setTimeout(() => {
-        if (recordingState === "recording") {
+        if (recordingStateRef.current === "recording") {
           stopRecording();
         }
       }, SILENCE_THRESHOLD);
@@ -297,7 +296,7 @@ export function VoiceSearchButton({
       setRecordingState("idle");
       setStatusText("");
     }
-  };
+  }, [startPulseAnimation, onError]);
 
   const stopRecording = async () => {
     try {
