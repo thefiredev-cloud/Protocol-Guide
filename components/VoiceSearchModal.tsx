@@ -49,6 +49,7 @@ import {
   createLiveRegionA11y,
   announceForAccessibility,
   MEDICAL_A11Y_LABELS,
+  useFocusTrap,
 } from "@/lib/accessibility";
 
 // Recording state types - proper state machine
