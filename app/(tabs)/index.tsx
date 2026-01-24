@@ -335,8 +335,21 @@ export default function HomeScreen() {
 
   const handleVoiceError = useCallback((error: string) => {
     setVoiceError(error);
+    // Clear any existing timer before setting a new one
+    if (voiceErrorTimerRef.current) {
+      clearTimeout(voiceErrorTimerRef.current);
+    }
     // Clear error after 3 seconds
-    setTimeout(() => setVoiceError(null), 3000);
+    voiceErrorTimerRef.current = setTimeout(() => setVoiceError(null), 3000);
+  }, []);
+
+  // Cleanup voice error timer on unmount
+  useEffect(() => {
+    return () => {
+      if (voiceErrorTimerRef.current) {
+        clearTimeout(voiceErrorTimerRef.current);
+      }
+    };
   }, []);
 
   // Get year color
