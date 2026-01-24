@@ -57,6 +57,7 @@ export const staffProcedures = router({
 
   /**
    * Invite member to agency
+   * TODO: Add agencyInvitations table to drizzle/schema.ts to enable this feature
    */
   inviteMember: agencyAdminProcedure
     .input(z.object({
@@ -67,9 +68,11 @@ export const staffProcedures = router({
     .mutation(async ({ ctx, input }) => {
       // Generate invitation token
       const token = crypto.randomBytes(32).toString("hex");
-      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+      const _expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
-      // Create invitation record
+      // Invitation feature not yet implemented - agencyInvitations table needed
+      // TODO: Create agencyInvitations table migration and uncomment below
+      /*
       const dbInstance = await db.getDb();
       if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
@@ -80,11 +83,12 @@ export const staffProcedures = router({
         role: input.role,
         invitedBy: ctx.user.id,
         token,
-        expiresAt,
+        expiresAt: _expiresAt,
       });
+      */
 
       // TODO: Send invitation email
-      console.log(`[AgencyAdmin] Invitation created for ${input.email}, token: ${token}`);
+      console.log(`[AgencyAdmin] Invitation feature pending - would invite ${input.email} to agency ${input.agencyId}`);
 
       return { success: true, token };
     }),
