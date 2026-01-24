@@ -103,6 +103,107 @@ const tracingMiddleware = t.middleware(async (opts) => {
  */
 export const publicProcedure = t.procedure.use(tracingMiddleware);
 
+// ============================================================================
+// CSRF PROTECTION MIDDLEWARE
+// ============================================================================
+
+const CSRF_TOKEN_HEADER = "x-csrf-token";
+const CSRF_COOKIE_NAME = "csrf_token";
+
+/**
+ * CSRF protection middleware for tRPC mutations
+ * Only validates mutations (not queries) to prevent CSRF attacks
+ *
+ * Security mechanism:
+ * - Requires `x-csrf-token` header to match `csrf_token` cookie
+ * - Uses constant-time comparison to prevent timing attacks
+ * - Only enforces on mutation procedures (queries are safe from CSRF)
+ *
+ * @throws TRPCError with code 'FORBIDDEN' if token is missing or invalid
+ */
+const csrfProtection = t.middleware(async (opts) => {
+  const { ctx, type, next, path } = opts;
+
+  // Only validate mutations - queries are safe from CSRF attacks
+  if (type === "mutation") {
+    const token = ctx.req.headers[CSRF_TOKEN_HEADER] as string | undefined;
+    const cookieToken = ctx.req.cookies?.[CSRF_COOKIE_NAME] as string | undefined;
+
+    // Token must be present in both header and cookie
+    if (!token || !cookieToken) {
+      logger.warn(
+        {
+          path,
+          type,
+          ip: ctx.req.ip,
+          hasToken: !!token,
+          hasCookie: !!cookieToken,
+          requestId: ctx.trace?.requestId,
+        },
+        "CSRF token missing in tRPC mutation"
+      );
+
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "CSRF token missing",
+      });
+    }
+
+    // Tokens must match (constant-time comparison to prevent timing attacks)
+    try {
+      const tokensMatch = crypto.timingSafeEqual(
+        Buffer.from(token),
+        Buffer.from(cookieToken)
+      );
+
+      if (!tokensMatch) {
+        logger.warn(
+          {
+            path,
+            type,
+            ip: ctx.req.ip,
+            requestId: ctx.trace?.requestId,
+          },
+          "CSRF token mismatch in tRPC mutation"
+        );
+
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "CSRF token mismatch",
+        });
+      }
+    } catch (error) {
+      // Catch errors from Buffer.from or timingSafeEqual (e.g., length mismatch)
+      logger.warn(
+        {
+          path,
+          type,
+          ip: ctx.req.ip,
+          error: error instanceof Error ? error.message : String(error),
+          requestId: ctx.trace?.requestId,
+        },
+        "CSRF token validation error in tRPC mutation"
+      );
+
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "CSRF token invalid",
+      });
+    }
+
+    logger.debug(
+      {
+        path,
+        type,
+        requestId: ctx.trace?.requestId,
+      },
+      "CSRF token validated successfully for tRPC mutation"
+    );
+  }
+
+  return next();
+});
+
 const requireUser = t.middleware(async (opts) => {
   const { ctx, next } = opts;
 
