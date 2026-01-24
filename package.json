@@ -14,6 +14,7 @@
     "docker:build": "docker compose build --no-cache",
     "docker:dev": "docker compose --profile dev up dev",
     "build": "esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "prebuild:web": "mkdir -p node_modules/react-native-css-interop/.cache && touch node_modules/react-native-css-interop/.cache/web.css",
     "build:web": "NODE_ENV=production npx expo export --platform web && node scripts/inject-pwa-meta.js && cp -r public/* dist/",
     "build:rust": "cd rust-server && cargo build --release",
     "start": "NODE_ENV=production node dist/index.js",
