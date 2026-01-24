@@ -217,6 +217,7 @@ type AuthFixtures = {
  * Extended Playwright test with auth fixtures
  * Use this instead of the default `test` import for authenticated tests
  */
+/* eslint-disable react-hooks/rules-of-hooks */
 export const test = base.extend<AuthFixtures>({
   // Authenticated page fixture - logs in as free user
   authenticatedPage: async ({ page }, use) => {
@@ -252,6 +253,7 @@ export const test = base.extend<AuthFixtures>({
     await use(TEST_PRO_USER);
   },
 });
+/* eslint-enable react-hooks/rules-of-hooks */
 
 // Re-export expect for convenience
 export { expect } from "@playwright/test";
