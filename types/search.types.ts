@@ -1,24 +1,15 @@
-export type Agency = {
+export type SearchResult = {
   id: number;
-  name: string;
-  state: string;
-  protocolCount: number;
+  protocolNumber: string;
+  protocolTitle: string;
+  section: string | null;
+  content: string;
+  fullContent: string;
+  sourcePdfUrl: string | null;
+  relevanceScore: number;
+  countyId: number;
+  // Protocol currency information
+  protocolEffectiveDate: string | null;
+  lastVerifiedAt: string | null;
+  protocolYear: number | null;
 };
-
-export type Message = {
-  id: string;
-  type: "user" | "summary" | "error";
-  text: string;
-  protocolTitle?: string;
-  protocolNumber?: string;
-  protocolYear?: number;
-  sourcePdfUrl?: string | null;
-  timestamp: Date;
-};
-
-export interface StateCoverage {
-  state: string;
-  stateCode: string;
-  chunks: number;
-  counties: number;
-}

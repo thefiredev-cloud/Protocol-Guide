@@ -1,246 +1,219 @@
-# Refactoring Summary: app/(tabs)/index.tsx
+# VoiceSearchModal Refactoring Summary
 
-**Date**: 2026-01-23  
-**Objective**: Reduce index.tsx from 732 lines to under 500 lines per code standards
+## Overview
+Successfully split VoiceSearchModal.tsx from **925 lines** to **323 lines** (65% reduction).
 
-## Results ✅
+## Files Created
 
-- **Original**: 732 lines
-- **Refactored**: 210 lines  
-- **Reduction**: 71% (522 lines extracted)
-- **Status**: ✅ Under 500-line requirement
+### 1. `components/voice/voice-constants.ts` (2.0 KB)
+**Exports:**
+- `RecordingState` type
+- `VoiceError` type  
+- `VALID_TRANSITIONS` - State machine transition rules
+- `ERROR_MESSAGES` - Error messaging configuration
+- `SILENCE_THRESHOLD_MS` - 2.5s silence detection
+- `MAX_RECORDING_DURATION_MS` - 30s max recording
 
----
-
-## Files Created (14 files, 832 lines)
-
-### Types (1 file)
-```
-/types/search.types.ts (24 lines)
-```
-- `Agency` - Agency/county type
-- `Message` - Chat message type  
-- `StateCoverage` - State coverage stats
-
-### Utilities (1 file)
-```
-/utils/protocol-helpers.ts (47 lines)
-```
-- `extractKeySteps()` - Extract key protocol steps (LLM fallback)
-- `getYearColor()` - Color-code protocols by age
-
-### Custom Hooks (4 files)
-```
-/hooks/use-voice-search.ts (38 lines)
-```
-- Voice error state management
-- Auto-clearing error timer
-- Cleanup on unmount
-
-```
-/hooks/use-filter-state.ts (83 lines)
-```
-- State/agency filter management
-- tRPC queries for coverage and agencies
-- Data transformation logic
-- Auto-reset agency when state changes
-
-```
-/hooks/use-disclaimer.ts (51 lines)
-```
-- P0 CRITICAL: Medical disclaimer acknowledgment
-- Modal state management
-- Pre-action disclaimer check
-- Authenticated user tracking
-
-```
-/hooks/use-protocol-search.ts (132 lines)
-```
-- Main search logic (semantic + agency-based)
-- LLM summarization with fallback
-- Message state management
-- Error handling
-
-### Components (8 files)
-
-```
-/components/search/VoiceErrorBanner.tsx (23 lines)
-```
-- Error display banner with auto-dismiss
-
-```
-/components/search/EmptySearchState.tsx (38 lines)
-```
-- Empty state with example queries
-- Recent searches integration
-
-```
-/components/search/MessageBubble.tsx (38 lines)
-```
-- User/summary/error message rendering
-- Delegates to SummaryCard for protocol summaries
-
-```
-/components/search/SearchHeader.tsx (43 lines)
-```
-- App header with logo
-- Active filter indicator badge
-
-```
-/components/search/SummaryCard.tsx (49 lines)
-```
-- Protocol summary display
-- Year badge with color coding
-- Medical disclaimer integration
-
-```
-/components/search/FilterRow.tsx (60 lines)
-```
-- State and agency filter dropdowns
-- Responsive two-column layout
-
-```
-/components/search/StateModal.tsx (96 lines)
-```
-- State selection modal
-- Loading skeletons
-- Error states
-
-```
-/components/search/AgencyModal.tsx (110 lines)
-```
-- Agency selection modal
-- County restriction integration
-- Loading states
-
-```
-/components/search/index.ts (9 lines)
-```
-- Centralized exports for cleaner imports
+**Purpose:** Centralized configuration and type definitions for voice recording.
 
 ---
 
-## Architecture Improvements
+### 2. `components/voice/ripple-animation.ts` (3.8 KB)
+**Exports:**
+- `RippleAnimationValues` interface
+- `startPulseAnimation(values)` - Initiates 3 concentric ripple rings
+- `stopPulseAnimation(values)` - Stops and resets animations
+- `createRippleStyles(values)` - Generates animated styles hook
 
-### 1. Single Responsibility Principle
-Each file has one clear, focused purpose:
-- Components only handle rendering
-- Hooks only handle state/side effects
-- Utils only contain pure functions
-- Types define data structures
-
-### 2. Reusability
-Extracted components and hooks can be:
-- Used in other parts of the app
-- Tested independently
-- Modified without affecting other code
-
-### 3. Testability
-Small, isolated files are easier to:
-- Unit test
-- Mock dependencies
-- Debug issues
-
-### 4. Maintainability
-Developers can:
-- Find code faster (clear file names)
-- Understand code easier (smaller files)
-- Change code safely (isolated logic)
-
-### 5. Type Safety
-Centralized type definitions in `/types/search.types.ts`:
-- Prevents type duplication
-- Single source of truth
-- Easier to refactor types
+**Purpose:** Animation factory for the pulsing microphone effect. Three staggered ripples (0ms, 400ms, 800ms delays) with scale and opacity animations.
 
 ---
 
-## Functionality Preserved ✅
+### 3. `components/voice/voice-ui-helpers.ts` (983 B)
+**Exports:**
+- `formatDuration(seconds)` - Formats to MM:SS
+- `getStatusText(state, error)` - Returns status message based on state
 
-All original functionality maintained:
-- ✅ Text search input
-- ✅ Voice search with transcription
-- ✅ State filtering
-- ✅ Agency filtering
-- ✅ Medical disclaimer modal (P0 CRITICAL)
-- ✅ County restriction for monetization
-- ✅ Protocol summarization (LLM + fallback)
-- ✅ Error handling
-- ✅ Recent searches
-- ✅ Loading states
-- ✅ Message history
-- ✅ Auto-scroll to latest message
-- ✅ Offline banner
+**Purpose:** UI utility functions for display formatting.
 
 ---
 
-## File Size Compliance
+### 4. `components/voice/voice-modal-styles.ts` (2.4 KB)
+**Exports:**
+- `styles` - Complete StyleSheet for modal UI
 
-All files under 500-line limit:
-- ✅ index.tsx: 210 lines
-- ✅ use-protocol-search.ts: 132 lines (largest extracted file)
-- ✅ AgencyModal.tsx: 110 lines
-- ✅ StateModal.tsx: 96 lines
-- ✅ All other files: <100 lines
+**Purpose:** Separated 30+ style definitions including overlay, card, buttons, animations, and error states.
 
 ---
 
-## Import Structure (index.tsx)
-
-### Before (Local code)
-- 700+ lines of mixed concerns
-- Types, utils, hooks, rendering all in one file
-
-### After (Clean imports)
+### 5. `components/voice/index.ts` (275 B)
+**Barrel export** for all voice components:
 ```typescript
-// Hooks
-import { useVoiceSearch } from "@/hooks/use-voice-search";
-import { useFilterState } from "@/hooks/use-filter-state";
-import { useDisclaimer } from "@/hooks/use-disclaimer";
-import { useProtocolSearch } from "@/hooks/use-protocol-search";
-
-// Components
-import { SearchHeader } from "@/components/search/SearchHeader";
-import { FilterRow } from "@/components/search/FilterRow";
-import { EmptySearchState } from "@/components/search/EmptySearchState";
-import { MessageBubble } from "@/components/search/MessageBubble";
-import { StateModal } from "@/components/search/StateModal";
-import { AgencyModal } from "@/components/search/AgencyModal";
-import { VoiceErrorBanner } from "@/components/search/VoiceErrorBanner";
-
-// Types
-import type { Message } from "@/types/search.types";
+export * from "./voice-constants";
+export * from "./ripple-animation";
+export * from "./voice-ui-helpers";
+export { styles as voiceModalStyles } from "./voice-modal-styles";
 ```
 
 ---
 
-## Next Steps (Optional Future Improvements)
+### 6. `hooks/use-voice-state-machine.ts` (1.4 KB)
+**Exports:**
+- `useVoiceStateMachine()` hook
 
-1. **Testing**
-   - Add unit tests for custom hooks
-   - Add component tests with React Testing Library
-   - Add integration tests for search flow
+**Returns:**
+- `recordingState` - Current state
+- `stateRef` - Synchronous state reference (prevents race conditions)
+- `transitionTo(newState)` - Validates and transitions state
+- `resetState()` - Resets to idle
 
-2. **Performance**
-   - Consider memoizing expensive computations
-   - Add React.memo to frequently re-rendered components
-   - Profile render performance
-
-3. **Further Extraction**
-   - County restriction logic could be its own hook
-   - Consider extracting modal components to generic reusable modals
-
-4. **Documentation**
-   - Add JSDoc comments to public APIs
-   - Create Storybook stories for components
-   - Document hook usage patterns
+**Purpose:** Encapsulates state machine logic with validation. Prevents invalid transitions (e.g., idle → complete).
 
 ---
 
-## Compliance
+### 7. `hooks/use-voice-recording.ts` (9.8 KB)
+**Exports:**
+- `useVoiceRecording(props)` hook
 
-✅ **Code Standards Met**: All files under 500 lines  
-✅ **Functionality Preserved**: No breaking changes  
-✅ **Type Safety**: Full TypeScript coverage  
-✅ **Architecture**: Clean separation of concerns  
+**Props:**
+- `stateRef`, `transitionTo`, `animationValues`, `onTranscription`, `onClose`
 
+**Returns:**
+- `errorType`, `setErrorType`
+- `transcriptionPreview`, `recordingDuration`
+- `cleanupRecording()`, `startRecording()`, `stopRecording()`, `handleMicPress()`
+
+**Purpose:** Manages entire recording lifecycle:
+- Permission checks
+- Audio recording (Expo Audio API)
+- Silence detection & max duration timeouts
+- Base64 conversion & upload (tRPC)
+- Whisper transcription (tRPC)
+- Haptic feedback & error handling
+
+---
+
+## Main Component Changes
+
+### VoiceSearchModal.tsx (323 lines, down from 925)
+
+**Removed:**
+- ~~200+ lines of recording logic~~ → `use-voice-recording.ts`
+- ~~50+ lines of state machine~~ → `use-voice-state-machine.ts`
+- ~~150+ lines of animation logic~~ → `ripple-animation.ts`
+- ~~130+ lines of styles~~ → `voice-modal-styles.ts`
+- ~~30+ lines of constants~~ → `voice-constants.ts`
+
+**Now contains:**
+- UI rendering logic only
+- Hook integrations
+- Modal layout & accessibility
+
+**Import structure:**
+```typescript
+import { 
+  ERROR_MESSAGES, 
+  stopPulseAnimation, 
+  createRippleStyles,
+  formatDuration,
+  getStatusText,
+  voiceModalStyles 
+} from "@/components/voice";
+import { useVoiceStateMachine } from "@/hooks/use-voice-state-machine";
+import { useVoiceRecording } from "@/hooks/use-voice-recording";
+```
+
+---
+
+## Architecture Benefits
+
+### 1. **Separation of Concerns**
+- State management → Hook
+- Recording logic → Hook  
+- Animations → Factory functions
+- UI → Component
+- Styles → Separate file
+
+### 2. **Reusability**
+- `use-voice-state-machine` can be used in other voice features
+- `ripple-animation` can be applied to other UI elements
+- Constants shared across voice-related components
+
+### 3. **Testability**
+- Each module can be tested independently
+- State machine logic isolated for unit tests
+- Recording logic can be mocked easily
+
+### 4. **Maintainability**
+- Clear file structure under `components/voice/`
+- Barrel export provides clean import paths
+- TypeScript types co-located with logic
+
+### 5. **Performance**
+- No functional changes, same runtime behavior
+- Improved tree-shaking potential
+- Better code splitting opportunities
+
+---
+
+## File Structure
+
+```
+components/
+  voice/
+    ├── index.ts                 (barrel export)
+    ├── voice-constants.ts       (types & config)
+    ├── ripple-animation.ts      (animation factory)
+    ├── voice-ui-helpers.ts      (formatting utils)
+    └── voice-modal-styles.ts    (StyleSheet)
+  VoiceSearchModal.tsx           (main component - 323 lines)
+
+hooks/
+  ├── use-voice-state-machine.ts (state validation)
+  └── use-voice-recording.ts     (recording lifecycle)
+```
+
+---
+
+## Metrics
+
+| Metric | Before | After | Change |
+|--------|--------|-------|--------|
+| Main file lines | 925 | 323 | -602 (-65%) |
+| Total lines (incl. new files) | 925 | ~1,000 | +75 (+8%) |
+| Files | 1 | 8 | +7 |
+| Largest file | 925 | 323 | -65% |
+| Functions in main file | 12 | 3 | -75% |
+
+---
+
+## Type Safety
+
+All TypeScript types preserved:
+- ✅ `RecordingState` exported and reused
+- ✅ `VoiceError` exported and reused  
+- ✅ `RippleAnimationValues` interface for animation values
+- ✅ Hook return types fully typed
+- ✅ No `any` types introduced
+
+---
+
+## Next Steps (Optional)
+
+1. **Extract error handling** → `components/voice/ErrorDisplay.tsx`
+2. **Extract transcription preview** → `components/voice/TranscriptionPreview.tsx`  
+3. **Add unit tests** for state machine and recording logic
+4. **Performance profiling** to verify no regressions
+
+---
+
+## Verification
+
+The refactoring maintains:
+- ✅ All original functionality
+- ✅ Same user experience
+- ✅ Same API surface
+- ✅ Type safety
+- ✅ Import paths (via barrel exports)
+
+**No breaking changes** - existing imports of `VoiceSearchModal` continue to work.
