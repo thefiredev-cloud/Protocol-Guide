@@ -212,6 +212,7 @@ function createAuthenticatedContext(userOverrides: Partial<AuthenticatedUser> = 
     res: {
       clearCookie: vi.fn(),
     } as unknown as TrpcContext["res"],
+    trace: createMockTraceContext(),
   };
 
   return { ctx };
@@ -228,6 +229,7 @@ function createUnauthenticatedContext(): { ctx: TrpcContext } {
     res: {
       clearCookie: vi.fn(),
     } as unknown as TrpcContext["res"],
+    trace: createMockTraceContext(),
   };
 
   return { ctx };
