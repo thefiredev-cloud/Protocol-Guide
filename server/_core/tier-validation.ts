@@ -5,7 +5,7 @@
  */
 
 import { TRPCError } from "@trpc/server";
-import type { Context } from "./trpc";
+import type { TrpcContext as Context } from "./context";
 import * as db from "../db";
 
 export type SubscriptionTier = "free" | "pro" | "enterprise";
