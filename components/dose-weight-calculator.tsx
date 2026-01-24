@@ -360,6 +360,9 @@ export function DoseWeightCalculator({
               },
             ]}
             activeOpacity={0.7}
+            accessibilityLabel={`Filter by ${CATEGORY_LABELS[cat]} medications`}
+            accessibilityRole="button"
+            accessibilityState={{ selected: selectedCategory === cat }}
           >
             <IconSymbol
               name={CATEGORY_ICONS[cat] as any}
