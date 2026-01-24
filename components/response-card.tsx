@@ -48,7 +48,7 @@ export const ResponseCard = memo(function ResponseCard({ text, protocolRefs, tim
   const handleReportError = useCallback(() => {
     const protocolRef = sections.protocol || protocolRefs?.[0] || "";
     router.push(`/feedback?category=error&protocolRef=${encodeURIComponent(protocolRef)}` as any);
-  }, [sections.protocol, protocolRefs, router]);
+  }, [sections, protocolRefs, router]);
 
   const toggleActions = useCallback(() => {
     setShowActions(prev => !prev);
