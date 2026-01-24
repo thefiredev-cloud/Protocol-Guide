@@ -628,52 +628,58 @@ async function seedEMSEntities() {
   const pool = mysql.createPool(connectionString);
   const db = drizzle(pool);
 
-  console.log(`Seeding ${ALL_EMS_ENTITIES.length} EMS entities...`);
+  try {
+    console.log(`Seeding ${ALL_EMS_ENTITIES.length} EMS entities...`);
 
-  // Insert entities in batches
-  const batchSize = 50;
-  let insertedCount = 0;
+    // Insert entities in batches
+    const batchSize = 50;
+    let insertedCount = 0;
 
-  for (let i = 0; i < ALL_EMS_ENTITIES.length; i += batchSize) {
-    const batch = ALL_EMS_ENTITIES.slice(i, i + batchSize);
-    
-    const countyRecords = batch.map(entity => ({
-      name: entity.name,
-      state: entity.state,
-      usesStateProtocols: entity.usesStateProtocols ?? false,
-      protocolVersion: entity.website ? "2025" : null,
-    }));
+    for (let i = 0; i < ALL_EMS_ENTITIES.length; i += batchSize) {
+      const batch = ALL_EMS_ENTITIES.slice(i, i + batchSize);
 
-    try {
-      await db.insert(counties).values(countyRecords);
-      insertedCount += batch.length;
-      console.log(`Inserted batch ${Math.floor(i / batchSize) + 1}: ${insertedCount}/${ALL_EMS_ENTITIES.length} entities`);
-    } catch (error: any) {
-      // Handle duplicate entries gracefully
-      if (error.code === 'ER_DUP_ENTRY') {
-        console.log(`Skipping duplicates in batch ${Math.floor(i / batchSize) + 1}`);
-      } else {
-        console.error(`Error inserting batch:`, error.message);
+      const countyRecords = batch.map(entity => ({
+        name: entity.name,
+        state: entity.state,
+        usesStateProtocols: entity.usesStateProtocols ?? false,
+        protocolVersion: entity.website ? "2025" : null,
+      }));
+
+      try {
+        await db.insert(counties).values(countyRecords);
+        insertedCount += batch.length;
+        console.log(`Inserted batch ${Math.floor(i / batchSize) + 1}: ${insertedCount}/${ALL_EMS_ENTITIES.length} entities`);
+      } catch (error: any) {
+        // Handle duplicate entries gracefully
+        if (error.code === 'ER_DUP_ENTRY') {
+          console.log(`Skipping duplicates in batch ${Math.floor(i / batchSize) + 1}`);
+        } else {
+          console.error(`Error inserting batch:`, error.message);
+        }
       }
     }
-  }
 
-  console.log(`\nSeeding complete! Total entities processed: ${ALL_EMS_ENTITIES.length}`);
-  
-  // Print summary by state
-  const stateCounts: Record<string, number> = {};
-  for (const entity of ALL_EMS_ENTITIES) {
-    stateCounts[entity.state] = (stateCounts[entity.state] || 0) + 1;
-  }
-  
-  console.log("\nEntities by state:");
-  Object.entries(stateCounts)
-    .sort((a, b) => b[1] - a[1])
-    .forEach(([state, count]) => {
-      console.log(`  ${state}: ${count}`);
-    });
+    console.log(`\nSeeding complete! Total entities processed: ${ALL_EMS_ENTITIES.length}`);
 
-  await pool.end();
+    // Print summary by state
+    const stateCounts: Record<string, number> = {};
+    for (const entity of ALL_EMS_ENTITIES) {
+      stateCounts[entity.state] = (stateCounts[entity.state] || 0) + 1;
+    }
+
+    console.log("\nEntities by state:");
+    Object.entries(stateCounts)
+      .sort((a, b) => b[1] - a[1])
+      .forEach(([state, count]) => {
+        console.log(`  ${state}: ${count}`);
+      });
+  } catch (error) {
+    console.error("Error seeding EMS entities:", error);
+    throw error;
+  } finally {
+    // Always close pool, even on error
+    await pool.end();
+  }
 }
 
 // Run the seed
