@@ -3,10 +3,12 @@
  * Handles authentication-related procedures with CSRF protection
  */
 
+import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { COOKIE_NAME } from "../../shared/const.js";
 import { getSessionCookieOptions } from "../_core/cookies";
 import { publicProcedure, publicRateLimitedProcedure, csrfProtectedProcedure, protectedProcedure, router } from "../_core/trpc";
-import { revokeUserTokens } from "../_core/token-blacklist";
+import { revokeUserTokens, getRevocationDetails } from "../_core/token-blacklist";
 import { createClient } from "@supabase/supabase-js";
 import { logger } from "../_core/logger";
 
@@ -55,12 +57,197 @@ export const authRouter = router({
   /**
    * Logout from all devices by revoking all existing tokens
    * Useful for password changes, security incidents, or user-initiated logout
+   * SECURITY: This invalidates all sessions including the current one
    */
   logoutAllDevices: protectedProcedure.mutation(async ({ ctx }) => {
     const revoked = await revokeUserTokens(ctx.user.id.toString(), "user_initiated_logout_all");
     const cookieOptions = getSessionCookieOptions(ctx.req);
     ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+
+    logger.info(
+      { userId: ctx.user.id, requestId: ctx.trace?.requestId },
+      "User logged out from all devices"
+    );
+
     return { success: true, revoked } as const;
+  }),
+
+  /**
+   * Change password - automatically revokes all tokens
+   * SECURITY: Forces re-authentication on all devices
+   */
+  changePassword: protectedProcedure
+    .input(z.object({
+      currentPassword: z.string().min(1),
+      newPassword: z.string().min(8).max(128),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const authHeader = ctx.req.headers.authorization;
+      const token = authHeader?.replace("Bearer ", "");
+
+      if (!token) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "No authentication token provided",
+        });
+      }
+
+      try {
+        // Verify current password by attempting to get user
+        const { data: { user }, error: getUserError } = await supabaseAdmin.auth.getUser(token);
+
+        if (getUserError || !user) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Invalid session",
+          });
+        }
+
+        // Update password in Supabase
+        const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+          user.id,
+          { password: input.newPassword }
+        );
+
+        if (updateError) {
+          logger.error(
+            { error: updateError, userId: ctx.user.id },
+            "Password change failed"
+          );
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Failed to update password",
+          });
+        }
+
+        // Revoke all tokens to force re-authentication
+        await revokeUserTokens(ctx.user.id.toString(), "password_change");
+
+        // Sign out all sessions
+        await supabaseAdmin.auth.admin.signOut(user.id, "global");
+
+        logger.info(
+          { userId: ctx.user.id, requestId: ctx.trace?.requestId },
+          "Password changed successfully, all sessions invalidated"
+        );
+
+        // Clear current session cookie
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+
+        return { success: true, message: "Password changed. Please sign in again." };
+      } catch (error) {
+        if (error instanceof TRPCError) throw error;
+
+        logger.error(
+          { error, userId: ctx.user.id },
+          "Unexpected error during password change"
+        );
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to change password",
+        });
+      }
+    }),
+
+  /**
+   * Update email - automatically revokes all tokens
+   * SECURITY: Forces re-authentication and email verification
+   */
+  updateEmail: protectedProcedure
+    .input(z.object({
+      newEmail: z.string().email(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const authHeader = ctx.req.headers.authorization;
+      const token = authHeader?.replace("Bearer ", "");
+
+      if (!token) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "No authentication token provided",
+        });
+      }
+
+      try {
+        const { data: { user }, error: getUserError } = await supabaseAdmin.auth.getUser(token);
+
+        if (getUserError || !user) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Invalid session",
+          });
+        }
+
+        // Update email in Supabase (requires confirmation)
+        const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+          user.id,
+          { email: input.newEmail }
+        );
+
+        if (updateError) {
+          logger.error(
+            { error: updateError, userId: ctx.user.id },
+            "Email update failed"
+          );
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Failed to update email. Email may already be in use.",
+          });
+        }
+
+        // Revoke all tokens to force re-authentication
+        await revokeUserTokens(
+          ctx.user.id.toString(),
+          "email_change",
+          { oldEmail: ctx.user.email, newEmail: input.newEmail }
+        );
+
+        // Sign out all sessions
+        await supabaseAdmin.auth.admin.signOut(user.id, "global");
+
+        logger.info(
+          { userId: ctx.user.id, oldEmail: ctx.user.email, newEmail: input.newEmail },
+          "Email updated successfully, all sessions invalidated"
+        );
+
+        // Clear current session cookie
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+
+        return {
+          success: true,
+          message: "Email updated. Please check your new email to confirm and sign in again."
+        };
+      } catch (error) {
+        if (error instanceof TRPCError) throw error;
+
+        logger.error(
+          { error, userId: ctx.user.id },
+          "Unexpected error during email update"
+        );
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to update email",
+        });
+      }
+    }),
+
+  /**
+   * Get account security status
+   * Shows if tokens are revoked and why
+   */
+  securityStatus: protectedProcedure.query(async ({ ctx }) => {
+    const revocationDetails = await getRevocationDetails(ctx.user.id.toString());
+
+    return {
+      isRevoked: revocationDetails !== null,
+      revocationReason: revocationDetails?.reason || null,
+      revokedAt: revocationDetails?.revokedAt || null,
+      metadata: revocationDetails?.metadata || null,
+    };
   }),
 });
 
