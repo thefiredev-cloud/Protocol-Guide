@@ -51,97 +51,28 @@ export function ReferralDashboard() {
   // Track viral events
   const trackEvent = trpc.referral.trackViralEvent.useMutation();
 
-  // ============ Share Handlers ============
-
-  const handleCopyCode = useCallback(async () => {
-    if (!codeData?.code) return;
-
-    await Clipboard.setStringAsync(codeData.code);
+  // Handle copy success callback
+  const handleCopySuccess = React.useCallback(() => {
     setCopied(true);
-
-    // Clear existing timer before setting new one
     if (copyTimerRef.current) {
       clearTimeout(copyTimerRef.current);
     }
     copyTimerRef.current = setTimeout(() => setCopied(false), 2000);
+  }, []);
 
-    trackEvent.mutate({
-      eventType: "referral_code_copied",
-      metadata: { referralCode: codeData.code },
-    });
-  }, [codeData?.code, trackEvent]);
-
-  const handleShareSMS = useCallback(async () => {
-    if (!templates?.sms) return;
-
-    trackEvent.mutate({
-      eventType: "referral_code_shared",
-      metadata: { shareMethod: "sms", referralCode: templates.code },
-    });
-
-    const smsUrl = Platform.select({
-      ios: `sms:&body=${encodeURIComponent(templates.sms)}`,
-      android: `sms:?body=${encodeURIComponent(templates.sms)}`,
-      default: `sms:?body=${encodeURIComponent(templates.sms)}`,
-    });
-
-    if (Platform.OS === "web") {
-      await Share.share({ message: templates.sms });
-    } else {
-      await Linking.openURL(smsUrl);
-    }
-  }, [templates, trackEvent]);
-
-  const handleShareWhatsApp = useCallback(async () => {
-    if (!templates?.whatsapp) return;
-
-    trackEvent.mutate({
-      eventType: "referral_code_shared",
-      metadata: { shareMethod: "whatsapp", referralCode: templates.code },
-    });
-
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(templates.whatsapp)}`;
-
-    if (Platform.OS === "web") {
-      window.open(whatsappUrl, "_blank");
-    } else {
-      await Linking.openURL(whatsappUrl);
-    }
-  }, [templates, trackEvent]);
-
-  const handleShareEmail = useCallback(async () => {
-    if (!templates?.email) return;
-
-    trackEvent.mutate({
-      eventType: "referral_code_shared",
-      metadata: { shareMethod: "email", referralCode: templates.code },
-    });
-
-    const emailUrl = `mailto:?subject=${encodeURIComponent(templates.email.subject)}&body=${encodeURIComponent(templates.email.body)}`;
-    await Linking.openURL(emailUrl);
-  }, [templates, trackEvent]);
-
-  const handleNativeShare = useCallback(async () => {
-    if (!templates?.generic) return;
-
-    trackEvent.mutate({
-      eventType: "share_button_tapped",
-      metadata: { referralCode: templates.code },
-    });
-
-    try {
-      await Share.share({
-        message: templates.generic,
-        url: templates.shareUrl,
-      });
-      trackEvent.mutate({
-        eventType: "social_share_completed",
-        metadata: { referralCode: templates.code },
-      });
-    } catch {
-      // User cancelled share
-    }
-  }, [templates, trackEvent]);
+  // Share handlers from custom hook
+  const {
+    handleCopyCode,
+    handleShareSMS,
+    handleShareWhatsApp,
+    handleShareEmail,
+    handleNativeShare,
+  } = useShareHandlers({
+    referralCode: codeData?.code,
+    templates,
+    trackEvent,
+    onCopySuccess: handleCopySuccess,
+  });
 
   // ============ Loading State ============
 
