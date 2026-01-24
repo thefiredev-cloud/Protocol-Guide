@@ -26,7 +26,7 @@ export async function semanticSearchProtocols(
   relevanceScore: number;
   countyId: number;
   protocolEffectiveDate: string | null;
-  lastVerifiedAt: Date | null;
+  lastVerifiedAt: string | null;
   protocolYear: number | null;
 }[]> {
   const db = await getDb();
