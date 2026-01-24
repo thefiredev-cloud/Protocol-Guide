@@ -111,3 +111,14 @@ rust-server/
 .gemini/skills/
 .github/skills/
 .opencode/skills/
+
+# Playwright Test Results
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Visual Regression Test Screenshots (DO commit baseline screenshots)
+# Only ignore test artifacts, not the baseline screenshots in __screenshots__
+test-results/**/*-actual.png
+test-results/**/*-expected.png
+test-results/**/*-diff.png
