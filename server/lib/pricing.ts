@@ -46,13 +46,13 @@ export function calculateDepartmentPrice(
   interval: BillingInterval
 ): number | null {
   // Validate tier and seat count match
-  if (tier === "small") {
-    if (seatCount < DEPARTMENT_PRICING.small.minSeats || seatCount > DEPARTMENT_PRICING.small.maxSeats) {
+  if (tier === "starter") {
+    if (seatCount < DEPARTMENT_PRICING.starter.minSeats || seatCount > DEPARTMENT_PRICING.starter.maxSeats) {
       return null;
     }
     const pricePerSeat = interval === "monthly"
-      ? DEPARTMENT_PRICING.small.perSeat.monthly
-      : DEPARTMENT_PRICING.small.perSeat.annual;
+      ? DEPARTMENT_PRICING.starter.perSeat.monthly
+      : DEPARTMENT_PRICING.starter.perSeat.annual;
     return pricePerSeat * seatCount;
   }
 
@@ -78,11 +78,11 @@ export function calculateDepartmentPrice(
  * Determine the appropriate tier based on seat count
  */
 export function getTierForSeatCount(seatCount: number): SubscriptionTier {
-  if (seatCount < DEPARTMENT_PRICING.small.minSeats) {
-    return "small"; // Default to small tier, but caller should handle this
+  if (seatCount < DEPARTMENT_PRICING.starter.minSeats) {
+    return "starter"; // Default to starter tier, but caller should handle this
   }
-  if (seatCount <= DEPARTMENT_PRICING.small.maxSeats) {
-    return "small";
+  if (seatCount <= DEPARTMENT_PRICING.starter.maxSeats) {
+    return "starter";
   }
   if (seatCount <= DEPARTMENT_PRICING.large.maxSeats) {
     return "large";
@@ -123,17 +123,17 @@ export function validateSeatCount(tier: SubscriptionTier, seatCount: number): {
     return { valid: false, error: "Seat count must be at least 1" };
   }
 
-  if (tier === "small") {
-    if (seatCount < DEPARTMENT_PRICING.small.minSeats) {
+  if (tier === "starter") {
+    if (seatCount < DEPARTMENT_PRICING.starter.minSeats) {
       return {
         valid: false,
-        error: `Small Department tier requires at least ${DEPARTMENT_PRICING.small.minSeats} seats.`
+        error: `Small Department tier requires at least ${DEPARTMENT_PRICING.starter.minSeats} seats.`
       };
     }
-    if (seatCount > DEPARTMENT_PRICING.small.maxSeats) {
+    if (seatCount > DEPARTMENT_PRICING.starter.maxSeats) {
       return {
         valid: false,
-        error: `Small Department tier supports up to ${DEPARTMENT_PRICING.small.maxSeats} seats. Please upgrade to Large Department.`
+        error: `Small Department tier supports up to ${DEPARTMENT_PRICING.starter.maxSeats} seats. Please upgrade to Large Department.`
       };
     }
   }
