@@ -37,6 +37,26 @@ export function useOfflineCache() {
     isLoading: true,
   });
 
+  // Load cache function - defined before useEffect that uses it
+  const loadCache = useCallback(async () => {
+    setState((prev) => ({ ...prev, isLoading: true }));
+    try {
+      const protocols = await OfflineCache.getAllProtocols();
+      const metadata = await OfflineCache.getMetadata();
+
+      setState((prev) => ({
+        ...prev,
+        cachedProtocols: protocols,
+        cacheSize: metadata ? formatCacheSize(metadata.totalSize) : "0 B",
+        itemCount: protocols.length,
+        isLoading: false,
+      }));
+    } catch (error) {
+      console.error("Error loading cache:", error);
+      setState((prev) => ({ ...prev, isLoading: false }));
+    }
+  }, []);
+
   // Monitor network connectivity
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((netState: NetInfoState) => {
@@ -53,25 +73,6 @@ export function useOfflineCache() {
   useEffect(() => {
     loadCache();
   }, [loadCache]);
-
-  const loadCache = useCallback(async () => {
-    setState((prev) => ({ ...prev, isLoading: true }));
-    try {
-      const protocols = await OfflineCache.getAllProtocols();
-      const metadata = await OfflineCache.getMetadata();
-      
-      setState((prev) => ({
-        ...prev,
-        cachedProtocols: protocols,
-        cacheSize: metadata ? formatCacheSize(metadata.totalSize) : "0 B",
-        itemCount: protocols.length,
-        isLoading: false,
-      }));
-    } catch (error) {
-      console.error("Error loading cache:", error);
-      setState((prev) => ({ ...prev, isLoading: false }));
-    }
-  }, []);
 
   const saveToCache = useCallback(async (
     query: string,
