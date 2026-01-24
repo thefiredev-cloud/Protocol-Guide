@@ -333,16 +333,16 @@ export const SkeletonListItem = memo(function SkeletonListItem({
           variant="circle"
           width={avatarSize}
           height={avatarSize}
-          style={{ marginRight: spacing.md }}
+          style={skeletonStyles.marginRightMd}
           testID={testID ? `${testID}-avatar` : undefined}
         />
       )}
-      <View style={{ flex: 1 }}>
+      <View style={skeletonStyles.flex1}>
         <Skeleton
           variant="text"
           width="80%"
           height={16}
-          style={{ marginBottom: spacing.xs }}
+          style={skeletonStyles.marginBottomXs}
           testID={testID ? `${testID}-title` : undefined}
         />
         {lines > 1 && (
