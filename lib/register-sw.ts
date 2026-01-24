@@ -19,9 +19,14 @@ export function registerServiceWorker(): void {
       console.log('[SW] Service worker registered:', registration.scope);
 
       // Check for updates periodically
-      setInterval(() => {
+      const updateInterval = setInterval(() => {
         registration.update();
       }, 60 * 60 * 1000); // Check every hour
+
+      // Cleanup function (though service worker registration persists across page loads)
+      window.addEventListener('beforeunload', () => {
+        clearInterval(updateInterval);
+      });
 
       // Handle updates
       registration.addEventListener('updatefound', () => {
