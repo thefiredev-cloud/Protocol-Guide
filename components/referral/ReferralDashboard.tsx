@@ -239,7 +239,12 @@ export function ReferralDashboard() {
 
     await Clipboard.setStringAsync(codeData.code);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+
+    // Clear existing timer before setting new one
+    if (copyTimerRef.current) {
+      clearTimeout(copyTimerRef.current);
+    }
+    copyTimerRef.current = setTimeout(() => setCopied(false), 2000);
 
     trackEvent.mutate({
       eventType: "referral_code_copied",
