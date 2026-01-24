@@ -120,6 +120,30 @@ FROM users u
 WHERE u.homeCountyId IS NOT NULL
   AND NOT EXISTS (SELECT 1 FROM counties c WHERE c.id = u.homeCountyId);
 
+-- Check for orphaned search_analytics (userId)
+SELECT 'Orphaned search_analytics (user)' as issue_type, COUNT(*) as count
+FROM search_analytics sa
+WHERE sa.userId IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM users u WHERE u.id = sa.userId);
+
+-- Check for orphaned search_analytics (agencyId)
+SELECT 'Orphaned search_analytics (agency)' as issue_type, COUNT(*) as count
+FROM search_analytics sa
+WHERE sa.agencyId IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM agencies a WHERE a.id = sa.agencyId);
+
+-- Check for orphaned search_analytics (topResultProtocolId)
+SELECT 'Orphaned search_analytics (top protocol)' as issue_type, COUNT(*) as count
+FROM search_analytics sa
+WHERE sa.topResultProtocolId IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM protocolChunks pc WHERE pc.id = sa.topResultProtocolId);
+
+-- Check for orphaned search_analytics (selectedProtocolId)
+SELECT 'Orphaned search_analytics (selected protocol)' as issue_type, COUNT(*) as count
+FROM search_analytics sa
+WHERE sa.selectedProtocolId IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM protocolChunks pc WHERE pc.id = sa.selectedProtocolId);
+
 -- =============================================================================
 -- DUPLICATE DETECTION (for unique constraints)
 -- =============================================================================
