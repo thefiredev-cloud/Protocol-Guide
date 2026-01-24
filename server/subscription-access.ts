@@ -57,7 +57,7 @@ export async function getUserAccess(userId: number): Promise<UserAccess> {
 
   // Get user tier
   const [user] = await db.select({ tier: users.tier }).from(users).where(eq(users.id, userId)).limit(1);
-  const tier = (user?.tier || "free") as "free" | "pro" | "enterprise";
+  const tier = validateTierValue(user?.tier);
   const tierConfig = TIER_ACCESS_CONFIG[tier];
 
   // Get subscribed states (not expired)
