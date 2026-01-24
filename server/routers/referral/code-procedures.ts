@@ -31,7 +31,7 @@ export const codeProcedures = router({
         LIMIT 1
       `);
 
-      const referralCode = result.rows[0];
+      const referralCode = result.rows[0] as any;
 
       if (!referralCode) {
         return { valid: false, error: "Invalid referral code" };
