@@ -127,9 +127,11 @@ export function CountySelector({ visible, onClose }: CountySelectorProps) {
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <View 
+      <View
+        ref={containerRef}
+        {...containerProps}
         className="flex-1"
-        style={{ 
+        style={{
           backgroundColor: colors.background,
           paddingTop: insets.top,
         }}
