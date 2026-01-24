@@ -76,7 +76,7 @@ export const protocolProcedures = router({
         version: input.version,
         status: "draft",
         sourceFileUrl: url,
-        effectiveDate: input.effectiveDate ? new Date(input.effectiveDate) : undefined,
+        effectiveDate: input.effectiveDate,
         createdBy: ctx.user.id,
       });
 
