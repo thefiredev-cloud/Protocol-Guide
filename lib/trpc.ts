@@ -29,12 +29,28 @@ export function createTRPCClient() {
         // tRPC v11: transformer MUST be inside httpBatchLink, not at root
         transformer: superjson,
         async headers() {
-          // Use token cache to prevent race conditions during concurrent requests
+          const headers: Record<string, string> = {};
+
+          // Add Authorization header if we have an access token
           const accessToken = await getAccessToken();
           if (accessToken) {
-            return { Authorization: `Bearer ${accessToken}` };
+            headers.Authorization = `Bearer ${accessToken}`;
           }
-          return {};
+
+          // Add CSRF token from cookie (double-submit pattern)
+          // The CSRF cookie is set with httpOnly:false so JavaScript can read it
+          if (typeof document !== "undefined") {
+            const csrfToken = document.cookie
+              .split("; ")
+              .find((row) => row.startsWith("csrf_token="))
+              ?.split("=")[1];
+
+            if (csrfToken) {
+              headers["x-csrf-token"] = csrfToken;
+            }
+          }
+
+          return headers;
         },
         // Custom fetch to include credentials for cookie-based auth
         fetch(url, options) {
