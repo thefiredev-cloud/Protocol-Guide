@@ -4,7 +4,7 @@
  */
 
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
+import { rateLimitedProcedure, router } from "../_core/trpc";
 import { transcribeAudio } from "../_core/voiceTranscription";
 import { storagePut } from "../storage";
 
@@ -25,7 +25,7 @@ function isAllowedUrl(url: string): boolean {
 }
 
 export const voiceRouter = router({
-  transcribe: protectedProcedure
+  transcribe: rateLimitedProcedure
     .input(z.object({
       audioUrl: z.string().url().refine(isAllowedUrl, {
         message: "Audio URL must be from an authorized storage domain",
@@ -54,7 +54,7 @@ export const voiceRouter = router({
       };
     }),
 
-  uploadAudio: protectedProcedure
+  uploadAudio: rateLimitedProcedure
     .input(z.object({
       // Max 10MB base64 (actual file ~7.5MB after encoding overhead)
       audioBase64: z.string().max(10_000_000, "Audio file exceeds 10MB limit"),
