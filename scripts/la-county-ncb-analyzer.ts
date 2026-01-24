@@ -114,31 +114,32 @@ async function downloadFile(url: string, destPath: string): Promise<void> {
 }
 
 /**
- * Parse Excel file using simple CSV fallback
- * Note: For production, use xlsx library: npm install xlsx
+ * Parse Excel file using xlsx library
+ * Note: Requires xlsx library: npm install xlsx
  */
 async function parseExcelOrFallback(filePath: string): Promise<NCBContract[]> {
   // Try to dynamically import xlsx
   try {
-    const XLSX = await import('xlsx');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const XLSX = require('xlsx') as typeof import('xlsx');
     const workbook = XLSX.readFile(filePath);
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
     const data = XLSX.utils.sheet_to_json(sheet);
 
-    return data.map((row: any) => ({
+    return data.map((row: Record<string, unknown>) => ({
       ncbNumber: String(row['NCB Number'] || row['NCB_NUMBER'] || ''),
       contractNumber: String(row['Contract Number'] || row['CONTRACT_NUMBER'] || ''),
       department: String(row['Department'] || row['DEPARTMENT'] || row['Agency'] || ''),
       vendor: String(row['Vendor'] || row['VENDOR'] || row['Contractor'] || ''),
       commodityDescription: String(row['Commodity Description'] || row['Description'] || ''),
-      dollarAmount: parseFloat(row['Dollar Amount'] || row['Amount'] || row['VALUE'] || 0) || 0,
+      dollarAmount: parseFloat(String(row['Dollar Amount'] || row['Amount'] || row['VALUE'] || 0)) || 0,
       startDate: String(row['Start Date'] || row['START_DATE'] || ''),
       endDate: String(row['End Date'] || row['END_DATE'] || ''),
       justification: String(row['Justification'] || row['NCB Justification'] || ''),
       ncbType: String(row['NCB Type'] || row['TYPE'] || ''),
     }));
-  } catch (error) {
+  } catch {
     console.warn('xlsx library not available. Install with: npm install xlsx');
     console.warn('Attempting alternative data fetch...');
     return [];
