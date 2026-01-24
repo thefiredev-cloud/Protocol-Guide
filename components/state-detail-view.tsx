@@ -160,7 +160,11 @@ export function StateDetailView({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <View
+        ref={containerRef}
+        {...containerProps}
+        style={{ flex: 1, backgroundColor: colors.background }}
+      >
         {/* Header */}
         <View
           style={{
