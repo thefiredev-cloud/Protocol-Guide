@@ -218,7 +218,8 @@ export const searchRouter = router({
     }),
 
   // Get protocol by ID
-  getProtocol: publicProcedure
+  // Rate limited to prevent scraping and DoS attacks
+  getProtocol: publicRateLimitedProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ input }) => {
       const dbInstance = await db.getDb();
