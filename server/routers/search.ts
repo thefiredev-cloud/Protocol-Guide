@@ -254,7 +254,8 @@ export const searchRouter = router({
   }),
 
   // Get agencies (counties) by state with protocol counts
-  agenciesByState: publicProcedure
+  // Rate limited to prevent abuse and scraping
+  agenciesByState: publicRateLimitedProcedure
     .input(z.object({ state: z.string() }))
     .query(async ({ input }) => {
       return db.getAgenciesByState(input.state);
