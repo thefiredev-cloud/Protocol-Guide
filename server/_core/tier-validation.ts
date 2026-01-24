@@ -87,7 +87,7 @@ export async function validateTier(
     });
   }
 
-  const userTier = (user.tier || "free") as SubscriptionTier;
+  const userTier = validateTierValue(user.tier);
 
   // Check tier hierarchy: free < pro < enterprise
   const tierHierarchy: Record<SubscriptionTier, number> = {
