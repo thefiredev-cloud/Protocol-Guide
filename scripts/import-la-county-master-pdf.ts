@@ -127,7 +127,8 @@ function categorizeProtocol(num: string, content: string): string {
 
 async function parsePDF(buffer: Buffer): Promise<{ text: string; numPages: number }> {
   console.log('Parsing PDF...');
-  const data = await pdf(buffer);
+  const pdfParse = (await import('pdf-parse')).default;
+  const data = await pdfParse(buffer);
   console.log(`  Pages: ${data.numpages}`);
   console.log(`  Text length: ${data.text.length} characters`);
   return { text: data.text, numPages: data.numpages };
