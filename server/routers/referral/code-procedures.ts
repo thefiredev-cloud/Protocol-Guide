@@ -5,7 +5,7 @@
 
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { router, protectedProcedure, publicProcedure } from "../../_core/trpc";
+import { router, protectedProcedure, publicRateLimitedProcedure } from "../../_core/trpc";
 import { getDb } from "../../db";
 import { sql } from "drizzle-orm";
 
@@ -13,7 +13,7 @@ export const codeProcedures = router({
   /**
    * Validate a referral code (public - for signup flow)
    */
-  validateCode: publicProcedure
+  validateCode: publicRateLimitedProcedure
     .input(z.object({ code: z.string().min(1).max(20) }))
     .query(async ({ input }) => {
       const db = await getDb();
