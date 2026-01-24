@@ -21,6 +21,14 @@ import { AppProvider } from "@/lib/app-context";
 import { registerServiceWorker } from "@/lib/register-sw";
 import { ErrorBoundary, NavigationErrorBoundary } from "@/components/ErrorBoundary";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { usePushNotifications } from "@/hooks/use-push-notifications";
+
+// Wrapper component to initialize push notifications inside provider context
+function PushNotificationInitializer({ children }: { children: React.ReactNode }) {
+  // Initialize push notifications for authenticated users
+  usePushNotifications();
+  return <>{children}</>;
+}
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
