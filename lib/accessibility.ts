@@ -323,3 +323,167 @@ export class FocusManager {
     }
   }
 }
+
+/**
+ * Focus trap hook for modals (WCAG 2.4.3)
+ *
+ * Traps keyboard focus within a modal when visible.
+ * Supports ESC key to close on web.
+ * Returns focus to trigger element on close.
+ */
+export interface UseFocusTrapOptions {
+  visible: boolean;
+  onClose: () => void;
+  /** Allow ESC key to close modal (default: true) */
+  allowEscapeClose?: boolean;
+  /** Selector for first focusable element (web only) */
+  initialFocusSelector?: string;
+}
+
+export interface UseFocusTrapReturn {
+  /** Ref to attach to modal container */
+  containerRef: React.RefObject<any>;
+  /** Props to spread on modal container for a11y */
+  containerProps: {
+    accessible: boolean;
+    accessibilityViewIsModal: boolean;
+    accessibilityRole: AccessibilityRole;
+  };
+}
+
+/**
+ * Hook for managing focus trap within modals
+ *
+ * Usage:
+ * ```tsx
+ * const { containerRef, containerProps } = useFocusTrap({
+ *   visible,
+ *   onClose,
+ * });
+ *
+ * return (
+ *   <Modal visible={visible}>
+ *     <View ref={containerRef} {...containerProps}>
+ *       {content}
+ *     </View>
+ *   </Modal>
+ * );
+ * ```
+ */
+export function useFocusTrap(options: UseFocusTrapOptions): UseFocusTrapReturn {
+  const { useRef, useEffect, useCallback } = require("react");
+
+  const { visible, onClose, allowEscapeClose = true, initialFocusSelector } = options;
+
+  const containerRef = useRef<any>(null);
+  const previousActiveElementRef = useRef<Element | null>(null);
+
+  // Handle ESC key press (web only)
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (!visible) return;
+
+      // ESC key closes modal
+      if (event.key === "Escape" && allowEscapeClose) {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+
+      // Tab key traps focus within modal
+      if (event.key === "Tab" && containerRef.current) {
+        const focusableElements = containerRef.current.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+
+        if (focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0] as HTMLElement;
+        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+        // Shift + Tab from first element -> focus last element
+        if (event.shiftKey && document.activeElement === firstElement) {
+          event.preventDefault();
+          lastElement.focus();
+        }
+        // Tab from last element -> focus first element
+        else if (!event.shiftKey && document.activeElement === lastElement) {
+          event.preventDefault();
+          firstElement.focus();
+        }
+      }
+    },
+    [visible, onClose, allowEscapeClose]
+  );
+
+  // Focus management effect
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+
+    if (visible) {
+      // Store the previously focused element to restore later
+      previousActiveElementRef.current = document.activeElement;
+
+      // Add keydown listener for focus trapping
+      document.addEventListener("keydown", handleKeyDown);
+
+      // Focus first focusable element in modal
+      setTimeout(() => {
+        if (containerRef.current) {
+          let elementToFocus: HTMLElement | null = null;
+
+          // Try initial focus selector first
+          if (initialFocusSelector) {
+            elementToFocus = containerRef.current.querySelector(initialFocusSelector);
+          }
+
+          // Fall back to first focusable element
+          if (!elementToFocus) {
+            const focusableElements = containerRef.current.querySelectorAll(
+              'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            elementToFocus = focusableElements[0] as HTMLElement;
+          }
+
+          if (elementToFocus) {
+            elementToFocus.focus();
+          }
+        }
+      }, 100); // Small delay to ensure modal is rendered
+    } else {
+      // Modal closing - restore focus to previous element
+      if (previousActiveElementRef.current && "focus" in previousActiveElementRef.current) {
+        (previousActiveElementRef.current as HTMLElement).focus();
+      }
+    }
+
+    return () => {
+      if (Platform.OS === "web") {
+        document.removeEventListener("keydown", handleKeyDown);
+      }
+    };
+  }, [visible, handleKeyDown, initialFocusSelector]);
+
+  // Native focus management (iOS/Android)
+  useEffect(() => {
+    if (Platform.OS === "web") return;
+
+    if (visible && containerRef.current) {
+      // Use React Native's AccessibilityInfo to set focus
+      const { AccessibilityInfo, findNodeHandle } = require("react-native");
+      const node = findNodeHandle(containerRef.current);
+      if (node) {
+        AccessibilityInfo.setAccessibilityFocus(node);
+      }
+    }
+  }, [visible]);
+
+  return {
+    containerRef,
+    containerProps: {
+      accessible: true,
+      accessibilityViewIsModal: true,
+      accessibilityRole: "none" as AccessibilityRole,
+    },
+  };
+}
