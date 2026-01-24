@@ -14,8 +14,14 @@ export default function OAuthCallback() {
   const router = useRouter();
   const [status, setStatus] = useState<"processing" | "success" | "error">("processing");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
+    // Helper to track timers for cleanup
+    const addTimer = (timer: ReturnType<typeof setTimeout>) => {
+      timersRef.current.push(timer);
+    };
+
     const handleCallback = async () => {
       console.log("[OAuth] Callback handler triggered");
 
