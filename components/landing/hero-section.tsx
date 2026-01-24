@@ -426,16 +426,6 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
           paddingVertical: isMobile ? 48 : isTablet ? 64 : 80,
         }}
       >
-        {/* Social Proof Badge - Trusted by badge with star rating */}
-        <TrustedBadge
-          userCount="12,000+"
-          rating={4.9}
-          reviewCount={847}
-          isMobile={isMobile}
-          opacity={socialProofOpacity}
-          translateY={socialProofTranslateY}
-        />
-
         {/* Main Headline with fade-in + slide-up and enhanced typography */}
         <Animated.Text
           style={{
