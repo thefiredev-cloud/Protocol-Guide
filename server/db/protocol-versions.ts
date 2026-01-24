@@ -89,8 +89,8 @@ export async function createProtocolUpload(data: InsertProtocolUpload): Promise<
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const result = await db.insert(protocolUploads).values(data);
-  return result[0].insertId;
+  const [result] = await db.insert(protocolUploads).values(data).returning({ id: protocolUploads.id });
+  return result.id;
 }
 
 /**
