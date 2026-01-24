@@ -13,9 +13,9 @@ import { getDb } from "./connection";
 export async function logAuditEvent(data: {
   userId: number;
   action: AuditAction;
-  targetType: string;
-  targetId: string;
-  details?: Record<string, unknown>;
+  entityType: string;
+  entityId: string;
+  metadata?: Record<string, unknown>;
 }): Promise<void> {
   const db = await getDb();
   if (!db) {
@@ -27,9 +27,9 @@ export async function logAuditEvent(data: {
     await db.insert(auditLogs).values({
       userId: data.userId,
       action: data.action,
-      targetType: data.targetType,
-      targetId: data.targetId,
-      details: data.details || null,
+      entityType: data.entityType,
+      entityId: data.entityId,
+      metadata: data.metadata || null,
     });
   } catch (error) {
     console.error("[Database] Failed to log audit event:", error);

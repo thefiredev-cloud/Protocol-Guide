@@ -140,7 +140,7 @@ const envSchema = z.object({
   // Trial period configuration
   STRIPE_TRIAL_PERIOD_DAYS: z
     .coerce
-    .number({ invalid_type_error: 'STRIPE_TRIAL_PERIOD_DAYS must be a number' })
+    .number()
     .int('STRIPE_TRIAL_PERIOD_DAYS must be an integer')
     .nonnegative('STRIPE_TRIAL_PERIOD_DAYS must be non-negative')
     .max(365, 'STRIPE_TRIAL_PERIOD_DAYS must be 365 or less')
