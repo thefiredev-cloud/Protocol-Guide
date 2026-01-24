@@ -154,9 +154,9 @@ export const adminRouter = router({
       await db.logAuditEvent({
         userId: ctx.user.id,
         action: "CONTACT_STATUS_CHANGED",
-        targetType: "contact",
-        targetId: String(input.submissionId),
-        details: {
+        entityType: "contact",
+        entityId: String(input.submissionId),
+        metadata: {
           contactEmail: currentSubmission.email,
           oldStatus,
           newStatus: input.status,
