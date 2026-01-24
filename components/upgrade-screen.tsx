@@ -228,6 +228,10 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     padding: 8,
+    minHeight: 44,
+    minWidth: 44,
+    alignItems: "center",
+    justifyContent: "center",
   },
   limitBanner: {
     flexDirection: "row",
