@@ -298,7 +298,7 @@ export function VoiceSearchButton({
     }
   }, [startPulseAnimation, onError]);
 
-  const stopRecording = async () => {
+  const stopRecording = useCallback(async () => {
     try {
       if (!recordingRef.current) return;
 
@@ -378,7 +378,7 @@ export function VoiceSearchButton({
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
     }
-  };
+  }, [stopPulseAnimation, uploadMutation, transcribeMutation, correctEMSTerminology, onTranscription, onError]);
 
   const handlePress = useCallback(() => {
     if (disabled) return;
