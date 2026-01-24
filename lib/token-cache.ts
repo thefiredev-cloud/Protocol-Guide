@@ -91,6 +91,12 @@ class TokenCache {
 
         const { data, error } = await supabase.auth.refreshSession();
 
+        // Check if cache was cleared during refresh
+        if (this.cleared) {
+          console.log("[TokenCache] Cache was cleared during refresh, ignoring result");
+          return null;
+        }
+
         if (error) {
           console.error("[TokenCache] Refresh failed:", error.message);
           this.cache = null;
