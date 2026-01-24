@@ -12,9 +12,12 @@
  *    Auth > Settings > Webhooks > Add webhook
  *    URL: https://<project>.supabase.co/functions/v1/auth-events
  *    Events: user.updated, user.deleted
+ * 3. Set AUTH_WEBHOOK_SECRET in environment variables (required for security)
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
+import { crypto } from 'https://deno.land/std@0.177.0/crypto/mod.ts';
+import { encode } from 'https://deno.land/std@0.177.0/encoding/hex.ts';
 
 const REDIS_URL = Deno.env.get('REDIS_URL');
 const WEBHOOK_SECRET = Deno.env.get('AUTH_WEBHOOK_SECRET');
