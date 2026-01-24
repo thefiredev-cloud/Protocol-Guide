@@ -121,10 +121,10 @@ export async function updateProtocolUploadStatus(
   if (details?.errorMessage) updateData.errorMessage = details.errorMessage;
 
   if (status === "processing") {
-    updateData.processingStartedAt = new Date();
+    updateData.processingStartedAt = new Date().toISOString();
   }
   if (status === "completed" || status === "failed") {
-    updateData.completedAt = new Date();
+    updateData.completedAt = new Date().toISOString();
   }
 
   await db.update(protocolUploads).set(updateData).where(eq(protocolUploads.id, uploadId));
