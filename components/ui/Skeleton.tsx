@@ -387,7 +387,7 @@ export const SkeletonProtocolCard = memo(function SkeletonProtocolCard({
         variant="text"
         width="75%"
         height={20}
-        style={{ marginBottom: spacing.sm }}
+        style={skeletonStyles.marginBottomSm}
       />
 
       {/* Category */}
@@ -395,11 +395,11 @@ export const SkeletonProtocolCard = memo(function SkeletonProtocolCard({
         variant="text"
         width="40%"
         height={14}
-        style={{ marginBottom: spacing.md }}
+        style={skeletonStyles.marginBottomMd}
       />
 
       {/* Tags */}
-      <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+      <View style={skeletonStyles.rowWithGap}>
         <Skeleton width={60} height={24} borderRadius={radii.full} />
         <Skeleton width={80} height={24} borderRadius={radii.full} />
         <Skeleton width={50} height={24} borderRadius={radii.full} />
