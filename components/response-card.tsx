@@ -162,10 +162,10 @@ export const ResponseCard = memo(function ResponseCard({ text, protocolRefs, tim
       <MedicalDisclaimer variant="inline" />
     </Animated.View>
   );
-}
+});
 
 // User message bubble
-export function UserMessageCard({ text, timestamp }: { text: string; timestamp?: Date }) {
+export const UserMessageCard = memo(function UserMessageCard({ text, timestamp }: { text: string; timestamp?: Date }) {
   const colors = useColors();
 
   return (
