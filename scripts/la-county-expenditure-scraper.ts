@@ -151,13 +151,14 @@ async function discoverExpenditureDatasets(): Promise<{
     const results = await searchLACountyDatasets(term);
 
     for (const result of results) {
-      const resource = result as Record<string, unknown>;
-      const id = String(resource.resource?.id || resource.id || '');
+      const resource = result as Record<string, Record<string, unknown> | unknown>;
+      const nested = resource.resource as Record<string, unknown> | undefined;
+      const id = String(nested?.id || resource.id || '');
       if (id && !discoveredDatasets.has(id)) {
         discoveredDatasets.set(id, {
           id,
-          name: String(resource.resource?.name || resource.name || 'Unknown'),
-          description: String(resource.resource?.description || resource.description || ''),
+          name: String(nested?.name || resource.name || 'Unknown'),
+          description: String(nested?.description || resource.description || ''),
         });
       }
     }
