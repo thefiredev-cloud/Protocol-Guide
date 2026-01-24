@@ -1,11 +1,17 @@
 /**
  * Token Refresh Handler
  * Manages automatic token refresh with fallback and error recovery
- * FIXED: Now uses tokenCache to prevent race conditions
+ * FIXED: Now uses tokenCache to prevent race conditions during concurrent requests
  */
 
 import { Session } from "@supabase/supabase-js";
-import { tokenCache, getSession as getCachedSession, refreshSession as refreshCachedSession } from "./token-cache";
+import { supabase } from "./supabase";
+import {
+  tokenCache,
+  getSession as getCachedSession,
+  refreshSession as refreshCachedSession,
+  clearTokenCache
+} from "./token-cache";
 
 const CHECK_INTERVAL_MS = 60000; // Check every 60 seconds
 
@@ -31,130 +37,93 @@ function getMinutesUntilExpiry(session: Session): number {
 }
 
 /**
- * Check if session needs refresh
- */
-function needsRefresh(session: Session | null): boolean {
-  if (!session) return false;
-
-  const minutesUntilExpiry = getMinutesUntilExpiry(session);
-  return minutesUntilExpiry < REFRESH_BUFFER_MINUTES;
-}
-
-/**
  * Refresh session token with error handling
- * Uses promise-based locking to prevent race conditions
+ * Uses tokenCache mutex to prevent race conditions
  */
 export async function refreshSession(): Promise<{
   success: boolean;
   session: Session | null;
   error?: string;
 }> {
-  // Return existing refresh promise if in progress
-  if (refreshPromise) {
-    console.log("[Auth] Refresh already in progress, returning existing promise");
-    return refreshPromise;
-  }
+  try {
+    console.log("[Auth] Attempting token refresh via cache");
 
-  // Create new refresh promise
-  refreshPromise = (async () => {
-    try {
-      console.log("[Auth] Attempting token refresh");
+    // Use token cache which has built-in mutex
+    const session = await refreshCachedSession();
 
-      const { data, error } = await supabase.auth.refreshSession();
-
-      if (error) {
-        refreshStatus.consecutiveFailures++;
-        console.error("[Auth] Token refresh failed:", error.message);
-
-        // After 3 consecutive failures, force logout
-        if (refreshStatus.consecutiveFailures >= 3) {
-          console.error("[Auth] Max refresh failures reached, forcing logout");
-          await supabase.auth.signOut();
-          refreshStatus.consecutiveFailures = 0;
-          return {
-            success: false,
-            session: null,
-            error: "Session expired - please sign in again",
-          };
-        }
-
-        return {
-          success: false,
-          session: null,
-          error: error.message,
-        };
-      }
-
-      if (!data.session) {
-        refreshStatus.consecutiveFailures++;
-        console.error("[Auth] No session returned from refresh");
-
-        return {
-          success: false,
-          session: null,
-          error: "No session returned",
-        };
-      }
-
-      // Success - reset failure counter
-      refreshStatus.consecutiveFailures = 0;
-      refreshStatus.lastRefresh = Date.now();
-
-      console.log("[Auth] Token refresh successful", {
-        expiresAt: data.session.expires_at,
-        minutesUntilExpiry: getMinutesUntilExpiry(data.session),
-      });
-
-      return {
-        success: true,
-        session: data.session,
-      };
-    } catch (err) {
+    if (!session) {
       refreshStatus.consecutiveFailures++;
-      const error = err instanceof Error ? err : new Error("Unknown error");
-      console.error("[Auth] Token refresh exception:", error);
+      console.error("[Auth] Token refresh failed");
+
+      // After 3 consecutive failures, force logout
+      if (refreshStatus.consecutiveFailures >= 3) {
+        console.error("[Auth] Max refresh failures reached, forcing logout");
+        await supabase.auth.signOut();
+        clearTokenCache();
+        refreshStatus.consecutiveFailures = 0;
+        return {
+          success: false,
+          session: null,
+          error: "Session expired - please sign in again",
+        };
+      }
 
       return {
         success: false,
         session: null,
-        error: error.message,
+        error: "Token refresh failed",
       };
-    } finally {
-      refreshPromise = null;
     }
-  })();
 
-  return refreshPromise;
+    // Success - reset failure counter
+    refreshStatus.consecutiveFailures = 0;
+    refreshStatus.lastRefresh = Date.now();
+
+    console.log("[Auth] Token refresh successful", {
+      expiresAt: session.expires_at,
+      minutesUntilExpiry: getMinutesUntilExpiry(session),
+    });
+
+    return {
+      success: true,
+      session,
+    };
+  } catch (err) {
+    refreshStatus.consecutiveFailures++;
+    const error = err instanceof Error ? err : new Error("Unknown error");
+    console.error("[Auth] Token refresh exception:", error);
+
+    return {
+      success: false,
+      session: null,
+      error: error.message,
+    };
+  }
 }
 
 /**
  * Check session and refresh if needed
+ * FIXED: Uses cached session to prevent race conditions
  */
 export async function checkAndRefreshSession(): Promise<{
   session: Session | null;
   refreshed: boolean;
 }> {
-  const { data: { session } } = await supabase.auth.getSession();
+  // Use token cache which handles refresh automatically
+  const session = await getCachedSession();
 
   if (!session) {
     return { session: null, refreshed: false };
   }
 
-  // Check if refresh is needed
-  if (needsRefresh(session)) {
-    console.log("[Auth] Session needs refresh", {
-      minutesUntilExpiry: getMinutesUntilExpiry(session),
-    });
+  // Check if session was recently refreshed by comparing with cache status
+  const cacheStatus = tokenCache.getStatus();
+  const wasRecentlyRefreshed = cacheStatus.cacheAge !== null && cacheStatus.cacheAge < 5000;
 
-    const result = await refreshSession();
-
-    return {
-      session: result.session,
-      refreshed: result.success,
-    };
-  }
-
-  return { session, refreshed: false };
+  return {
+    session,
+    refreshed: wasRecentlyRefreshed
+  };
 }
 
 /**
@@ -201,14 +170,17 @@ export async function forceRefresh(): Promise<boolean> {
  * Get refresh status (for debugging/monitoring)
  */
 export function getRefreshStatus(): Readonly<RefreshStatus> {
-  return { ...refreshStatus };
+  return {
+    ...refreshStatus,
+    cacheStatus: tokenCache.getStatus()
+  };
 }
 
 /**
  * Reset refresh status (for testing)
  */
 export function resetRefreshStatus(): void {
-  refreshPromise = null;
+  clearTokenCache();
   refreshStatus.lastRefresh = null;
   refreshStatus.consecutiveFailures = 0;
 }
