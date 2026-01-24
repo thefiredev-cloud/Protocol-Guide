@@ -10,7 +10,7 @@
  *   });
  */
 
-import { test as base, Page, BrowserContext } from "@playwright/test";
+import { test as base, Page } from "@playwright/test";
 
 // Test user data that matches Supabase session structure
 export interface TestUser {
