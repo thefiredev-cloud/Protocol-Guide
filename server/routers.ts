@@ -35,6 +35,7 @@ import { adminRouter } from "./routers/admin";
 import { agencyAdminRouter } from "./routers/agency-admin/index";
 import { integrationRouter } from "./routers/integration";
 import { referralRouter } from "./routers/referral/index";
+import { jobsRouter } from "./routers/jobs";
 
 export const appRouter = router({
   system: systemRouter,
