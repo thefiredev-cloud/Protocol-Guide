@@ -28,7 +28,8 @@ const COLORS = {
 };
 
 // Beta access code - stored in env for easy rotation
-const BETA_ACCESS_CODE = process.env.EXPO_PUBLIC_BETA_ACCESS_CODE || "PROTOCOL2026";
+// If env var is not set, beta access is disabled (empty string will never match)
+const BETA_ACCESS_CODE = process.env.EXPO_PUBLIC_BETA_ACCESS_CODE || "";
 
 export default function LoginPage() {
   const { isAuthenticated, loading } = useAuth();
