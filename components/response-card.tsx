@@ -73,17 +73,21 @@ export const ResponseCard = memo(function ResponseCard({ text, protocolRefs, tim
               onPress={handleCopy}
               activeOpacity={0.7}
               style={styles.iconButton}
+              accessibilityLabel={copied ? "Copied" : "Copy response"}
+              accessibilityRole="button"
             >
-              <IconSymbol 
-                name={copied ? "checkmark" : "doc.on.doc"} 
-                size={16} 
-                color={copied ? colors.success : colors.muted} 
+              <IconSymbol
+                name={copied ? "checkmark" : "doc.on.doc"}
+                size={16}
+                color={copied ? colors.success : colors.muted}
               />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={toggleActions}
               activeOpacity={0.7}
               style={styles.iconButton}
+              accessibilityLabel="More actions"
+              accessibilityRole="button"
             >
               <IconSymbol name="ellipsis.vertical" size={16} color={colors.muted} />
             </TouchableOpacity>
