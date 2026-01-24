@@ -768,7 +768,7 @@ export const SkeletonStatsCard = memo(function SkeletonStatsCard({
         variant="circle"
         width={40}
         height={40}
-        style={{ marginBottom: spacing.sm }}
+        style={skeletonStyles.marginBottomSm}
       />
 
       {/* Value */}
@@ -776,7 +776,7 @@ export const SkeletonStatsCard = memo(function SkeletonStatsCard({
         variant="text"
         width={80}
         height={28}
-        style={{ marginBottom: spacing.xs }}
+        style={skeletonStyles.marginBottomXs}
       />
 
       {/* Label */}
