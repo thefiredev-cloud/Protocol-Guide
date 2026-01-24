@@ -338,12 +338,12 @@ export const SkeletonProtocolCard = memo(function SkeletonProtocolCard({
       </View>
     </View>
   );
-}
+});
 
 /**
  * Profile header skeleton with avatar, name, and tier badge
  */
-export function SkeletonProfileHeader({
+export const SkeletonProfileHeader = memo(function SkeletonProfileHeader({
   style,
   testID,
 }: {
