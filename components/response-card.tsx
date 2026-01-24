@@ -196,7 +196,7 @@ export const LoadingCard = memo(function LoadingCard() {
       </View>
     </Animated.View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {
