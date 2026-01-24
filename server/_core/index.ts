@@ -18,6 +18,7 @@ import { createTimeoutMiddleware } from "./timeout";
 import { createSearchLimiter, createAiLimiter, createPublicLimiter } from "./rateLimitRedis";
 import { healthHandler, readyHandler, liveHandler } from "./health";
 import { initResilientRedis, initResilientDb, ServiceRegistry } from "./resilience";
+import { cookieMiddleware } from "./cookie-middleware";
 
 // CORS whitelist - only allow these origins
 const CORS_WHITELIST = [
