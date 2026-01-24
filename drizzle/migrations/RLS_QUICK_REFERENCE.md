@@ -101,9 +101,16 @@ const { data } = await supabase.from('queries').select('*');
 
 ## Deployment
 
+> **Target Database:** Supabase PostgreSQL (NOT TiDB/MySQL)
+>
+> This migration uses PostgreSQL-specific RLS and Supabase `auth.uid()`.
+> Connection: `postgresql://postgres:[password]@db.dflmjilieokjkkqxrmda.supabase.co:5432/postgres`
+
 ### 1. Apply Migration
 ```bash
-psql $DB -f drizzle/migrations/0027_add_row_level_security_policies.sql
+# Via Supabase Dashboard: SQL Editor > paste contents of 0027_add_row_level_security_policies.sql
+# Or via psql with Supabase PostgreSQL connection string:
+psql $SUPABASE_DB_URL -f drizzle/migrations/0027_add_row_level_security_policies.sql
 ```
 
 ### 2. Run Tests
