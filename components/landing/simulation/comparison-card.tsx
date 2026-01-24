@@ -13,7 +13,7 @@ interface ComparisonCardProps {
   variant: "standard" | "protocol";
 }
 
-export function ComparisonCard({ label, value, description, variant }: ComparisonCardProps) {
+export const ComparisonCard = React.memo(function ComparisonCard({ label, value, description, variant }: ComparisonCardProps) {
   const isProtocol = variant === "protocol";
 
   return (
