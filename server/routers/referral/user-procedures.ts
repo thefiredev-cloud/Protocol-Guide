@@ -187,7 +187,7 @@ export const userProcedures = router({
       `);
 
       return {
-        referrals: ((referrals[0] as any[]) || []).map((r) => ({
+        referrals: (referrals.rows || []).map((r: any) => ({
           id: r.id,
           redeemedAt: r.redeemedAt,
           convertedToPaid: Boolean(r.convertedToPaid),
@@ -201,7 +201,7 @@ export const userProcedures = router({
               : null,
           },
         })),
-        total: (countResult[0] as any[])?.[0]?.total || 0,
+        total: countResult.rows[0]?.total || 0,
       };
     }),
 });
