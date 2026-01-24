@@ -157,7 +157,7 @@ export function VoiceSearchModal({
               Voice Search
             </Text>
             <Text style={[styles.subtitle, { color: colors.muted }]}>
-              {getStatusText()}
+              {getStatusText(recordingState, errorType)}
             </Text>
 
             {/* Microphone button with pulse rings */}
