@@ -7,7 +7,6 @@
 
 import { Platform } from "react-native";
 import Constants from "expo-constants";
-import { useEffect, useRef } from "react";
 import { EventQueue } from "./event-queue";
 import { SessionManager, UserTraits } from "./session";
 
