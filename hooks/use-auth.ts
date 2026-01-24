@@ -126,11 +126,14 @@ export function useAuth(options?: UseAuthOptions) {
         console.log("[useAuth] Session refreshed automatically");
         setSession(refreshedSession);
         setUser(mapSupabaseUser(refreshedSession.user));
+        // Update token cache when session is refreshed
+        tokenCache.updateCache(refreshedSession);
       },
       () => {
         console.log("[useAuth] Session expired, logging out");
         setSession(null);
         setUser(null);
+        clearTokenCache();
       }
     );
 
