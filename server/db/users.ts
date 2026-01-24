@@ -103,7 +103,7 @@ export async function acknowledgeDisclaimer(userId: number): Promise<{ success: 
   try {
     await db
       .update(users)
-      .set({ disclaimerAcknowledgedAt: new Date() })
+      .set({ disclaimerAcknowledgedAt: new Date().toISOString() })
       .where(eq(users.id, userId));
 
     return { success: true };
