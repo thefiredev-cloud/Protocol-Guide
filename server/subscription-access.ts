@@ -333,6 +333,7 @@ export async function removeAgencySubscription(userId: number, agencyId: number)
 /**
  * Build access filter parameters for search queries
  * Returns params to pass to Supabase RPC for access-controlled search
+ * SECURITY: Validates subscription status before granting full access
  */
 export async function buildAccessFilterParams(userId: number): Promise<{
   userStates: string[];
@@ -342,10 +343,31 @@ export async function buildAccessFilterParams(userId: number): Promise<{
 }> {
   const access = await getUserAccess(userId);
 
+  // For paid tiers, validate subscription is active before granting full access
+  let hasFullAccess = false;
+  if (access.tier === "enterprise") {
+    const db = await getDb();
+    if (db) {
+      const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+      if (user) {
+        try {
+          const { validateSubscriptionActive } = await import("./_core/tier-validation.js");
+          await validateSubscriptionActive(user);
+          // Only grant full access if subscription is valid
+          hasFullAccess = true;
+        } catch (error) {
+          // Subscription invalid/expired - no full access
+          console.warn(`[SubscriptionAccess] User ${userId} has enterprise tier but invalid subscription`);
+          hasFullAccess = false;
+        }
+      }
+    }
+  }
+
   return {
     userStates: access.subscribedStates,
     userAgencies: access.subscribedAgencies,
     userTier: access.tier,
-    hasFullAccess: access.tier === "enterprise",
+    hasFullAccess,
   };
 }
