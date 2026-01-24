@@ -158,7 +158,7 @@ export async function getUserTierFeatures(userId: number) {
     return TIER_FEATURES.free;
   }
 
-  const tier = (user.tier || "free") as SubscriptionTier;
+  const tier = validateTierValue(user.tier);
 
   // Validate subscription is active for paid tiers
   if (tier !== "free") {
