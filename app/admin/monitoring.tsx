@@ -52,7 +52,7 @@ function MetricCard({
           <IconSymbol
             name={trend.positive ? "arrow.up.right" : "arrow.down.right"}
             size={12}
-            color={trend.positive ? colors.success : colors.destructive}
+            color={trend.positive ? colors.success : colors.error}
           />
           <Text
             style={[
