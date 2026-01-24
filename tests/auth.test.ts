@@ -74,6 +74,7 @@ function createAuthenticatedContext(userOverrides: Partial<AuthenticatedUser> = 
         clearedCookies.push({ name, options });
       },
     } as TrpcContext["res"],
+    trace: createMockTraceContext(),
   };
 
   return { ctx, clearedCookies, user };
