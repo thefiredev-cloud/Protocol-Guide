@@ -683,13 +683,13 @@ export const SkeletonRecentQueries = memo(function SkeletonRecentQueries({
       testID={testID}
     >
       {/* Header */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.lg }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <View style={[skeletonStyles.rowAlignedSpaceBetween, skeletonStyles.marginBottomLg]}>
+        <View style={skeletonStyles.rowAligned}>
           <Skeleton
             variant="circle"
             width={36}
             height={36}
-            style={{ marginRight: spacing.md }}
+            style={skeletonStyles.marginRightMd}
           />
           <Skeleton variant="text" width={110} height={17} />
         </View>
@@ -697,7 +697,7 @@ export const SkeletonRecentQueries = memo(function SkeletonRecentQueries({
       </View>
 
       {/* Query items */}
-      <View style={{ gap: spacing.md }}>
+      <View style={skeletonStyles.gapMd}>
         {Array.from({ length: count }).map((_, index) => (
           <View
             key={index}
@@ -707,7 +707,7 @@ export const SkeletonRecentQueries = memo(function SkeletonRecentQueries({
               borderBottomColor: colors.border,
             }}
           >
-            <Skeleton variant="text" width="85%" height={14} style={{ marginBottom: spacing.xs }} />
+            <Skeleton variant="text" width="85%" height={14} style={skeletonStyles.marginBottomXs} />
             <Skeleton variant="text" width="40%" height={12} />
           </View>
         ))}
