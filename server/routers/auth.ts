@@ -99,17 +99,36 @@ export const authRouter = router({
       }
 
       try {
-        // Verify current password by attempting to get user
+        // Get user session first
         const { data: { user }, error: getUserError } = await supabaseAdmin.auth.getUser(token);
 
-        if (getUserError || !user) {
+        if (getUserError || !user || !user.email) {
           throw new TRPCError({
             code: "UNAUTHORIZED",
             message: "Invalid session",
           });
         }
 
-        // Update password in Supabase
+        // SECURITY: Verify current password before allowing change
+        // This prevents attackers with a valid session token from changing
+        // the password without knowing the current password
+        const { error: verifyError } = await supabase.auth.signInWithPassword({
+          email: user.email,
+          password: input.currentPassword,
+        });
+
+        if (verifyError) {
+          logger.warn(
+            { userId: ctx.user.id, requestId: ctx.trace?.requestId },
+            "Failed password change attempt - incorrect current password"
+          );
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Current password is incorrect",
+          });
+        }
+
+        // Current password verified, now safe to update password in Supabase
         const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
           user.id,
           { password: input.newPassword }
