@@ -31,7 +31,7 @@ export function DisclaimerConsentModal({ visible, onAcknowledged }: DisclaimerCo
   const [isChecked, setIsChecked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const trpcUtils = trpc.useUtils();
+  const acknowledgeDisclaimerMutation = trpc.user.acknowledgeDisclaimer.useMutation();
 
   // Focus trap for accessibility (WCAG 2.4.3)
   // Note: allowEscapeClose is false because this modal requires acknowledgment
