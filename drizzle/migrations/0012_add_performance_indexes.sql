@@ -12,7 +12,7 @@ CREATE INDEX idx_queries_user_created ON queries(userId, createdAt DESC);
 
 -- Composite index for search history with timestamp ordering
 -- Used in: Pro user cloud sync, cross-device search history
-CREATE INDEX idx_search_history_user_ts ON searchHistory(userId, timestamp DESC);
+CREATE INDEX idx_search_history_user_ts ON search_history(userId, timestamp DESC);
 
 -- Composite index for agency member lookups
 -- Used in: Agency portal access control, member management
