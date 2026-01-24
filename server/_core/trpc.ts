@@ -220,9 +220,15 @@ const requireUser = t.middleware(async (opts) => {
 });
 
 /**
+ * CSRF-protected procedure - requires CSRF token but NOT authentication
+ * Use for public mutations that need CSRF protection (e.g., logout)
+ */
+export const csrfProtectedProcedure = publicProcedure.use(csrfProtection);
+
+/**
  * Protected procedure with tracing and CSRF protection - requires authenticated user
  */
-export const protectedProcedure = publicProcedure.use(csrfProtection).use(requireUser);
+export const protectedProcedure = csrfProtectedProcedure.use(requireUser);
 
 /**
  * Admin procedure with tracing and CSRF protection - requires admin role

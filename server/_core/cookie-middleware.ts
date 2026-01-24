@@ -46,7 +46,7 @@ export function csrfTokenGenerator(req: Request, res: Response, next: NextFuncti
   }
 
   // Generate new CSRF token
-  const csrfToken = crypto.randomBytes(32).toString("hex");
+  const csrfToken = randomBytes(32).toString("hex");
 
   // Get proper cookie options with domain, secure, and sameSite settings
   const cookieOptions = getSessionCookieOptions(req);
