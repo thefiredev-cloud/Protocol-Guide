@@ -76,6 +76,10 @@ export const searchRouter = router({
     .query(async ({ input, ctx }) => {
       const searchStartTime = Date.now();
 
+      // Validate and enforce tier-based result limits
+      const userId = ctx.user?.id || null;
+      const effectiveLimit = await validateSearchLimit(userId, input.limit);
+
       // Step 1: Normalize the EMS query (expand abbreviations, fix typos)
       const normalized = normalizeEmsQuery(input.query);
 
