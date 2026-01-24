@@ -242,7 +242,7 @@ export async function removeUserCounty(
     if (nextCounty) {
       await db
         .update(userCounties)
-        .set({ isPrimary: 1 })
+        .set({ isPrimary: true })
         .where(eq(userCounties.id, nextCounty.id));
     }
   }
@@ -282,7 +282,7 @@ export async function setUserPrimaryCounty(
   // Set the new primary
   await db
     .update(userCounties)
-    .set({ isPrimary: 1 })
+    .set({ isPrimary: true })
     .where(and(eq(userCounties.userId, userId), eq(userCounties.countyId, countyId)));
 
   return { success: true };
