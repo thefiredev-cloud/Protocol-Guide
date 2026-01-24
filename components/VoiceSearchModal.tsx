@@ -118,6 +118,13 @@ export function VoiceSearchModal({
 }: VoiceSearchModalProps) {
   const colors = useColors();
   const [recordingState, setRecordingState] = useState<RecordingState>("idle");
+
+  // Focus trap for accessibility (WCAG 2.4.3)
+  const { containerRef, containerProps } = useFocusTrap({
+    visible,
+    onClose,
+    allowEscapeClose: true,
+  });
   const [errorType, setErrorType] = useState<VoiceError | null>(null);
   const [transcriptionPreview, setTranscriptionPreview] = useState("");
   const [recordingDuration, setRecordingDuration] = useState(0);
