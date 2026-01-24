@@ -147,107 +147,106 @@ async function importProtocols() {
   const db = drizzle(pool);
 
   try {
+    // Read the CSV results
+    const csvPath = "/home/ubuntu/scrape_ems_protocols.csv";
+    const csvContent = fs.readFileSync(csvPath, "utf-8");
+    const lines = csvContent.split("\n").slice(1); // Skip header
 
-  // Read the CSV results
-  const csvPath = "/home/ubuntu/scrape_ems_protocols.csv";
-  const csvContent = fs.readFileSync(csvPath, "utf-8");
-  const lines = csvContent.split("\n").slice(1); // Skip header
+    let totalChunks = 0;
+    let successfulSources = 0;
 
-  let totalChunks = 0;
-  let successfulSources = 0;
+    for (const line of lines) {
+      if (!line.trim()) continue;
 
-  for (const line of lines) {
-    if (!line.trim()) continue;
-    
-    // Parse CSV line (handle commas in quoted fields)
-    const parts = line.match(/(".*?"|[^,]+)(?=,|$)/g);
-    if (!parts || parts.length < 6) continue;
-    
-    const sourceUrl = parts[0].replace(/"/g, "").trim();
-    const sourceName = parts[1].replace(/"/g, "").trim();
-    const protocolsFound = parseInt(parts[3]) || 0;
-    const contentPath = parts[4].replace(/"/g, "").trim();
-    const accessStatus = parts[5].replace(/"/g, "").trim();
-    
-    // Skip failed sources
-    if (accessStatus === "error" || accessStatus === "not_found" || accessStatus === "login_required") {
-      console.log(`Skipping ${sourceName}: ${accessStatus}`);
-      continue;
-    }
-    
-    // Skip if no content file
-    if (!contentPath || !fs.existsSync(contentPath)) {
-      console.log(`No content file for ${sourceName}`);
-      continue;
-    }
-    
-    // Read and parse the protocol content
-    const content = fs.readFileSync(contentPath, "utf-8");
-    if (content.length < 100) {
-      console.log(`Content too short for ${sourceName}`);
-      continue;
-    }
-    
-    const chunks = parseProtocolFile(content, sourceUrl);
-    if (chunks.length === 0) {
-      console.log(`No chunks parsed for ${sourceName}`);
-      continue;
-    }
-    
-    // Find matching county/entity in database
-    const state = SOURCE_TO_STATE[sourceName];
-    let countyId: number | null = null;
-    
-    if (state) {
-      // For state protocols, find any county in that state
-      const stateCounties = await db.select().from(counties).where(eq(counties.state, state)).limit(1);
-      if (stateCounties.length > 0) {
-        countyId = stateCounties[0].id;
+      // Parse CSV line (handle commas in quoted fields)
+      const parts = line.match(/(".*?"|[^,]+)(?=,|$)/g);
+      if (!parts || parts.length < 6) continue;
+
+      const sourceUrl = parts[0].replace(/"/g, "").trim();
+      const sourceName = parts[1].replace(/"/g, "").trim();
+      const protocolsFound = parseInt(parts[3]) || 0;
+      const contentPath = parts[4].replace(/"/g, "").trim();
+      const accessStatus = parts[5].replace(/"/g, "").trim();
+
+      // Skip failed sources
+      if (accessStatus === "error" || accessStatus === "not_found" || accessStatus === "login_required") {
+        console.log(`Skipping ${sourceName}: ${accessStatus}`);
+        continue;
       }
-    } else {
-      // Try to find by name match
-      const nameMatch = await db.select().from(counties).where(
-        like(counties.name, `%${sourceName.split(" ")[0]}%`)
-      ).limit(1);
-      if (nameMatch.length > 0) {
-        countyId = nameMatch[0].id;
+
+      // Skip if no content file
+      if (!contentPath || !fs.existsSync(contentPath)) {
+        console.log(`No content file for ${sourceName}`);
+        continue;
       }
-    }
-    
-    if (!countyId) {
-      // Create a new county entry for this source
-      const result = await db.insert(counties).values({
-        name: sourceName,
-        state: state || "Unknown",
-        usesStateProtocols: false,
-        protocolVersion: "2025",
-      });
-      countyId = Number(result[0].insertId);
-    }
-    
-    // Insert protocol chunks
-    for (const chunk of chunks) {
-      try {
-        await db.insert(protocolChunks).values({
-          countyId,
-          protocolNumber: chunk.protocolNumber || "N/A",
-          protocolTitle: chunk.protocolTitle,
-          section: chunk.section,
-          content: chunk.content,
-          sourcePdfUrl: chunk.sourcePdfUrl,
-        });
-        totalChunks++;
-      } catch (error: any) {
-        // Skip duplicates
-        if (!error.message?.includes("Duplicate")) {
-          console.error(`Error inserting chunk: ${error.message}`);
+
+      // Read and parse the protocol content
+      const content = fs.readFileSync(contentPath, "utf-8");
+      if (content.length < 100) {
+        console.log(`Content too short for ${sourceName}`);
+        continue;
+      }
+
+      const chunks = parseProtocolFile(content, sourceUrl);
+      if (chunks.length === 0) {
+        console.log(`No chunks parsed for ${sourceName}`);
+        continue;
+      }
+
+      // Find matching county/entity in database
+      const state = SOURCE_TO_STATE[sourceName];
+      let countyId: number | null = null;
+
+      if (state) {
+        // For state protocols, find any county in that state
+        const stateCounties = await db.select().from(counties).where(eq(counties.state, state)).limit(1);
+        if (stateCounties.length > 0) {
+          countyId = stateCounties[0].id;
+        }
+      } else {
+        // Try to find by name match
+        const nameMatch = await db.select().from(counties).where(
+          like(counties.name, `%${sourceName.split(" ")[0]}%`)
+        ).limit(1);
+        if (nameMatch.length > 0) {
+          countyId = nameMatch[0].id;
         }
       }
+
+      if (!countyId) {
+        // Create a new county entry for this source
+        const result = await db.insert(counties).values({
+          name: sourceName,
+          state: state || "Unknown",
+          usesStateProtocols: false,
+          protocolVersion: "2025",
+        });
+        countyId = Number(result[0].insertId);
+      }
+
+      // Insert protocol chunks
+      for (const chunk of chunks) {
+        try {
+          await db.insert(protocolChunks).values({
+            countyId,
+            protocolNumber: chunk.protocolNumber || "N/A",
+            protocolTitle: chunk.protocolTitle,
+            section: chunk.section,
+            content: chunk.content,
+            sourcePdfUrl: chunk.sourcePdfUrl,
+          });
+          totalChunks++;
+        } catch (error: any) {
+          // Skip duplicates
+          if (!error.message?.includes("Duplicate")) {
+            console.error(`Error inserting chunk: ${error.message}`);
+          }
+        }
+      }
+
+      successfulSources++;
+      console.log(`Imported ${chunks.length} chunks from ${sourceName}`);
     }
-    
-    successfulSources++;
-    console.log(`Imported ${chunks.length} chunks from ${sourceName}`);
-  }
 
     console.log(`\n=== Import Complete ===`);
     console.log(`Successful sources: ${successfulSources}`);
