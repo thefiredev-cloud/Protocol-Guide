@@ -33,18 +33,26 @@ interface ProtocolFix {
  * - REFERENCE NO. 1301
  * - Ref. No. 1345
  * - REFERENCE NO. 13 17.39 (space between digits)
+ * - Ref. No. 13 45 (space between digits)
  */
 function extractProtocolNumber(content: string): string | null {
-  // Pattern 1: REFERENCE NO. with potential spaces in number
-  const refMatch = content.match(/REFERENCE\s*NO\.?\s*:?\s*(\d+\s*\d*\.?\d*)/i);
+  // Pattern 1: REFERENCE NO. with potential spaces in number (capture all digit groups)
+  const refMatch = content.match(/REFERENCE\s*NO\.?\s*:?\s*([\d\s\.]+)/i);
   if (refMatch) {
-    return refMatch[1].replace(/\s+/g, '').trim();
+    // Remove all spaces and trim, keep only digits and dots
+    const cleaned = refMatch[1].replace(/\s+/g, '').replace(/^\.+|\.+$/g, '').trim();
+    if (cleaned && /^\d+\.?\d*$/.test(cleaned)) {
+      return cleaned;
+    }
   }
 
-  // Pattern 2: Ref. No. format
-  const refNoMatch = content.match(/Ref\.?\s*No\.?\s*:?\s*(\d+\.?\d*)/i);
+  // Pattern 2: Ref. No. format with potential spaces
+  const refNoMatch = content.match(/Ref\.?\s*No\.?\s*:?\s*([\d\s\.]+)/i);
   if (refNoMatch) {
-    return refNoMatch[1].trim();
+    const cleaned = refNoMatch[1].replace(/\s+/g, '').replace(/^\.+|\.+$/g, '').trim();
+    if (cleaned && /^\d+\.?\d*$/.test(cleaned)) {
+      return cleaned;
+    }
   }
 
   return null;
