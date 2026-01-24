@@ -5,7 +5,7 @@
 
 import { Request, Response, NextFunction } from "express";
 import { parse as parseCookie } from "cookie";
-import { getSessionCookieOptions } from "./cookies";
+import { getCsrfCookieOptions } from "./cookies";
 import * as crypto from "crypto";
 
 const CSRF_COOKIE_NAME = "csrf_token";
