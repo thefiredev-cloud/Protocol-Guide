@@ -469,7 +469,7 @@ export function EmailCaptureSection() {
         </Text>
 
         <Text style={{ color: COLORS.textMuted, fontSize: isMobile ? 15 : isTablet ? 16 : 17, textAlign: "center", marginBottom: isMobile ? 28 : isTablet ? 32 : 36, lineHeight: isMobile ? 22 : 24 }}>
-          Join the medics and departments already switching{"\n"}to the new standard of care.
+          Be among the first to upgrade your protocol access.
         </Text>
 
         {submitted ? (
