@@ -289,6 +289,9 @@ export function DoseWeightCalculator({
                   },
                 ]}
                 activeOpacity={0.7}
+                accessibilityLabel={`Set weight to ${quickWeight} ${weightUnit}`}
+                accessibilityRole="button"
+                accessibilityState={{ selected: weight === quickWeight }}
               >
                 <Text
                   style={[
