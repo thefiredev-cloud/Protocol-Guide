@@ -170,7 +170,7 @@ export async function getAgenciesWithProtocols(state?: string): Promise<AgencyIn
         c.state,
         COUNT(pc.id) as protocol_count
       FROM counties c
-      INNER JOIN protocolChunks pc ON pc.countyId = c.id
+      INNER JOIN protocol_chunks pc ON pc.county_id = c.id
       WHERE c.state = ${state}
       GROUP BY c.id, c.name, c.state
       HAVING COUNT(pc.id) > 0
@@ -184,7 +184,7 @@ export async function getAgenciesWithProtocols(state?: string): Promise<AgencyIn
         c.state,
         COUNT(pc.id) as protocol_count
       FROM counties c
-      INNER JOIN protocolChunks pc ON pc.countyId = c.id
+      INNER JOIN protocol_chunks pc ON pc.county_id = c.id
       GROUP BY c.id, c.name, c.state
       HAVING COUNT(pc.id) > 0
       ORDER BY c.state ASC, protocol_count DESC, c.name ASC
@@ -192,7 +192,7 @@ export async function getAgenciesWithProtocols(state?: string): Promise<AgencyIn
   }
 
   const results = await db.execute(query);
-  const rows = (results[0] as unknown as any[]) || [];
+  const rows = (results.rows as any[]) || [];
 
   return rows.map(row => ({
     id: row.id,
