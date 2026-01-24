@@ -4,11 +4,11 @@
  */
 
 import { z } from "zod";
-import { publicProcedure, router } from "../_core/trpc";
+import { strictPublicRateLimitedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 
 export const contactRouter = router({
-  submit: publicProcedure
+  submit: strictPublicRateLimitedProcedure
     .input(z.object({
       name: z.string().min(1).max(255),
       email: z.string().email().max(320),

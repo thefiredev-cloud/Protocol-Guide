@@ -333,3 +333,94 @@ const enforceRateLimit = t.middleware(async (opts) => {
  * Rate-limited procedure with tracing and CSRF protection - enforces daily query limits
  */
 export const rateLimitedProcedure = publicProcedure.use(csrfProtection).use(enforceRateLimit);
+
+// ============================================================================
+// PUBLIC RATE LIMIT MIDDLEWARE (IP-BASED)
+// ============================================================================
+
+// In-memory store for public endpoint rate limiting (IP-based)
+// Key: IP address, Value: { count: number, resetTime: number }
+const publicRateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
+// Cleanup old entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, data] of publicRateLimitStore.entries()) {
+    if (data.resetTime < now) {
+      publicRateLimitStore.delete(ip);
+    }
+  }
+}, 5 * 60 * 1000);
+
+/**
+ * Public rate limit middleware - IP-based rate limiting for unauthenticated endpoints
+ * Default: 10 requests per 15 minutes per IP
+ */
+const enforcePublicRateLimit = (options?: { maxRequests?: number; windowMs?: number }) => {
+  const maxRequests = options?.maxRequests ?? 10;
+  const windowMs = options?.windowMs ?? 15 * 60 * 1000; // 15 minutes
+
+  return t.middleware(async (opts) => {
+    const { ctx, next } = opts;
+
+    // Get IP address from request
+    const ip =
+      ctx.req.headers["x-forwarded-for"]?.toString().split(",")[0].trim() ||
+      ctx.req.headers["x-real-ip"]?.toString() ||
+      ctx.req.socket.remoteAddress ||
+      "unknown";
+
+    const now = Date.now();
+    const rateLimitData = publicRateLimitStore.get(ip);
+
+    // Initialize or reset if window expired
+    if (!rateLimitData || rateLimitData.resetTime < now) {
+      publicRateLimitStore.set(ip, {
+        count: 1,
+        resetTime: now + windowMs,
+      });
+    } else {
+      // Check if limit exceeded
+      if (rateLimitData.count >= maxRequests) {
+        const retryAfter = Math.ceil((rateLimitData.resetTime - now) / 1000);
+        ctx.res.setHeader(RATE_LIMIT_HEADERS.RETRY_AFTER, retryAfter);
+        ctx.res.setHeader(RATE_LIMIT_HEADERS.LIMIT, maxRequests);
+        ctx.res.setHeader(RATE_LIMIT_HEADERS.REMAINING, 0);
+        ctx.res.setHeader(RATE_LIMIT_HEADERS.RESET, Math.floor(rateLimitData.resetTime / 1000));
+
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: `Rate limit exceeded. Please try again in ${retryAfter} seconds.`,
+        });
+      }
+
+      // Increment count
+      rateLimitData.count++;
+      publicRateLimitStore.set(ip, rateLimitData);
+    }
+
+    // Set rate limit headers
+    const currentData = publicRateLimitStore.get(ip)!;
+    ctx.res.setHeader(RATE_LIMIT_HEADERS.LIMIT, maxRequests);
+    ctx.res.setHeader(RATE_LIMIT_HEADERS.REMAINING, Math.max(0, maxRequests - currentData.count));
+    ctx.res.setHeader(RATE_LIMIT_HEADERS.RESET, Math.floor(currentData.resetTime / 1000));
+
+    return next();
+  });
+};
+
+/**
+ * Public rate-limited procedure - for unauthenticated endpoints
+ * Default: 10 requests per 15 minutes per IP
+ */
+export const publicRateLimitedProcedure = publicProcedure.use(
+  enforcePublicRateLimit({ maxRequests: 10, windowMs: 15 * 60 * 1000 })
+);
+
+/**
+ * Strict public rate-limited procedure - for sensitive public endpoints
+ * Stricter limits: 5 requests per 15 minutes per IP
+ */
+export const strictPublicRateLimitedProcedure = publicProcedure.use(
+  enforcePublicRateLimit({ maxRequests: 5, windowMs: 15 * 60 * 1000 })
+);
