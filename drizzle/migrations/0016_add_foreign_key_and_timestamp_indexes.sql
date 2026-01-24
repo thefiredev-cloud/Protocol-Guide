@@ -140,13 +140,13 @@ CREATE INDEX IF NOT EXISTS idx_user_counties_county_primary ON userCounties(coun
 -- SEARCH HISTORY TABLE
 -- ============================================
 -- Foreign key index for county (filter by county)
-CREATE INDEX IF NOT EXISTS idx_search_history_county ON searchHistory(countyId);
+CREATE INDEX IF NOT EXISTS idx_search_history_county ON search_history(countyId);
 
 -- Composite index for user + county search history
-CREATE INDEX IF NOT EXISTS idx_search_history_user_county ON searchHistory(userId, countyId, createdAt DESC);
+CREATE INDEX IF NOT EXISTS idx_search_history_user_county ON search_history(userId, countyId, createdAt DESC);
 
 -- Index for results count analysis (zero-result searches)
-CREATE INDEX IF NOT EXISTS idx_search_history_results ON searchHistory(resultsCount);
+CREATE INDEX IF NOT EXISTS idx_search_history_results ON search_history(resultsCount);
 
 -- ============================================
 -- STRIPE WEBHOOK EVENTS TABLE
