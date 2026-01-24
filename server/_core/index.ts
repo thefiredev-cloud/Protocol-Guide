@@ -164,10 +164,11 @@ async function startServer() {
 
   registerOAuthRoutes(app);
 
-  // Health check endpoints - comprehensive monitoring
+  // Health check endpoints - comprehensive monitoring with rate limiting
+  // Even health checks need rate limiting to prevent DoS attacks
   app.get("/api/health", publicLimiter, healthHandler);
-  app.get("/api/ready", readyHandler);  // Kubernetes readiness probe
-  app.get("/api/live", liveHandler);    // Kubernetes liveness probe
+  app.get("/api/ready", publicLimiter, readyHandler);  // Kubernetes readiness probe (rate limited)
+  app.get("/api/live", publicLimiter, liveHandler);    // Kubernetes liveness probe (rate limited)
 
   // Resilience status endpoint - for monitoring circuit breakers and fallbacks
   app.get("/api/resilience", publicLimiter, (_req, res) => {
