@@ -27,6 +27,8 @@
     "lib/**/*.ts",
     "shared/**/*.ts",
     "constants/**/*.ts",
+    "types/**/*.ts",
+    "utils/**/*.ts",
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "nativewind-env.d.ts"
