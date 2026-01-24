@@ -347,7 +347,7 @@ export function VoiceSearchModal({
 
       setTranscriptionPreview("");
       setRecordingDuration(0);
-      startPulseAnimation();
+      startPulseAnimation(animationValues);
 
       // Track duration
       durationIntervalRef.current = setInterval(() => {
