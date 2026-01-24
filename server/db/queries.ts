@@ -11,8 +11,8 @@ export async function createQuery(data: InsertQuery) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const result = await db.insert(queries).values(data);
-  return result[0].insertId;
+  const [result] = await db.insert(queries).values(data).returning({ id: queries.id });
+  return result.id;
 }
 
 export async function getUserQueries(userId: number, limit = 50) {
