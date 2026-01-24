@@ -11,7 +11,7 @@ import {
   Platform,
   Pressable,
 } from "react-native";
-import { COLORS } from "./animation-utils";
+import { COLORS } from "./constants";
 
 interface PulsingButtonProps {
   onPress: () => void;
