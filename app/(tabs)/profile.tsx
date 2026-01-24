@@ -549,6 +549,9 @@ export default function ProfileScreen() {
                       removeFavorite(fav.id);
                     }}
                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    accessibilityLabel={`Remove ${fav.protocolTitle} from favorites`}
+                    accessibilityRole="button"
+                    accessibilityHint="Removes this protocol from your saved favorites"
                   >
                     <IconSymbol name="xmark" size={16} color={colors.muted} />
                   </TouchableOpacity>
