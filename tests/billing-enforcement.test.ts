@@ -7,6 +7,7 @@ import { TRPCError } from "@trpc/server";
 import { paidProcedure, rateLimitedProcedure, router } from "../server/_core/trpc";
 
 import * as db from "../server/db";
+import { createMockTraceContext } from "./setup";
 
 // Mock db module
 vi.mock("../server/db", () => ({
@@ -16,6 +17,7 @@ vi.mock("../server/db", () => ({
 // Mock the context
 const createMockContext = (user?: any) => ({
   user,
+  trace: createMockTraceContext(),
 });
 
 // Create a test router with procedures
