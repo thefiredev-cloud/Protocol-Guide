@@ -248,7 +248,8 @@ export const searchRouter = router({
   }),
 
   // Get total protocol statistics
-  totalStats: publicProcedure.query(async () => {
+  // Rate limited to prevent abuse of aggregation queries
+  totalStats: publicRateLimitedProcedure.query(async () => {
     return db.getTotalProtocolStats();
   }),
 
