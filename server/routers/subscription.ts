@@ -55,22 +55,10 @@ export const subscriptionRouter = router({
       return { success: true, error: null, url: result.url };
     }),
 
-  // Get current subscription status
+  // Get current subscription status with tier features
   status: protectedProcedure.query(async ({ ctx }) => {
-    const user = await db.getUserById(ctx.user.id);
-    if (!user) {
-      return {
-        tier: "free" as const,
-        subscriptionStatus: null,
-        subscriptionEndDate: null,
-      };
-    }
-
-    return {
-      tier: user.tier,
-      subscriptionStatus: user.subscriptionStatus,
-      subscriptionEndDate: user.subscriptionEndDate,
-    };
+    const tierInfo = await getUserTierInfo(ctx.user.id);
+    return tierInfo;
   }),
 
   // Create department/agency checkout session
