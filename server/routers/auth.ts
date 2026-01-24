@@ -29,7 +29,8 @@ export const authRouter = router({
     const token = authHeader?.replace("Bearer ", "");
 
     // Revoke token on Supabase if present for immediate invalidation
-    if (token) {
+    // This works for both authenticated and unauthenticated requests
+    if (token && ctx.user) {
       try {
         await supabaseAdmin.auth.admin.signOut(token);
         logger.info(
@@ -44,6 +45,7 @@ export const authRouter = router({
       }
     }
 
+    // Clear session cookie (works for both authenticated and unauthenticated)
     const cookieOptions = getSessionCookieOptions(ctx.req);
     ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
     return { success: true } as const;
