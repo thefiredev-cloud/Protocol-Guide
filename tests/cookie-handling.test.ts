@@ -65,7 +65,7 @@ describe("Cookie Middleware", () => {
   });
 
   describe("csrfTokenGenerator", () => {
-    let setCookieCalls: Array<{ name: string; value: string; options: Record<string, unknown> }>;
+    let setCookieCalls: { name: string; value: string; options: Record<string, unknown> }[];
 
     beforeEach(() => {
       setCookieCalls = [];
@@ -156,7 +156,7 @@ describe("Cookie Middleware", () => {
 
   describe("cookieMiddleware", () => {
     it("parses cookies and generates CSRF token", () => {
-      const setCookieCalls: Array<{ name: string; value: string; options: Record<string, unknown> }> = [];
+      const setCookieCalls: { name: string; value: string; options: Record<string, unknown> }[] = [];
 
       const req = {
         headers: {

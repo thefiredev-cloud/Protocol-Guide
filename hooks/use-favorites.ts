@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const FAVORITES_KEY = "protocol_guide_favorites";
@@ -17,12 +17,15 @@ export function useFavorites() {
   const [favorites, setFavorites] = useState<FavoriteProtocol[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load favorites on mount
-  useEffect(() => {
-    loadFavorites();
-  }, []);
+  // Use ref to always access current favorites without causing re-renders
+  const favoritesRef = useRef<FavoriteProtocol[]>([]);
 
-  const loadFavorites = async () => {
+  // Keep ref in sync with state
+  useEffect(() => {
+    favoritesRef.current = favorites;
+  }, [favorites]);
+
+  const loadFavorites = useCallback(async () => {
     try {
       const stored = await AsyncStorage.getItem(FAVORITES_KEY);
       if (stored) {
@@ -33,7 +36,12 @@ export function useFavorites() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  // Load favorites on mount
+  useEffect(() => {
+    loadFavorites();
+  }, [loadFavorites]);
 
   const addFavorite = useCallback(async (protocol: Omit<FavoriteProtocol, "savedAt">) => {
     try {
@@ -64,17 +72,19 @@ export function useFavorites() {
     }
   }, []);
 
+  // Use ref to avoid recreating this callback on every favorites change
   const isFavorite = useCallback((protocolId: number) => {
-    return favorites.some((f) => f.id === protocolId);
-  }, [favorites]);
+    return favoritesRef.current.some((f) => f.id === protocolId);
+  }, []);
 
   const toggleFavorite = useCallback(async (protocol: Omit<FavoriteProtocol, "savedAt">) => {
-    if (isFavorite(protocol.id)) {
+    // Check current state using ref to avoid stale closure
+    if (favoritesRef.current.some((f) => f.id === protocol.id)) {
       await removeFavorite(protocol.id);
     } else {
       await addFavorite(protocol);
     }
-  }, [isFavorite, addFavorite, removeFavorite]);
+  }, [addFavorite, removeFavorite]);
 
   return {
     favorites,
