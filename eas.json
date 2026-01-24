@@ -26,7 +26,9 @@
       "channel": "development",
       "env": {
         "APP_ENV": "development",
-        "EXPO_PUBLIC_API_BASE_URL": "http://localhost:3000"
+        "EXPO_PUBLIC_API_BASE_URL": "http://localhost:3000",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://dflmjilieokjkkqxrmda.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmbG1qaWxpZW9ramtrcXhybWRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzNzcxODMsImV4cCI6MjA4MTk1MzE4M30.XrmZjCRmnwxyJlzLMMwOv_MrlMrwIaCcXtirlDN_DYQ"
       }
     },
     "development-device": {
