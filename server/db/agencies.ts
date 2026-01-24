@@ -39,8 +39,8 @@ export async function createAgency(data: InsertAgency): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const result = await db.insert(agencies).values(data);
-  return result[0].insertId;
+  const [result] = await db.insert(agencies).values(data).returning({ id: agencies.id });
+  return result.id;
 }
 
 /**
