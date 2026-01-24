@@ -68,32 +68,36 @@ export function createMockTraceContext(overrides: Partial<{
  * Includes all properties needed by middleware (CSRF, tracing, rate limiting)
  */
 export function createMockRequest(overrides: Record<string, unknown> = {}) {
+  const { headers: headersOverrides, cookies: cookiesOverrides, ...restOverrides } = overrides as {
+    headers?: Record<string, string>;
+    cookies?: Record<string, string>;
+    [key: string]: unknown;
+  };
+
   const csrfToken = "test-csrf-token-12345";
-  const headersOverrides = (overrides.headers as Record<string, string>) || {};
-  const cookiesOverrides = (overrides.cookies as Record<string, string>) || {};
 
   return {
     protocol: "https",
     hostname: "localhost",
     method: "POST",
     url: "/api/trpc",
+    path: "/api/trpc",
     ip: "127.0.0.1",
     headers: {
       authorization: "Bearer test_token",
       "user-agent": "vitest-test-agent",
       "x-csrf-token": csrfToken,
       "x-request-id": "test-request-id",
-      ...headersOverrides,
+      ...(headersOverrides || {}),
     },
     cookies: {
       csrf_token: csrfToken,
-      ...cookiesOverrides,
+      ...(cookiesOverrides || {}),
     },
     socket: {
       remoteAddress: "127.0.0.1",
     },
-    ...overrides,
-    // Ensure headers and cookies are not overwritten by spread
+    ...restOverrides,
   };
 }
 
