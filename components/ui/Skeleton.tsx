@@ -646,12 +646,12 @@ export const SkeletonRecentQueries = memo(function SkeletonRecentQueries({
       </View>
     </View>
   );
-}
+});
 
 /**
  * History list skeleton with multiple items
  */
-export function SkeletonHistoryList({
+export const SkeletonHistoryList = memo(function SkeletonHistoryList({
   count = 5,
   style,
   testID,
