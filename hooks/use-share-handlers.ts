@@ -1,6 +1,6 @@
 /**
  * useShareHandlers Hook
- * 
+ *
  * Provides share functionality for referral codes via multiple channels.
  * Handles clipboard, SMS, WhatsApp, Email, and native share.
  */
@@ -8,7 +8,6 @@
 import { useCallback } from "react";
 import { Share, Platform, Linking } from "react-native";
 import * as Clipboard from "expo-clipboard";
-import type { UseMutationResult } from "@tanstack/react-query";
 
 interface ShareTemplates {
   code: string;
@@ -24,13 +23,15 @@ interface ShareTemplates {
 
 interface TrackEventParams {
   eventType: string;
-  metadata: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
 }
 
 interface UseShareHandlersProps {
   referralCode?: string;
   templates?: ShareTemplates;
-  trackEvent: UseMutationResult<unknown, unknown, TrackEventParams, unknown>;
+  trackEvent: {
+    mutate: (params: TrackEventParams) => void;
+  };
   onCopySuccess?: () => void;
 }
 
