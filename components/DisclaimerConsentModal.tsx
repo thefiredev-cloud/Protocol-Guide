@@ -5,6 +5,7 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc";
 import * as Haptics from "@/lib/haptics";
+import { useFocusTrap } from "@/lib/accessibility";
 
 type DisclaimerConsentModalProps = {
   visible: boolean;
