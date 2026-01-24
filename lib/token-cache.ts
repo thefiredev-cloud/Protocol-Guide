@@ -151,6 +151,12 @@ class TokenCache {
 
     const session = await this.getSession();
 
+    // Check AGAIN after async operation (another thread could have started refresh)
+    if (this.refreshInProgress) {
+      console.log("[TokenCache] Refresh started during getSession, waiting...");
+      return this.refreshInProgress;
+    }
+
     if (!session) {
       return null;
     }
