@@ -78,26 +78,8 @@ export default function UploadProtocolScreen() {
     setError(null);
 
     try {
-      // Read file as base64
-      let base64: string;
-      if (Platform.OS === "web") {
-        // For web, fetch and convert to base64
-        const response = await fetch(file.uri);
-        const blob = await response.blob();
-        base64 = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            const result = reader.result as string;
-            resolve(result.split(",")[1]);
-          };
-          reader.readAsDataURL(blob);
-        });
-      } else {
-        // For native, use FileSystem
-        base64 = await FileSystem.readAsStringAsync(file.uri, {
-          encoding: "base64",
-        });
-      }
+      // Read file as base64 (cross-platform)
+      const base64 = await uriToBase64(file.uri);
 
       await uploadMutation.mutateAsync({
         agencyId,
