@@ -270,7 +270,7 @@ export async function getUserTierInfo(userId: number) {
     };
   }
 
-  const tier = (user.tier || "free") as SubscriptionTier;
+  const tier = validateTierValue(user.tier);
   const features = await getUserTierFeatures(userId);
 
   // Check if subscription is active
