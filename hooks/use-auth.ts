@@ -129,6 +129,17 @@ export function useAuth(options?: UseAuthOptions) {
       setLoading(true);
       setError(null);
 
+      // Check for E2E mock session first (browser only)
+      const e2eMockUser = getE2EMockUser();
+      if (e2eMockUser) {
+        console.log("[useAuth] E2E mock session found:", e2eMockUser.email);
+        const mockSession = createE2EMockSession();
+        setSession(mockSession);
+        setUser(e2eMockUser);
+        setLoading(false);
+        return;
+      }
+
       // Use cached session to prevent race conditions
       const cachedSession = await getCachedSession();
 
