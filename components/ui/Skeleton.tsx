@@ -217,8 +217,10 @@ export const SkeletonText = memo(function SkeletonText({
   style?: ViewStyle;
   testID?: string;
 }) {
+  const gapStyle = useMemo(() => ({ gap }), [gap]);
+
   return (
-    <View style={[{ gap }, style]} testID={testID}>
+    <View style={[gapStyle, style]} testID={testID}>
       {Array.from({ length: lines }).map((_, index) => (
         <Skeleton
           key={index}
