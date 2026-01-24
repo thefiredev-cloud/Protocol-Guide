@@ -154,7 +154,7 @@ export async function createDepartmentCheckoutSession({
       line_items: [
         {
           price: priceId,
-          quantity: seatCount, // Both small and large departments are per-seat
+          quantity: seatCount, // Both starter and professional tiers are per-seat
         },
       ],
       success_url: successUrl,
