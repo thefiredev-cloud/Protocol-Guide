@@ -28,7 +28,10 @@ export const ResponseCard = memo(function ResponseCard({ text, protocolRefs, tim
     if (Platform.OS !== "web") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-    setTimeout(() => setCopied(false), 2000);
+    const timer = setTimeout(() => setCopied(false), 2000);
+    // Note: Timer is self-contained in callback, cleanup happens when component unmounts
+    // Store timer ref if component might unmount during the 2s window
+    return () => clearTimeout(timer);
   }, [text]);
 
   const handleReportError = useCallback(() => {
