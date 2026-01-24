@@ -45,8 +45,12 @@ export const integrationRouter = router({
    * - userAge and impression parameters are IGNORED and NOT stored
    * - Only operational metrics are logged (partner, agency, response time)
    * - No patient-identifying information is persisted
+   *
+   * SECURITY:
+   * - Rate limited (strict): 5 requests per 15 minutes per IP to prevent abuse
+   * - Prevents malicious actors from flooding integration logs
    */
-  logAccess: publicProcedure
+  logAccess: strictPublicRateLimitedProcedure
     .input(
       z.object({
         partner: z.enum(integrationPartners),
