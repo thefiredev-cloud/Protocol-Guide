@@ -5,6 +5,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { appRouter } from "../server/routers";
 import type { TrpcContext } from "../server/_core/context";
+import { createMockTraceContext } from "./setup";
 
 // Mock all dependencies
 vi.mock("../server/db", () => ({
