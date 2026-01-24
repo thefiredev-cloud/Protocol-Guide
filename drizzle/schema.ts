@@ -275,6 +275,35 @@ export const userCounties = mysqlTable("user_counties", {
 	index("idx_user_counties_county").on(table.countyId),
 ]);
 
+export const userStates = mysqlTable("user_states", {
+	id: int().autoincrement().primaryKey().notNull(),
+	userId: int().notNull(),
+	stateCode: varchar({ length: 2 }).notNull(),
+	accessLevel: mysqlEnum(['view','contribute','admin']).default('view'),
+	subscribedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP'),
+	expiresAt: timestamp({ mode: 'string' }),
+},
+(table) => [
+	index("idx_user_states_user").on(table.userId),
+	index("idx_user_states_state").on(table.stateCode),
+]);
+
+export const userAgencies = mysqlTable("user_agencies", {
+	id: int().autoincrement().primaryKey().notNull(),
+	userId: int().notNull(),
+	agencyId: int().notNull(),
+	accessLevel: mysqlEnum(['view','contribute','admin']).default('view'),
+	isPrimary: tinyint().default(0),
+	role: varchar({ length: 100 }),
+	verifiedAt: timestamp({ mode: 'string' }),
+	subscribedAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP'),
+	expiresAt: timestamp({ mode: 'string' }),
+},
+(table) => [
+	index("idx_user_agencies_user").on(table.userId),
+	index("idx_user_agencies_agency").on(table.agencyId),
+]);
+
 export const searchHistory = mysqlTable("search_history", {
 	id: int().autoincrement().primaryKey().notNull(),
 	userId: int().notNull(),
