@@ -117,31 +117,6 @@ export function VoiceSearchModal({
     }
   }, [visible, cleanupRecording, resetState, setErrorType, animationValues]);
 
-  // Format duration for display
-  const formatDuration = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  // Get status text
-  const getStatusText = (): string => {
-    switch (recordingState) {
-      case "idle":
-        return "Tap to start voice search";
-      case "recording":
-        return "Listening... Tap to stop";
-      case "processing":
-        return "Processing...";
-      case "complete":
-        return "Success!";
-      case "error":
-        return errorType ? ERROR_MESSAGES[errorType].title : "An error occurred";
-      default:
-        return "";
-    }
-  };
-
   return (
     <Modal
       visible={visible}
