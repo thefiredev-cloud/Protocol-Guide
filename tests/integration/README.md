@@ -2,7 +2,12 @@
 
 ## Overview
 
-This directory contains integration tests for Protocol Guide's critical user journeys. These tests validate the complete flow from user signup through subscription to protocol search and bookmarking.
+This directory contains two types of integration tests:
+
+1. **Database Integration Tests** - Real PostgreSQL database operations with transaction rollback
+2. **User Journey Tests** - End-to-end tRPC router tests with mocked external services
+
+Both types validate critical flows from user signup through subscription to protocol search and bookmarking.
 
 ## Test File
 
