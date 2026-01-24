@@ -5,7 +5,7 @@
 
 import { supabase, signOut as supabaseSignOut } from "@/lib/supabase";
 import { startSessionMonitor } from "@/lib/auth-refresh";
-import { getSession as getCachedSession, clearTokenCache } from "@/lib/token-cache";
+import { getSession as getCachedSession, clearTokenCache, tokenCache } from "@/lib/token-cache";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
 
