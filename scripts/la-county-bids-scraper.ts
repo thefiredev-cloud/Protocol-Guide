@@ -1,7 +1,8 @@
 /**
  * LA County Bids Portal Scraper
- * Fetches open solicitations from https://camisvr.co.la.ca.us/lacobids
+ * Downloads and parses real solicitation data from LA County
  *
+ * Source: https://camisvr.co.la.ca.us/lacobids/BidLookUp/OpenBidList
  * Output: scripts/output/la-county-bids-data.json
  */
 
@@ -10,290 +11,265 @@ import * as path from 'path';
 import * as https from 'https';
 
 interface BidRecord {
+  bidUrl: string;
   bidNumber: string;
   title: string;
+  bidType: string;
   department: string;
+  description: string;
+  commodityCode: string;
+  commodityDescription: string;
+  openDate: string;
   closingDate: string;
-  estimatedValue?: number;
-  category?: string;
-  status: string;
+  contactName: string;
+  contactPhone: string;
+  contactEmail: string;
 }
 
 interface ScraperResult {
   generatedAt: string;
   source: string;
+  sourceUrl: string;
   totalBids: number;
   bids: BidRecord[];
-  byDepartment: Record<string, { count: number; totalValue: number; bids: string[] }>;
-  byCategory: Record<string, { count: number; totalValue: number }>;
-  valueDistribution: {
-    under100k: number;
-    from100kTo500k: number;
-    from500kTo1M: number;
-    from1MTo5M: number;
-    over5M: number;
-    unknown: number;
-  };
+  byDepartment: Record<string, { count: number; bids: string[] }>;
+  byBidType: Record<string, { count: number }>;
+  byCommodity: Record<string, { count: number }>;
   upcomingClosings: BidRecord[];
+  closingSoon: BidRecord[];
 }
 
-// LA County Budget and Contract Data (FY 2024-25)
-// Source: https://ceo.lacounty.gov/budget/
-const LA_COUNTY_BUDGET_DATA = {
-  totalBudget: 49.2e9, // $49.2 billion
-  departments: {
-    'Health Services': { budget: 8.1e9, contractShare: 0.35 },
-    'Public Social Services': { budget: 5.8e9, contractShare: 0.25 },
-    'Sheriff': { budget: 4.1e9, contractShare: 0.15 },
-    'Public Works': { budget: 3.2e9, contractShare: 0.45 },
-    'Fire': { budget: 2.1e9, contractShare: 0.20 },
-    'Mental Health': { budget: 2.9e9, contractShare: 0.40 },
-    'Probation': { budget: 1.1e9, contractShare: 0.18 },
-    'Parks and Recreation': { budget: 0.6e9, contractShare: 0.35 },
-    'Internal Services': { budget: 1.4e9, contractShare: 0.55 },
-    'CEO': { budget: 0.45e9, contractShare: 0.30 },
-    'Registrar-Recorder': { budget: 0.35e9, contractShare: 0.40 },
-    'Child Support Services': { budget: 0.25e9, contractShare: 0.22 },
-    'Assessor': { budget: 0.22e9, contractShare: 0.15 },
-    'Agricultural Commissioner': { budget: 0.08e9, contractShare: 0.25 },
-    'Alternate Public Defender': { budget: 0.12e9, contractShare: 0.10 },
-  },
-  contractCategories: [
-    { name: 'Professional Services', avgValue: 2.5e6, bidFrequency: 0.25 },
-    { name: 'Construction', avgValue: 15e6, bidFrequency: 0.15 },
-    { name: 'IT Services', avgValue: 5e6, bidFrequency: 0.20 },
-    { name: 'Medical/Health', avgValue: 8e6, bidFrequency: 0.12 },
-    { name: 'Facilities Management', avgValue: 3e6, bidFrequency: 0.18 },
-    { name: 'Transportation', avgValue: 4e6, bidFrequency: 0.10 },
-  ]
-};
+const CSV_URL = 'https://camisvr.co.la.ca.us/LACoBids/Download/Rpt_Listing/OpenBidList.csv';
 
-// Generate realistic bid data based on LA County budget structure
-function generateBidData(): BidRecord[] {
-  const bids: BidRecord[] = [];
-  const departments = Object.keys(LA_COUNTY_BUDGET_DATA.departments);
-  const categories = LA_COUNTY_BUDGET_DATA.contractCategories;
+function parseCSVLine(line: string): string[] {
+  const result: string[] = [];
+  let current = '';
+  let inQuotes = false;
 
-  const bidTitles: Record<string, string[]> = {
-    'Health Services': [
-      'Medical Equipment Maintenance Services',
-      'Clinical Laboratory Services',
-      'Patient Transport Services',
-      'Healthcare IT System Upgrade',
-      'Nursing Registry Services',
-      'Pharmacy Distribution Services',
-      'Medical Waste Disposal',
-      'Electronic Health Records Implementation',
-    ],
-    'Public Works': [
-      'Road Resurfacing Project - District 3',
-      'Bridge Maintenance and Repair Services',
-      'Storm Drain Improvement Project',
-      'Traffic Signal Modernization',
-      'Flood Control Channel Maintenance',
-      'Engineering Design Services',
-      'Construction Management Services',
-      'Environmental Remediation Services',
-    ],
-    'Sheriff': [
-      'Detention Facility Food Services',
-      'Law Enforcement Equipment',
-      'Jail Medical Services',
-      'Vehicle Fleet Maintenance',
-      'Communications System Upgrade',
-      'Security Technology Integration',
-    ],
-    'Fire': [
-      'Fire Apparatus Replacement',
-      'Personal Protective Equipment',
-      'Emergency Medical Supplies',
-      'Fire Station Construction',
-      'Dispatch System Modernization',
-    ],
-    'Internal Services': [
-      'Enterprise Software Licensing',
-      'Data Center Operations',
-      'Fleet Management Services',
-      'Printing and Mail Services',
-      'Telecommunications Infrastructure',
-      'Cloud Migration Services',
-    ],
-    'Mental Health': [
-      'Outpatient Treatment Services',
-      'Residential Care Facilities',
-      'Crisis Intervention Services',
-      'Substance Abuse Treatment',
-      'Telehealth Platform Implementation',
-    ],
-    'Parks and Recreation': [
-      'Park Facility Renovation',
-      'Grounds Maintenance Services',
-      'Recreation Program Services',
-      'Trail Development Project',
-    ],
-    'Public Social Services': [
-      'CalFresh Benefits Administration',
-      'Homeless Services Program',
-      'Employment Services Provider',
-      'Case Management System',
-    ],
-  };
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
 
-  let bidCounter = 2024001;
-  const now = new Date();
-
-  // Generate 45-65 open bids (typical for LA County at any time)
-  const numBids = 45 + Math.floor(Math.random() * 20);
-
-  for (let i = 0; i < numBids; i++) {
-    const deptIndex = Math.floor(Math.random() * departments.length);
-    const dept = departments[deptIndex];
-    const catIndex = Math.floor(Math.random() * categories.length);
-    const category = categories[catIndex];
-
-    const deptTitles = bidTitles[dept] || [`${dept} Services Contract`];
-    const title = deptTitles[Math.floor(Math.random() * deptTitles.length)];
-
-    // Generate closing date 7-90 days from now
-    const closingDays = 7 + Math.floor(Math.random() * 83);
-    const closingDate = new Date(now.getTime() + closingDays * 24 * 60 * 60 * 1000);
-
-    // Generate estimated value based on category
-    const baseValue = category.avgValue;
-    const variance = 0.5 + Math.random(); // 50% to 150% of avg
-    const estimatedValue = Math.round(baseValue * variance);
-
-    bids.push({
-      bidNumber: `BRC-${bidCounter++}`,
-      title: `${title} - RFP ${new Date().getFullYear()}`,
-      department: dept,
-      closingDate: closingDate.toISOString().split('T')[0],
-      estimatedValue,
-      category: category.name,
-      status: 'Open',
-    });
-  }
-
-  return bids;
-}
-
-async function fetchLACountyBids(): Promise<ScraperResult> {
-  console.log('LA County Bids Analysis');
-  console.log('========================');
-  console.log('');
-  console.log('Note: LA County does not provide a public API for bid data.');
-  console.log('This analysis uses LA County budget data and typical procurement patterns');
-  console.log('to model the open solicitation landscape.');
-  console.log('');
-  console.log('Source: LA County CEO Budget (ceo.lacounty.gov/budget/)');
-  console.log('Budget Year: FY 2024-25');
-  console.log(`Total County Budget: $${(LA_COUNTY_BUDGET_DATA.totalBudget / 1e9).toFixed(1)}B`);
-  console.log('');
-
-  // Generate modeled bid data
-  const bids = generateBidData();
-
-  // Aggregate by department
-  const byDepartment: Record<string, { count: number; totalValue: number; bids: string[] }> = {};
-  for (const bid of bids) {
-    if (!byDepartment[bid.department]) {
-      byDepartment[bid.department] = { count: 0, totalValue: 0, bids: [] };
+    if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += char;
     }
-    byDepartment[bid.department].count++;
-    byDepartment[bid.department].totalValue += bid.estimatedValue || 0;
-    byDepartment[bid.department].bids.push(bid.bidNumber);
   }
-
-  // Aggregate by category
-  const byCategory: Record<string, { count: number; totalValue: number }> = {};
-  for (const bid of bids) {
-    const cat = bid.category || 'Uncategorized';
-    if (!byCategory[cat]) {
-      byCategory[cat] = { count: 0, totalValue: 0 };
-    }
-    byCategory[cat].count++;
-    byCategory[cat].totalValue += bid.estimatedValue || 0;
-  }
-
-  // Value distribution
-  const valueDistribution = {
-    under100k: 0,
-    from100kTo500k: 0,
-    from500kTo1M: 0,
-    from1MTo5M: 0,
-    over5M: 0,
-    unknown: 0,
-  };
-
-  for (const bid of bids) {
-    const val = bid.estimatedValue || 0;
-    if (val === 0) valueDistribution.unknown++;
-    else if (val < 100000) valueDistribution.under100k++;
-    else if (val < 500000) valueDistribution.from100kTo500k++;
-    else if (val < 1000000) valueDistribution.from500kTo1M++;
-    else if (val < 5000000) valueDistribution.from1MTo5M++;
-    else valueDistribution.over5M++;
-  }
-
-  // Get upcoming closings (next 14 days)
-  const twoWeeksOut = new Date();
-  twoWeeksOut.setDate(twoWeeksOut.getDate() + 14);
-  const upcomingClosings = bids
-    .filter(b => new Date(b.closingDate) <= twoWeeksOut)
-    .sort((a, b) => new Date(a.closingDate).getTime() - new Date(b.closingDate).getTime());
-
-  const result: ScraperResult = {
-    generatedAt: new Date().toISOString(),
-    source: 'LA County CEO Budget Analysis (FY 2024-25)',
-    totalBids: bids.length,
-    bids,
-    byDepartment,
-    byCategory,
-    valueDistribution,
-    upcomingClosings,
-  };
-
-  // Print summary
-  console.log(`Generated ${bids.length} modeled open solicitations`);
-  console.log('');
-  console.log('Top Departments by Open Bids:');
-  Object.entries(byDepartment)
-    .sort((a, b) => b[1].count - a[1].count)
-    .slice(0, 5)
-    .forEach(([dept, stats]) => {
-      console.log(`  ${dept}: ${stats.count} bids ($${(stats.totalValue / 1e6).toFixed(1)}M)`);
-    });
-  console.log('');
-  console.log('Categories:');
-  Object.entries(byCategory)
-    .sort((a, b) => b[1].totalValue - a[1].totalValue)
-    .forEach(([cat, stats]) => {
-      console.log(`  ${cat}: ${stats.count} bids ($${(stats.totalValue / 1e6).toFixed(1)}M)`);
-    });
+  result.push(current.trim());
 
   return result;
 }
 
-async function main() {
-  try {
-    const result = await fetchLACountyBids();
+function parseCSV(csvContent: string): BidRecord[] {
+  const lines = csvContent.split('\n').filter(line => line.trim());
+  if (lines.length < 2) return [];
 
-    const outputDir = path.join(__dirname, 'output');
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir, { recursive: true });
+  // Skip header row
+  const records: BidRecord[] = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const fields = parseCSVLine(lines[i]);
+    if (fields.length < 12) continue;
+
+    // Clean up commodity code (remove leading =")
+    let commodityCode = fields[6] || '';
+    if (commodityCode.startsWith('="')) {
+      commodityCode = commodityCode.slice(2);
+    }
+    if (commodityCode.endsWith('"')) {
+      commodityCode = commodityCode.slice(0, -1);
     }
 
-    const outputPath = path.join(outputDir, 'la-county-bids-data.json');
-    fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
-
-    console.log('');
-    console.log(`Data saved: ${outputPath}`);
-    console.log('');
-    console.log('Run generate-la-county-report.js to create DOCX report.');
-  } catch (error) {
-    console.error('Error:', error);
-    process.exit(1);
+    records.push({
+      bidUrl: fields[0] || '',
+      bidNumber: fields[1] || '',
+      title: fields[2] || '',
+      bidType: fields[3] || '',
+      department: fields[4] || '',
+      description: fields[5] || '',
+      commodityCode,
+      commodityDescription: fields[7] || '',
+      openDate: fields[8] || '',
+      closingDate: fields[9] || '',
+      contactName: fields[10] || '',
+      contactPhone: fields[11] || '',
+      contactEmail: fields[12] || '',
+    });
   }
+
+  return records;
 }
 
-main();
+function downloadCSV(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const outputPath = path.join(__dirname, 'output/la-county-open-bids.csv');
+
+    // Check if we have a recent local copy (less than 1 hour old)
+    if (fs.existsSync(outputPath)) {
+      const stats = fs.statSync(outputPath);
+      const ageMs = Date.now() - stats.mtimeMs;
+      if (ageMs < 3600000) {
+        console.log('Using cached CSV (less than 1 hour old)');
+        resolve(fs.readFileSync(outputPath, 'utf8'));
+        return;
+      }
+    }
+
+    console.log('Downloading fresh data from LA County Bids Portal...');
+
+    https.get(CSV_URL, (response) => {
+      if (response.statusCode !== 200) {
+        reject(new Error(`HTTP ${response.statusCode}`));
+        return;
+      }
+
+      let data = '';
+      response.on('data', chunk => data += chunk);
+      response.on('end', () => {
+        // Save to cache
+        fs.writeFileSync(outputPath, data);
+        console.log(`Downloaded ${data.length} bytes`);
+        resolve(data);
+      });
+      response.on('error', reject);
+    }).on('error', reject);
+  });
+}
+
+async function main() {
+  console.log('LA County Bids Scraper');
+  console.log('======================');
+  console.log('');
+  console.log(`Source: ${CSV_URL}`);
+  console.log('');
+
+  const outputDir = path.join(__dirname, 'output');
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+
+  // Download or use cached CSV
+  const csvContent = await downloadCSV();
+  const bids = parseCSV(csvContent);
+
+  console.log(`Parsed ${bids.length} solicitations`);
+  console.log('');
+
+  // Aggregate by department
+  const byDepartment: Record<string, { count: number; bids: string[] }> = {};
+  for (const bid of bids) {
+    const dept = bid.department || 'Unknown';
+    if (!byDepartment[dept]) {
+      byDepartment[dept] = { count: 0, bids: [] };
+    }
+    byDepartment[dept].count++;
+    byDepartment[dept].bids.push(bid.bidNumber);
+  }
+
+  // Aggregate by bid type
+  const byBidType: Record<string, { count: number }> = {};
+  for (const bid of bids) {
+    const type = bid.bidType || 'Unknown';
+    if (!byBidType[type]) {
+      byBidType[type] = { count: 0 };
+    }
+    byBidType[type].count++;
+  }
+
+  // Aggregate by commodity (top-level category from description)
+  const byCommodity: Record<string, { count: number }> = {};
+  for (const bid of bids) {
+    // Extract first word/phrase as category
+    let category = bid.commodityDescription.split(':')[0].trim();
+    if (category.length > 40) {
+      category = category.substring(0, 40) + '...';
+    }
+    if (!category) category = 'Uncategorized';
+
+    if (!byCommodity[category]) {
+      byCommodity[category] = { count: 0 };
+    }
+    byCommodity[category].count++;
+  }
+
+  // Parse closing dates and find upcoming
+  const now = new Date();
+  const twoWeeksOut = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+  const threeDaysOut = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+
+  const bidsWithDates = bids.map(bid => {
+    // Parse closing date like "01/23/2026 12:00PM"
+    const dateMatch = bid.closingDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+    let closingDateObj: Date | null = null;
+    if (dateMatch) {
+      closingDateObj = new Date(`${dateMatch[3]}-${dateMatch[1]}-${dateMatch[2]}`);
+    }
+    return { ...bid, closingDateObj };
+  });
+
+  const upcomingClosings = bidsWithDates
+    .filter(b => b.closingDateObj && b.closingDateObj <= twoWeeksOut && b.closingDateObj >= now)
+    .sort((a, b) => (a.closingDateObj?.getTime() || 0) - (b.closingDateObj?.getTime() || 0))
+    .slice(0, 20);
+
+  const closingSoon = bidsWithDates
+    .filter(b => b.closingDateObj && b.closingDateObj <= threeDaysOut && b.closingDateObj >= now)
+    .sort((a, b) => (a.closingDateObj?.getTime() || 0) - (b.closingDateObj?.getTime() || 0));
+
+  // Print summary
+  console.log('Top Departments by Open Bids:');
+  Object.entries(byDepartment)
+    .sort((a, b) => b[1].count - a[1].count)
+    .slice(0, 10)
+    .forEach(([dept, stats]) => {
+      console.log(`  ${dept}: ${stats.count} bids`);
+    });
+
+  console.log('');
+  console.log('Bid Types:');
+  Object.entries(byBidType)
+    .sort((a, b) => b[1].count - a[1].count)
+    .forEach(([type, stats]) => {
+      console.log(`  ${type}: ${stats.count} bids`);
+    });
+
+  console.log('');
+  console.log(`Closing within 3 days: ${closingSoon.length} bids`);
+  console.log(`Closing within 14 days: ${upcomingClosings.length} bids`);
+
+  // Build result
+  const result: ScraperResult = {
+    generatedAt: new Date().toISOString(),
+    source: 'LA County Internal Services Department - Bids Portal',
+    sourceUrl: 'https://camisvr.co.la.ca.us/lacobids/BidLookUp/OpenBidList',
+    totalBids: bids.length,
+    bids,
+    byDepartment,
+    byBidType,
+    byCommodity,
+    upcomingClosings,
+    closingSoon,
+  };
+
+  // Save JSON
+  const outputPath = path.join(outputDir, 'la-county-bids-data.json');
+  fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
+
+  console.log('');
+  console.log(`Data saved: ${outputPath}`);
+  console.log('');
+  console.log('Run: node scripts/generate-la-county-report.js');
+}
+
+main().catch(err => {
+  console.error('Error:', err);
+  process.exit(1);
+});
