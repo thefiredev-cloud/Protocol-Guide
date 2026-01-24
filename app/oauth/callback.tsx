@@ -59,15 +59,15 @@ export default function OAuthCallback() {
           setStatus("success");
 
           // Redirect to main app after brief delay
-          setTimeout(() => {
+          addTimer(setTimeout(() => {
             router.replace("/(tabs)");
-          }, 1000);
+          }, 1000));
         } else {
           // No session yet - Supabase may still be processing
           // Wait a moment and check again
           console.log("[OAuth] No session yet, waiting...");
 
-          setTimeout(async () => {
+          addTimer(setTimeout(async () => {
             const { data: retryData, error: retryError } = await supabase.auth.getSession();
 
             if (retryError || !retryData.session) {
@@ -79,10 +79,10 @@ export default function OAuthCallback() {
 
             console.log("[OAuth] Session found on retry:", retryData.session.user?.email);
             setStatus("success");
-            setTimeout(() => {
+            addTimer(setTimeout(() => {
               router.replace("/(tabs)");
-            }, 500);
-          }, 1500);
+            }, 500));
+          }, 1500));
         }
       } catch (error) {
         console.error("[OAuth] Callback error:", error);
