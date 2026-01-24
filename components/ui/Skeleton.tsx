@@ -729,7 +729,7 @@ export const SkeletonHistoryList = memo(function SkeletonHistoryList({
   testID?: string;
 }) {
   return (
-    <View style={[{ gap: spacing.md }, style]} testID={testID}>
+    <View style={[skeletonStyles.gapMd, style]} testID={testID}>
       {Array.from({ length: count }).map((_, index) => (
         <SkeletonQueryItem key={index} />
       ))}
