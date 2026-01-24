@@ -3,6 +3,7 @@ import express from "express";
 import helmet from "helmet";
 import { createServer } from "http";
 import net from "net";
+import crypto from "crypto";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
