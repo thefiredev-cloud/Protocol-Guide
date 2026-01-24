@@ -287,9 +287,9 @@ export default function SearchScreen() {
                 </View>
                 
                 <View className="flex-row items-center">
-                  <View 
+                  <View
                     className="w-2 h-2 rounded-full mr-2"
-                    style={{ backgroundColor: getScoreColor(item.relevanceScore) }}
+                    style={{ backgroundColor: getScoreColor(item.relevanceScore, colors) }}
                   />
                   <Text className="text-xs text-muted">
                     Relevance: {getScoreLabel(item.relevanceScore)} ({item.relevanceScore} points)
@@ -298,7 +298,7 @@ export default function SearchScreen() {
               </View>
 
               {/* Protocol Currency Info */}
-              <View 
+              <View
                 className="rounded-xl p-4 mb-4"
                 style={{ backgroundColor: colors.surface }}
               >
@@ -306,9 +306,9 @@ export default function SearchScreen() {
                   Protocol Currency
                 </Text>
                 <View className="flex-row items-center">
-                  <View 
+                  <View
                     className="w-3 h-3 rounded-full mr-2"
-                    style={{ backgroundColor: getDateColor(item.protocolYear, item.lastVerifiedAt) }}
+                    style={{ backgroundColor: getDateColor(item.protocolYear, item.lastVerifiedAt, colors) }}
                   />
                   <Text className="text-sm text-foreground">
                     {formatProtocolDate(item.protocolEffectiveDate, item.protocolYear, item.lastVerifiedAt)}
