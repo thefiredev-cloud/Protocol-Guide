@@ -55,9 +55,7 @@
       "channel": "preview",
       "env": {
         "APP_ENV": "preview",
-        "EXPO_PUBLIC_API_BASE_URL": "https://protocol-guide-production.up.railway.app",
-        "EXPO_PUBLIC_SUPABASE_URL": "https://dflmjilieokjkkqxrmda.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmbG1qaWxpZW9ramtrcXhybWRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzNzcxODMsImV4cCI6MjA4MTk1MzE4M30.XrmZjCRmnwxyJlzLMMwOv_MrlMrwIaCcXtirlDN_DYQ"
+        "EXPO_PUBLIC_API_BASE_URL": "https://protocol-guide-production.up.railway.app"
       }
     },
     "preview-testflight": {
