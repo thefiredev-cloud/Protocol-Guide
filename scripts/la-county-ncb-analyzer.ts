@@ -120,14 +120,14 @@ async function downloadFile(url: string, destPath: string): Promise<void> {
 async function parseExcelOrFallback(filePath: string): Promise<NCBContract[]> {
   // Try to dynamically import xlsx
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const XLSX = require('xlsx') as typeof import('xlsx');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+    const XLSX = require('xlsx');
     const workbook = XLSX.readFile(filePath);
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
-    const data = XLSX.utils.sheet_to_json(sheet);
+    const data: Record<string, unknown>[] = XLSX.utils.sheet_to_json(sheet);
 
-    return data.map((row: Record<string, unknown>) => ({
+    return data.map((row) => ({
       ncbNumber: String(row['NCB Number'] || row['NCB_NUMBER'] || ''),
       contractNumber: String(row['Contract Number'] || row['CONTRACT_NUMBER'] || ''),
       department: String(row['Department'] || row['DEPARTMENT'] || row['Agency'] || ''),
