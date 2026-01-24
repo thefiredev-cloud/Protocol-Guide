@@ -59,7 +59,7 @@ export function DisclaimerConsentModal({ visible, onAcknowledged }: DisclaimerCo
     setIsSubmitting(true);
     try {
       // Call server to record acknowledgment with timestamp
-      const result = await trpcUtils.user.acknowledgeDisclaimer.mutate();
+      const result = await acknowledgeDisclaimerMutation.mutateAsync();
 
       if (result.success) {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
