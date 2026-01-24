@@ -203,14 +203,24 @@ export function VoiceInput({ onTranscription, onError, disabled = false }: Voice
     return uriToBase64(uri);
   };
 
-  // Send audio to Whisper API (web-only PWA)
+  // Send audio to Whisper API (cross-platform)
   const transcribeAudio = async (audioUri: string): Promise<string> => {
     try {
       const formData = new FormData();
 
-      const audioResponse = await fetch(audioUri);
-      const blob = await audioResponse.blob();
-      formData.append("file", blob, "recording.webm");
+      // Platform-specific file append
+      if (Platform.OS === 'web') {
+        const audioResponse = await fetch(audioUri);
+        const blob = await audioResponse.blob();
+        formData.append("file", blob, "recording.webm");
+      } else {
+        // React Native - use file URI
+        formData.append("file", {
+          uri: audioUri,
+          type: "audio/m4a",
+          name: "recording.m4a",
+        } as any);
+      }
 
       formData.append("model", "whisper-1");
       formData.append("language", "en");
