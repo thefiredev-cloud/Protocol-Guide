@@ -33,10 +33,11 @@ export const userProcedures = router({
       .limit(1);
 
     if (existing.length > 0) {
+      const row = existing[0] as any;
       return {
-        code: existing[0].code as string,
-        usesCount: existing[0].usesCount as number,
-        createdAt: existing[0].createdAt as Date,
+        code: row.code as string,
+        usesCount: row.usesCount as number,
+        createdAt: row.createdAt as Date,
       };
     }
 
