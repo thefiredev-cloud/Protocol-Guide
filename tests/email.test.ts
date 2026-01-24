@@ -5,7 +5,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Import after mocking
-import { sendEmail, EmailTemplate, isEmailConfigured } from '@/server/_core/email';
+import { sendEmail, EmailTemplate, isEmailConfigured } from '../server/_core/email';
 import { Resend } from 'resend';
 
 // Mock Resend before importing email service
