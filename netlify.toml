@@ -132,11 +132,14 @@
   autoLaunch = false
 
 # Context-specific settings
+# NOTE: NODE_ENV is NOT set globally - it's set per-command in the build script
+# Setting NODE_ENV=production globally causes devDeps to be skipped during install
+# NativeWind requires devDeps (react-native-css-interop) for .cache/web.css generation
 [context.production]
-  environment = { NODE_ENV = "production" }
+  # No NODE_ENV here - build command handles it
 
 [context.deploy-preview]
-  environment = { NODE_ENV = "preview" }
+  # No NODE_ENV here - build command handles it
 
 [context.branch-deploy]
-  environment = { NODE_ENV = "development" }
+  # No NODE_ENV here - build command handles it
