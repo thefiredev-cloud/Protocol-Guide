@@ -1,4 +1,6 @@
-import { test, expect } from "@playwright/test";
+import { test as baseTest, expect } from "@playwright/test";
+import { test } from "./fixtures/auth";
+import { setupMockApiRoutes, clearMockApiRoutes } from "./fixtures/mock-api";
 
 /**
  * E2E Tests for Protocol Search Functionality
@@ -6,30 +8,30 @@ import { test, expect } from "@playwright/test";
  * state filtering, and result display
  */
 
-test.describe("Protocol Search", () => {
-  test.beforeEach(async ({ page }) => {
-    // Navigate to main app (tabs) with E2E bypass parameter
-    await page.goto("/(tabs)/?e2e=true");
+baseTest.describe("Protocol Search - Public", () => {
+  baseTest.beforeEach(async ({ page }) => {
+    // Navigate to main app (tabs)
+    await page.goto("/(tabs)/");
     // Wait for React Native Web to fully render
     await page.waitForTimeout(2000);
   });
 
-  test("displays search input on homepage", async ({ page }) => {
+  baseTest("displays search input on homepage", async ({ page }) => {
     // Verify search UI is visible - React Native Web uses testID
     // Try both data-testid and testID selectors
-    const searchInput = page.locator('[data-testid="search-input"]').or(
-      page.locator('[testID="search-input"]')
-    ).or(
-      page.locator('input[placeholder*="protocol"]')
-    );
+    const searchInput = page
+      .locator('[data-testid="search-input"]')
+      .or(page.locator('[testID="search-input"]'))
+      .or(page.locator('input[placeholder*="protocol"]'));
     await expect(searchInput.first()).toBeVisible({ timeout: 10000 });
   });
 
-  test("searches for cardiac arrest and returns results", async ({ page }) => {
+  baseTest("searches for cardiac arrest and returns results", async ({ page }) => {
     // Find and fill search input - React Native Web uses testID
-    const searchInput = page.locator('[data-testid="search-input"]').or(
-      page.locator('input[placeholder*="protocol"]')
-    ).first();
+    const searchInput = page
+      .locator('[data-testid="search-input"]')
+      .or(page.locator('input[placeholder*="protocol"]'))
+      .first();
     await searchInput.fill("cardiac arrest");
 
     // Submit search (may be auto-submit or button click)
@@ -43,15 +45,16 @@ test.describe("Protocol Search", () => {
     const pageContent = await page.textContent("body");
     expect(
       pageContent?.toLowerCase().includes("cardiac") ||
-      pageContent?.toLowerCase().includes("arrest") ||
-      pageContent?.toLowerCase().includes("protocol")
+        pageContent?.toLowerCase().includes("arrest") ||
+        pageContent?.toLowerCase().includes("protocol")
     ).toBeTruthy();
   });
 
-  test("handles empty search query gracefully", async ({ page }) => {
-    const searchInput = page.locator('[data-testid="search-input"]').or(
-      page.locator('input[placeholder*="protocol"]')
-    ).first();
+  baseTest("handles empty search query gracefully", async ({ page }) => {
+    const searchInput = page
+      .locator('[data-testid="search-input"]')
+      .or(page.locator('input[placeholder*="protocol"]'))
+      .first();
 
     // Submit empty search
     await searchInput.fill("");
@@ -61,10 +64,11 @@ test.describe("Protocol Search", () => {
     await expect(page).not.toHaveURL(/error/);
   });
 
-  test("displays helpful message for no results", async ({ page }) => {
-    const searchInput = page.locator('[data-testid="search-input"]').or(
-      page.locator('input[placeholder*="protocol"]')
-    ).first();
+  baseTest("displays helpful message for no results", async ({ page }) => {
+    const searchInput = page
+      .locator('[data-testid="search-input"]')
+      .or(page.locator('input[placeholder*="protocol"]'))
+      .first();
 
     // Search for nonsense query
     await searchInput.fill("xyzzy12345nonsensequery");
@@ -84,19 +88,90 @@ test.describe("Protocol Search", () => {
   });
 });
 
-test.describe("State Filter", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/(tabs)/?e2e=true");
+test.describe("Protocol Search - Authenticated", () => {
+  test("authenticated user can search protocols", async ({ authenticatedPage }) => {
+    await setupMockApiRoutes(authenticatedPage, { tier: "free" });
+
+    await authenticatedPage.goto("/(tabs)/");
+    await authenticatedPage.waitForTimeout(2000);
+
+    const searchInput = authenticatedPage
+      .locator('[data-testid="search-input"]')
+      .or(authenticatedPage.locator('input[placeholder*="protocol"]'))
+      .first();
+
+    await searchInput.fill("cardiac arrest");
+    await searchInput.press("Enter");
+
+    await authenticatedPage.waitForLoadState("networkidle");
+
+    const pageContent = await authenticatedPage.textContent("body");
+    expect(
+      pageContent?.toLowerCase().includes("cardiac") ||
+        pageContent?.toLowerCase().includes("arrest") ||
+        pageContent?.toLowerCase().includes("protocol")
+    ).toBeTruthy();
+
+    await clearMockApiRoutes(authenticatedPage);
+  });
+
+  test("pro user has unlimited searches", async ({ proUserPage }) => {
+    await setupMockApiRoutes(proUserPage, { tier: "pro" });
+
+    await proUserPage.goto("/(tabs)/");
+    await proUserPage.waitForTimeout(2000);
+
+    // Pro users should not see query limit warnings
+    const pageContent = await proUserPage.textContent("body");
+    const hasLimitWarning = pageContent?.toLowerCase().includes("limit reached");
+
+    expect(hasLimitWarning).toBeFalsy();
+
+    await clearMockApiRoutes(proUserPage);
+  });
+
+  test("search history is saved for authenticated users", async ({ authenticatedPage }) => {
+    await setupMockApiRoutes(authenticatedPage, { tier: "free" });
+
+    // Perform a search
+    await authenticatedPage.goto("/(tabs)/");
+    await authenticatedPage.waitForTimeout(2000);
+
+    const searchInput = authenticatedPage
+      .locator('[data-testid="search-input"]')
+      .or(authenticatedPage.locator('input[placeholder*="protocol"]'))
+      .first();
+
+    await searchInput.fill("chest pain");
+    await searchInput.press("Enter");
+    await authenticatedPage.waitForLoadState("networkidle");
+
+    // Navigate to history page
+    await authenticatedPage.goto("/(tabs)/history");
+    await authenticatedPage.waitForTimeout(2000);
+
+    // Should not show "Please sign in" since user is authenticated
+    const pageContent = await authenticatedPage.textContent("body");
+    const hasSignInPrompt = pageContent?.toLowerCase().includes("please sign in to view");
+
+    expect(hasSignInPrompt).toBeFalsy();
+
+    await clearMockApiRoutes(authenticatedPage);
+  });
+});
+
+baseTest.describe("State Filter", () => {
+  baseTest.beforeEach(async ({ page }) => {
+    await page.goto("/(tabs)/");
     await page.waitForTimeout(2000);
   });
 
-  test("displays state filter options", async ({ page }) => {
+  baseTest("displays state filter options", async ({ page }) => {
     // Look for state filter UI (dropdown, buttons, etc.)
-    const stateFilter = page.locator("[data-testid=state-filter]").or(
-      page.getByRole("combobox", { name: /state/i })
-    ).or(
-      page.getByText(/select state/i)
-    );
+    const stateFilter = page
+      .locator("[data-testid=state-filter]")
+      .or(page.getByRole("combobox", { name: /state/i }))
+      .or(page.getByText(/select state/i));
 
     // State filter should be present in UI
     const isVisible = await stateFilter.isVisible().catch(() => false);
@@ -109,15 +184,13 @@ test.describe("State Filter", () => {
     }
   });
 
-  test("filters by California (CA)", async ({ page }) => {
+  baseTest("filters by California (CA)", async ({ page }) => {
     // Navigate to coverage or search with state filter
     await page.goto("/(tabs)/coverage");
     await page.waitForLoadState("networkidle");
 
     // Look for California in the list
-    const californiaOption = page.getByText(/California/i).or(
-      page.getByText(/^CA$/i)
-    );
+    const californiaOption = page.getByText(/California/i).or(page.getByText(/^CA$/i));
 
     const isVisible = await californiaOption.first().isVisible().catch(() => false);
 
@@ -130,13 +203,11 @@ test.describe("State Filter", () => {
     expect(true).toBeTruthy();
   });
 
-  test("filters by Texas (TX)", async ({ page }) => {
+  baseTest("filters by Texas (TX)", async ({ page }) => {
     await page.goto("/(tabs)/coverage");
     await page.waitForLoadState("networkidle");
 
-    const texasOption = page.getByText(/Texas/i).or(
-      page.getByText(/^TX$/i)
-    );
+    const texasOption = page.getByText(/Texas/i).or(page.getByText(/^TX$/i));
 
     const isVisible = await texasOption.first().isVisible().catch(() => false);
 
@@ -148,13 +219,11 @@ test.describe("State Filter", () => {
     expect(true).toBeTruthy();
   });
 
-  test("filters by New York (NY)", async ({ page }) => {
+  baseTest("filters by New York (NY)", async ({ page }) => {
     await page.goto("/(tabs)/coverage");
     await page.waitForLoadState("networkidle");
 
-    const nyOption = page.getByText(/New York/i).or(
-      page.getByText(/^NY$/i)
-    );
+    const nyOption = page.getByText(/New York/i).or(page.getByText(/^NY$/i));
 
     const isVisible = await nyOption.first().isVisible().catch(() => false);
 
@@ -166,13 +235,11 @@ test.describe("State Filter", () => {
     expect(true).toBeTruthy();
   });
 
-  test("filters by Florida (FL)", async ({ page }) => {
+  baseTest("filters by Florida (FL)", async ({ page }) => {
     await page.goto("/(tabs)/coverage");
     await page.waitForLoadState("networkidle");
 
-    const floridaOption = page.getByText(/Florida/i).or(
-      page.getByText(/^FL$/i)
-    );
+    const floridaOption = page.getByText(/Florida/i).or(page.getByText(/^FL$/i));
 
     const isVisible = await floridaOption.first().isVisible().catch(() => false);
 
@@ -185,14 +252,15 @@ test.describe("State Filter", () => {
   });
 });
 
-test.describe("Search Results Display", () => {
-  test("displays protocol title in results", async ({ page }) => {
-    await page.goto("/(tabs)/?e2e=true");
+baseTest.describe("Search Results Display", () => {
+  baseTest("displays protocol title in results", async ({ page }) => {
+    await page.goto("/(tabs)/");
     await page.waitForTimeout(2000);
 
-    const searchInput = page.locator('[data-testid="search-input"]').or(
-      page.locator('input[placeholder*="protocol"]')
-    ).first();
+    const searchInput = page
+      .locator('[data-testid="search-input"]')
+      .or(page.locator('input[placeholder*="protocol"]'))
+      .first();
     await searchInput.fill("chest pain");
     await searchInput.press("Enter");
 
@@ -203,13 +271,14 @@ test.describe("Search Results Display", () => {
     expect(pageContent).toBeTruthy();
   });
 
-  test("displays relevance score or ranking", async ({ page }) => {
-    await page.goto("/(tabs)/?e2e=true");
+  baseTest("displays relevance score or ranking", async ({ page }) => {
+    await page.goto("/(tabs)/");
     await page.waitForTimeout(2000);
 
-    const searchInput = page.locator('[data-testid="search-input"]').or(
-      page.locator('input[placeholder*="protocol"]')
-    ).first();
+    const searchInput = page
+      .locator('[data-testid="search-input"]')
+      .or(page.locator('input[placeholder*="protocol"]'))
+      .first();
     await searchInput.fill("stroke");
     await searchInput.press("Enter");
 
@@ -220,24 +289,24 @@ test.describe("Search Results Display", () => {
     expect(pageContent).toBeTruthy();
   });
 
-  test("allows clicking on result for details", async ({ page }) => {
-    await page.goto("/(tabs)/?e2e=true");
+  baseTest("allows clicking on result for details", async ({ page }) => {
+    await page.goto("/(tabs)/");
     await page.waitForTimeout(2000);
 
-    const searchInput = page.locator('[data-testid="search-input"]').or(
-      page.locator('input[placeholder*="protocol"]')
-    ).first();
+    const searchInput = page
+      .locator('[data-testid="search-input"]')
+      .or(page.locator('input[placeholder*="protocol"]'))
+      .first();
     await searchInput.fill("trauma");
     await searchInput.press("Enter");
 
     await page.waitForLoadState("networkidle");
 
     // Find any clickable result
-    const resultLink = page.locator("[data-testid=protocol-result]").or(
-      page.getByRole("link").filter({ hasText: /protocol/i })
-    ).or(
-      page.locator(".protocol-card, .result-card, .search-result")
-    );
+    const resultLink = page
+      .locator("[data-testid=protocol-result]")
+      .or(page.getByRole("link").filter({ hasText: /protocol/i }))
+      .or(page.locator(".protocol-card, .result-card, .search-result"));
 
     const isClickable = await resultLink.first().isVisible().catch(() => false);
 
