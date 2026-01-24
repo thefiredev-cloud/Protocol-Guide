@@ -148,3 +148,30 @@ export function createMockUser(overrides: Record<string, unknown> = {}) {
     ...overrides,
   };
 }
+
+/**
+ * Create a complete tRPC context for testing
+ * Includes properly configured request, response, trace context, and optional user
+ *
+ * Usage:
+ *   const ctx = createMockContext({ user: createMockUser({ tier: 'pro' }) });
+ *   const caller = appRouter.createCaller(ctx);
+ */
+export function createMockContext(options: {
+  user?: ReturnType<typeof createMockUser> | null;
+  requestOverrides?: Record<string, unknown>;
+  traceOverrides?: Parameters<typeof createMockTraceContext>[0];
+} = {}) {
+  const { user = null, requestOverrides = {}, traceOverrides = {} } = options;
+
+  return {
+    req: createMockRequest(requestOverrides),
+    res: createMockResponse(),
+    user,
+    trace: createMockTraceContext({
+      userId: user?.id?.toString(),
+      userTier: user?.tier as string,
+      ...traceOverrides,
+    }),
+  };
+}
