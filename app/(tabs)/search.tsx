@@ -142,13 +142,12 @@ export default function SearchScreen() {
   const handleVoiceTranscription = useCallback((text: string) => {
     setQuery(text);
     // Auto-search after voice input
-    const timer = setTimeout(() => {
+    if (voiceTimerRef.current) clearTimeout(voiceTimerRef.current);
+    voiceTimerRef.current = setTimeout(() => {
       if (text.trim()) {
         handleSearch();
       }
     }, 100);
-    // Note: Short timeout (100ms), cleanup not critical but included for completeness
-    return () => clearTimeout(timer);
   }, [handleSearch]);
 
   const handleStateSelect = useCallback((state: string | null) => {
