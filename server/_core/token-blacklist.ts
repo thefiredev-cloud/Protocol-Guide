@@ -115,12 +115,12 @@ export async function getRevocationDetails(userId: string): Promise<RevocationRe
 
   const permRevoked = await redis.get(permKey);
   if (permRevoked) {
-    return JSON.parse(permRevoked);
+    return typeof permRevoked === 'string' ? JSON.parse(permRevoked) : permRevoked as RevocationRecord;
   }
 
   const tempRevoked = await redis.get(tempKey);
   if (tempRevoked) {
-    return JSON.parse(tempRevoked);
+    return typeof tempRevoked === 'string' ? JSON.parse(tempRevoked) : tempRevoked as RevocationRecord;
   }
 
   return null;
