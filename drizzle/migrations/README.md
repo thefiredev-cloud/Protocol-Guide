@@ -401,6 +401,154 @@ For more information, see:
 
 ---
 
+## NEW: Row Level Security (RLS) Migration
+
+**Date:** 2026-01-23
+**Migration:** `0027_add_row_level_security_policies.sql`
+**Priority:** CRITICAL - HIPAA Compliance
+
+### Overview
+
+Migration 0027 implements comprehensive Row Level Security (RLS) policies for all database tables to ensure:
+- **User Isolation**: Users can only access their own data
+- **Agency Scoping**: Agency members access data based on role
+- **Admin Elevation**: System admins have elevated access
+- **HIPAA Compliance**: No unauthorized PHI access
+- **Public Safety**: Medical protocols remain accessible
+
+### What's Included
+
+1. **RLS Policies for 21 Tables**
+   - `users`, `queries`, `bookmarks`, `search_history`
+   - `feedback`, `audit_logs`, `agencies`, `agency_members`
+   - `protocol_versions`, `protocol_uploads`, `user_auth_providers`
+   - `user_counties`, `user_states`, `user_agencies`
+   - `contact_submissions`, `counties`, `protocol_chunks`
+   - `integration_logs`, `stripe_webhook_events`, `push_tokens`
+   - `drip_emails_sent`
+
+2. **Helper Functions**
+   - `get_current_user_id()` - Maps auth.uid() to internal user ID
+   - `is_admin()` - Check admin role
+   - `is_agency_member(agency_id)` - Check agency membership
+   - `is_agency_admin(agency_id)` - Check agency admin/owner role
+
+3. **Role-Based Permissions**
+   - `anon` - Public read access to counties, protocols, agencies
+   - `authenticated` - User-scoped access per RLS policies
+   - `service_role` - Full access (backend operations)
+
+### Running the RLS Migration
+
+```bash
+# Apply RLS policies
+psql $DATABASE_URL -f drizzle/migrations/0027_add_row_level_security_policies.sql
+
+# Test RLS policies
+psql $DATABASE_URL -f drizzle/migrations/0027_test_rls_policies.sql
+```
+
+### Verification
+
+```sql
+-- Check RLS is enabled
+SELECT tablename, rowsecurity
+FROM pg_tables
+WHERE schemaname = 'public'
+ORDER BY tablename;
+
+-- Count policies per table
+SELECT tablename, COUNT(*) as policy_count
+FROM pg_policies
+WHERE schemaname = 'public'
+GROUP BY tablename
+ORDER BY tablename;
+```
+
+### Documentation
+
+- **Full Documentation**: `RLS_POLICIES_DOCUMENTATION.md` - Complete policy reference
+- **Developer Guide**: `RLS_DEVELOPER_GUIDE.md` - How to work with RLS in code
+- **Test Suite**: `0027_test_rls_policies.sql` - Automated tests
+- **Migration**: `0027_add_row_level_security_policies.sql` - Policy definitions
+
+### Key Features
+
+**User Isolation:**
+```typescript
+// Frontend (RLS enforced)
+const { data: queries } = await supabase.from('queries').select('*');
+// Returns only current user's queries
+```
+
+**Agency Scoping:**
+```typescript
+// Agency members see agency protocols
+const { data: protocols } = await supabase
+  .from('protocol_versions')
+  .select('*')
+  .eq('agency_id', agencyId);
+// RLS verifies user is member of agencyId
+```
+
+**Admin Access:**
+```typescript
+// Admins see all data
+const { data: allQueries } = await supabase.from('queries').select('*');
+// If admin: returns all queries
+// If user: returns only own queries
+```
+
+### HIPAA Compliance
+
+RLS policies enforce HIPAA requirements:
+- **queries**: Query text may reference patient scenarios - strict user isolation
+- **search_history**: Search terms may contain clinical context - isolated
+- **audit_logs**: Required for compliance - admin read-only
+- **integration_logs**: PHI removed in migration 0012 - analytics only
+- **contact_submissions**: Contains PII - admin access only
+
+### Testing
+
+Run the test suite to verify all policies:
+```bash
+psql $DATABASE_URL -f drizzle/migrations/0027_test_rls_policies.sql
+```
+
+Expected output:
+- ✅ PASS: User isolation working
+- ✅ PASS: Agency scoping working
+- ✅ PASS: Admin access working
+- ✅ PASS: Public data accessible
+- ✅ PASS: Helper functions working
+
+### Rollback
+
+If needed, rollback instructions are included in the migration file:
+```sql
+-- Drop all policies
+-- Disable RLS on tables
+-- Drop helper functions
+-- Revoke permissions
+```
+
+### Migration Checklist
+
+- [ ] Review RLS documentation
+- [ ] Backup database
+- [ ] Apply RLS migration (0027)
+- [ ] Run test suite
+- [ ] Verify policies in Supabase dashboard
+- [ ] Test frontend access as different user roles
+- [ ] Test backend service role operations
+- [ ] Update application code if needed
+- [ ] Deploy to staging
+- [ ] Test in staging environment
+- [ ] Deploy to production
+- [ ] Monitor for access issues
+
+---
+
 **Last Updated:** 2026-01-23
 **Status:** Ready for execution
 **Risk Level:** Low
