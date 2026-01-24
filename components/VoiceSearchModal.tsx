@@ -40,6 +40,7 @@ import {
   RippleAnimationValues,
   formatDuration,
   getStatusText,
+  voiceModalStyles,
 } from "@/components/voice";
 import { useVoiceStateMachine } from "@/hooks/use-voice-state-machine";
 import { useVoiceRecording } from "@/hooks/use-voice-recording";
