@@ -11,8 +11,15 @@
 import * as React from "react";
 import { View, Text, Pressable } from "react-native";
 import { trpc } from "@/lib/trpc";
-import { Skeleton } from "@/components/ui/Skeleton";
-import { ShareButton, StatCard, TierBadge, ProgressBar, COLORS, TIER_COLORS } from "./index";
+import {
+  ShareButton,
+  StatCard,
+  TierBadge,
+  ProgressBar,
+  LoadingSkeleton,
+  RewardsInfo,
+  COLORS
+} from "./index";
 import { useShareHandlers } from "@/hooks/use-share-handlers";
 
 const { useState } = React;
