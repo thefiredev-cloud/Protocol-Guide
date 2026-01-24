@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.expo/
+
+# Server files
+server/
+
+# Supabase Edge Functions (Deno runtime, not Node.js)
+supabase/functions/
+
+# Logs
+*.log
+
+# Environment
+.env*
+!.env.example
