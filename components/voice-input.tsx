@@ -198,19 +198,9 @@ export function VoiceInput({ onTranscription, onError, disabled = false }: Voice
     return corrected;
   }, []);
 
-  // Convert audio to base64 for API (web-only PWA)
+  // Convert audio to base64 for API (cross-platform)
   const audioToBase64 = async (uri: string): Promise<string> => {
-    const response = await fetch(uri);
-    const blob = await response.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        resolve(base64.split(",")[1]); // Remove data URL prefix
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+    return uriToBase64(uri);
   };
 
   // Send audio to Whisper API (web-only PWA)
