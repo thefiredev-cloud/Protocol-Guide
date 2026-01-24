@@ -96,31 +96,6 @@ export function VoiceSearchModal({
     onClose,
   });
 
-  // Clear only timeouts/intervals (safe to call anytime)
-  const clearTimers = useCallback(() => {
-    if (silenceTimeoutRef.current) {
-      clearTimeout(silenceTimeoutRef.current);
-      silenceTimeoutRef.current = null;
-    }
-    if (maxDurationTimeoutRef.current) {
-      clearTimeout(maxDurationTimeoutRef.current);
-      maxDurationTimeoutRef.current = null;
-    }
-    if (durationIntervalRef.current) {
-      clearInterval(durationIntervalRef.current);
-      durationIntervalRef.current = null;
-    }
-  }, []);
-
-  // Full cleanup function - stops recording AND clears timers (for unmount/cancel)
-  const cleanupRecording = useCallback(() => {
-    clearTimers();
-    if (recordingRef.current) {
-      recordingRef.current.stopAndUnloadAsync().catch(() => {});
-      recordingRef.current = null;
-    }
-  }, [clearTimers]);
-
   // Cleanup on unmount
   useEffect(() => {
     return () => {
