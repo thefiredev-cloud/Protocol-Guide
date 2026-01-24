@@ -1,6 +1,7 @@
 /**
  * useAuth Hook - Supabase Auth integration with token refresh
  * FIXED: Uses token cache to prevent race conditions
+ * Supports E2E test mocking via localStorage
  */
 
 import { supabase, signOut as supabaseSignOut } from "@/lib/supabase";
@@ -19,6 +20,90 @@ export type User = {
 type UseAuthOptions = {
   autoFetch?: boolean;
 };
+
+/**
+ * Check for E2E mock session in localStorage (browser only)
+ * Returns mock user data if E2E auth is injected
+ */
+function getE2EMockUser(): User | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const isE2EAuthenticated = localStorage.getItem("e2e-authenticated");
+    if (isE2EAuthenticated !== "true") return null;
+
+    const userJson = localStorage.getItem("protocol-guide-user");
+    if (!userJson) return null;
+
+    const userData = JSON.parse(userJson);
+    return {
+      id: userData.id,
+      email: userData.email ?? null,
+      name: userData.name ?? null,
+      avatarUrl: userData.avatarUrl ?? null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Create a mock session object for E2E testing
+ */
+function createE2EMockSession(): Session | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const isE2EAuthenticated = localStorage.getItem("e2e-authenticated");
+    if (isE2EAuthenticated !== "true") return null;
+
+    const userJson = localStorage.getItem("protocol-guide-user");
+    if (!userJson) return null;
+
+    const userData = JSON.parse(userJson);
+    const now = Math.floor(Date.now() / 1000);
+
+    // Create a minimal mock session that satisfies the Session type
+    return {
+      access_token: `e2e-mock-token-${now}`,
+      refresh_token: `e2e-mock-refresh-${now}`,
+      expires_at: now + 3600,
+      expires_in: 3600,
+      token_type: "bearer",
+      user: {
+        id: userData.id,
+        email: userData.email,
+        aud: "authenticated",
+        role: "authenticated",
+        app_metadata: { provider: "google", providers: ["google"] },
+        user_metadata: {
+          full_name: userData.name,
+          avatar_url: userData.avatarUrl,
+          email: userData.email,
+        },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    } as Session;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Clear E2E mock session from localStorage
+ */
+function clearE2EMockSession(): void {
+  if (typeof window === "undefined") return;
+
+  try {
+    localStorage.removeItem("e2e-authenticated");
+    localStorage.removeItem("e2e-user-tier");
+    localStorage.removeItem("protocol-guide-user");
+  } catch {
+    // Ignore errors
+  }
+}
 
 export function useAuth(options?: UseAuthOptions) {
   const { autoFetch = true } = options ?? {};
