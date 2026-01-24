@@ -59,13 +59,21 @@ export default function SearchScreen() {
   const [showStateFilter, setShowStateFilter] = useState(false);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const inputRef = useRef<TextInput>(null);
-  
+  const voiceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   // Update state filter when navigation params change
   useEffect(() => {
     if (params.stateFilter) {
       setSelectedState(params.stateFilter);
     }
   }, [params.stateFilter]);
+
+  // Cleanup voice timer on unmount
+  useEffect(() => {
+    return () => {
+      if (voiceTimerRef.current) clearTimeout(voiceTimerRef.current);
+    };
+  }, []);
 
   // Get protocol stats
   const statsQuery = trpc.search.stats.useQuery();
