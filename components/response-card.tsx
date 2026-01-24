@@ -20,7 +20,7 @@ export function ResponseCard({ text, protocolRefs, timestamp }: ResponseCardProp
   const [copied, setCopied] = useState(false);
   const [showActions, setShowActions] = useState(false);
 
-  const sections = parseResponse(text);
+  const sections = useMemo(() => parseResponse(text), [text]);
 
   const handleCopy = async () => {
     await Clipboard.setStringAsync(text);
