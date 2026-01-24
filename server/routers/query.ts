@@ -244,7 +244,10 @@ export const queryRouter = router({
 
       const result = await dbUserCounties.syncSearchHistory(
         ctx.user.id,
-        input.localQueries
+        input.localQueries.map((q) => ({
+          searchQuery: q.queryText,
+          countyId: q.countyId,
+        }))
       );
 
       return {
