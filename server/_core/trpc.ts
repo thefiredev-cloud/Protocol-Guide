@@ -336,7 +336,7 @@ const enforceRateLimit = t.middleware(async (opts) => {
 /**
  * Rate-limited procedure with tracing and CSRF protection - enforces daily query limits
  */
-export const rateLimitedProcedure = publicProcedure.use(csrfProtection).use(enforceRateLimit);
+export const rateLimitedProcedure = csrfProtectedProcedure.use(enforceRateLimit);
 
 // ============================================================================
 // PUBLIC RATE LIMIT MIDDLEWARE (IP-BASED)
