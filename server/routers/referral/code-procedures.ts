@@ -81,7 +81,7 @@ export const codeProcedures = router({
         SELECT * FROM referral_codes WHERE code = ${code} AND isActive = true LIMIT 1
       `);
 
-      const referralCode = (codeResult[0] as any[])?.[0];
+      const referralCode = codeResult.rows[0] as any;
 
       if (!referralCode) {
         throw new TRPCError({
