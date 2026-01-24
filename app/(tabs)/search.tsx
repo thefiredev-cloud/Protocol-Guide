@@ -702,7 +702,8 @@ export default function SearchScreen() {
                 key={example}
                 onPress={() => {
                   setQuery(example);
-                  setTimeout(() => handleSearch(), 100);
+                  // Direct call instead of setTimeout to avoid memory leak
+                  requestAnimationFrame(() => handleSearch());
                 }}
                 className="px-3 py-2 rounded-full"
                 style={{ backgroundColor: colors.surface }}
