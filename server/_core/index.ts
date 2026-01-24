@@ -116,7 +116,8 @@ async function startServer() {
         ].filter(Boolean),
         styleSrc: [
           "'self'",
-          // SECURITY: Use nonce-based CSP for styles - prevents CSS injection attacks
+          "'unsafe-inline'", // Required for NativeWind/React Native Web dynamic inline styles
+          // Nonce kept for future <style> tag usage
           (req, res) => `'nonce-${res.locals.cspNonce}'`,
         ],
         // SECURITY: Restrict image sources to specific trusted domains only
