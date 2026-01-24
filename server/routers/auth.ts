@@ -17,6 +17,12 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// Regular Supabase client for password verification (non-admin operations)
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_ANON_KEY!
+);
+
 export const authRouter = router({
   // Rate limited to prevent account enumeration attacks and brute force attempts
   me: publicRateLimitedProcedure.query((opts) => opts.ctx.user),
