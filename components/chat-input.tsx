@@ -168,6 +168,10 @@ export function ChatInput({
                 opacity: canSend ? 1 : 0.5,
               }}
               activeOpacity={0.7}
+              accessibilityLabel="Send protocol search"
+              accessibilityRole="button"
+              accessibilityHint={canSend ? "Submits your protocol search query" : "Enter a search query first"}
+              accessibilityState={{ disabled: !canSend }}
             >
               <IconSymbol
                 name="arrow.up.circle.fill"
