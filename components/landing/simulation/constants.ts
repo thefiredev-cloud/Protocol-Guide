@@ -4,16 +4,16 @@
 
 import { Platform } from "react-native";
 
+// Color Palette - Dark Theme
 export const COLORS = {
-  primaryRed: "#9B2335",
-  chartYellow: "#D97706", // WCAG AA contrast (4.5:1)
-  bgLightGray: "#F8FAFC",
-  textBlack: "#0F172A",
-  textGray: "#475569", // WCAG AA contrast (5.9:1)
-  textMuted: "#64748B", // WCAG AA contrast (4.5:1)
-  borderGray: "#E2E8F0",
-  bgLightPink: "#FEF2F2",
-  celebrationGold: "#FFD700",
+  primaryRed: "#EF4444",
+  textWhite: "#F1F5F9",
+  textMuted: "#94A3B8",
+  textMutedLight: "#CBD5E1",
+  bgDark: "#0F172A",
+  bgSurface: "#1E293B",
+  border: "#334155",
+  chartYellow: "#F59E0B",
   celebrationGreen: "#10B981",
 };
 
@@ -21,6 +21,8 @@ export const MANUAL_SEARCH_TIME = 90;
 export const PROTOCOL_GUIDE_TIME = 2.3;
 export const MAX_TIME = 95;
 export const CONFETTI_COUNT = 12;
+
+export type SimulationState = "idle" | "running" | "complete";
 
 // Check for reduced motion preference
 export const prefersReducedMotion = (): boolean => {
