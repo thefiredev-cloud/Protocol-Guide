@@ -13,6 +13,8 @@
 [build.environment]
   # Node version for build
   NODE_VERSION = "20"
+  # pnpm version - lockfileVersion 9.0 requires pnpm 9+
+  PNPM_VERSION = "9"
   # Do NOT set NODE_ENV=production here - it causes pnpm to skip devDependencies
   # NativeWind's react-native-css-interop needs devDeps to generate .cache/web.css
   # CI = "true" suppresses interactive prompts
