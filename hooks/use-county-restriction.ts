@@ -71,6 +71,14 @@ export function useCountyRestriction(initialCountyCount = 0): CountyRestrictionS
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [currentCounties, setCurrentCounties] = useState(initialCountyCount);
 
+  // Use ref to access current state without stale closures
+  const currentCountiesRef = useRef(initialCountyCount);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    currentCountiesRef.current = currentCounties;
+  }, [currentCounties]);
+
   // Fetch user usage data which includes tier and features
   const { data: usage, isLoading } = trpc.user.usage.useQuery(undefined, {
     enabled: isAuthenticated,
