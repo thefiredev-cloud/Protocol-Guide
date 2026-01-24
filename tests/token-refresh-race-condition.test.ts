@@ -7,6 +7,8 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { tokenCache } from "../lib/token-cache";
 import type { Session } from "@supabase/supabase-js";
 
+import { supabase } from "../lib/supabase";
+
 // Mock Supabase
 vi.mock("../lib/supabase", () => ({
   supabase: {
@@ -17,8 +19,6 @@ vi.mock("../lib/supabase", () => ({
     },
   },
 }));
-
-import { supabase } from "../lib/supabase";
 
 describe("Token Refresh Race Condition Fixes", () => {
   beforeEach(() => {

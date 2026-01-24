@@ -44,17 +44,30 @@ function getParentDomain(hostname: string): string | undefined {
   return "." + parts.slice(-2).join(".");
 }
 
+/**
+ * Configuration for subdomain cookie sharing
+ * Set ENABLE_SUBDOMAIN_COOKIES=true to share cookies across subdomains in production
+ * WARNING: Only enable this if you control all subdomains (e.g., api.example.com and app.example.com)
+ */
+const ENABLE_SUBDOMAIN_COOKIES = process.env.ENABLE_SUBDOMAIN_COOKIES === "true";
+
 export function getSessionCookieOptions(
   req: Request,
 ): Pick<CookieOptions, "domain" | "httpOnly" | "path" | "sameSite" | "secure"> {
   const hostname = req.hostname;
 
-  // Only allow subdomain sharing in development
-  // In production, undefined domain = exact host only (prevents subdomain cookie attacks)
-  const domain = process.env.NODE_ENV === "development"
+  // Determine if we should use parent domain for subdomain sharing
+  // In development: Always enable for convenience (e.g., 3000-xxx.manuspre.computer <-> 8081-xxx.manuspre.computer)
+  // In production: Only if explicitly enabled AND hostname has subdomains
+  const shouldShareSubdomains =
+    process.env.NODE_ENV === "development" || ENABLE_SUBDOMAIN_COOKIES;
+
+  const domain = shouldShareSubdomains
     ? getParentDomain(hostname)
     : undefined;
 
+  // Use strict sameSite policy to prevent CSRF attacks
+  // This is critical when domain attribute is set
   return {
     domain,
     httpOnly: true,
