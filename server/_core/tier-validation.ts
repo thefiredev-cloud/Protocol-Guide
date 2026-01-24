@@ -10,6 +10,23 @@ import * as db from "../db";
 
 export type SubscriptionTier = "free" | "pro" | "enterprise";
 
+// Valid tier values for runtime validation
+const VALID_TIERS: SubscriptionTier[] = ["free", "pro", "enterprise"];
+
+/**
+ * Validates that a tier value is one of the allowed subscription tiers
+ * SECURITY: Prevents tier bypass attacks by validating tier values before use
+ * @param tier - The tier value to validate (from database or user input)
+ * @returns A validated SubscriptionTier, defaulting to "free" for invalid values
+ */
+export function validateTierValue(tier: string | null | undefined): SubscriptionTier {
+  if (tier && VALID_TIERS.includes(tier as SubscriptionTier)) {
+    return tier as SubscriptionTier;
+  }
+  // Invalid or missing tier defaults to free (safe default)
+  return "free";
+}
+
 // Feature flags per tier
 export const TIER_FEATURES = {
   free: {
