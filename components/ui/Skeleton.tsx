@@ -584,12 +584,12 @@ export const SkeletonQueryItem = memo(function SkeletonQueryItem({
       </View>
     </View>
   );
-}
+});
 
 /**
  * Recent queries list skeleton
  */
-export function SkeletonRecentQueries({
+export const SkeletonRecentQueries = memo(function SkeletonRecentQueries({
   count = 3,
   style,
   testID,
