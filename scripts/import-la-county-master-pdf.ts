@@ -129,14 +129,12 @@ async function parsePDF(buffer: Buffer): Promise<{ text: string; numPages: numbe
   console.log('Parsing PDF...');
 
   const { PDFParse } = require('pdf-parse');
-  const parser = new PDFParse();
-  const data = await parser.loadPDF(buffer);
-  const text = data.getAllText();
-  const numPages = data.numPages || 0;
+  const parser = new PDFParse({ data: buffer });
+  const result = await parser.getText();
 
-  console.log(`  Pages: ${numPages}`);
-  console.log(`  Text length: ${text.length} characters`);
-  return { text, numPages };
+  console.log(`  Pages: ${result.numPages}`);
+  console.log(`  Text length: ${result.text.length} characters`);
+  return { text: result.text, numPages: result.numPages };
 }
 
 function extractProtocols(text: string): ParsedProtocol[] {
