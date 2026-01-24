@@ -13,6 +13,7 @@ import { IconSymbol } from "./ui/icon-symbol";
 import { trpc } from "@/lib/trpc";
 import { useAppContext } from "@/lib/app-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useFocusTrap } from "@/lib/accessibility";
 
 type County = {
   id: number;
