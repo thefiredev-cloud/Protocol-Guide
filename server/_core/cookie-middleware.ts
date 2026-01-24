@@ -48,8 +48,8 @@ export function csrfTokenGenerator(req: Request, res: Response, next: NextFuncti
   // Generate new CSRF token
   const csrfToken = crypto.randomBytes(32).toString("hex");
 
-  // Get proper cookie options with domain, secure, and sameSite settings
-  const cookieOptions = getSessionCookieOptions(req);
+  // Get CSRF cookie options (httpOnly:false for double-submit pattern)
+  const cookieOptions = getCsrfCookieOptions(req);
 
   // Set CSRF token cookie
   res.cookie(CSRF_COOKIE_NAME, csrfToken, {
