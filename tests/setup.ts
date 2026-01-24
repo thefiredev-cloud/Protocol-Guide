@@ -63,15 +63,37 @@ export function createMockTraceContext(overrides: Partial<{
   };
 }
 
+/**
+ * Create a mock Express-like request object for tRPC context
+ * Includes all properties needed by middleware (CSRF, tracing, rate limiting)
+ */
 export function createMockRequest(overrides: Record<string, unknown> = {}) {
+  const csrfToken = "test-csrf-token-12345";
+  const headersOverrides = (overrides.headers as Record<string, string>) || {};
+  const cookiesOverrides = (overrides.cookies as Record<string, string>) || {};
+
   return {
     protocol: "https",
     hostname: "localhost",
+    method: "POST",
+    url: "/api/trpc",
+    ip: "127.0.0.1",
     headers: {
       authorization: "Bearer test_token",
-      ...overrides.headers,
+      "user-agent": "vitest-test-agent",
+      "x-csrf-token": csrfToken,
+      "x-request-id": "test-request-id",
+      ...headersOverrides,
+    },
+    cookies: {
+      csrf_token: csrfToken,
+      ...cookiesOverrides,
+    },
+    socket: {
+      remoteAddress: "127.0.0.1",
     },
     ...overrides,
+    // Ensure headers and cookies are not overwritten by spread
   };
 }
 
