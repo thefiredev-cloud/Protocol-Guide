@@ -615,7 +615,7 @@ const styles = StyleSheet.create({
   },
   quickWeightButton: {
     minWidth: touchTargets.minimum,
-    height: 36,
+    height: touchTargets.minimum,
     paddingHorizontal: spacing.md,
     borderRadius: radii.md,
     justifyContent: "center",
