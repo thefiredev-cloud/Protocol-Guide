@@ -44,7 +44,13 @@ export function RecentSearches({ onSelectSearch }: RecentSearchesProps) {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: colors.muted }]}>Recent Searches</Text>
-        <TouchableOpacity onPress={clearHistory} activeOpacity={0.7}>
+        <TouchableOpacity
+          onPress={clearHistory}
+          activeOpacity={0.7}
+          style={styles.clearButtonTouchable}
+          accessibilityLabel="Clear recent searches"
+          accessibilityRole="button"
+        >
           <Text style={[styles.clearButton, { color: colors.primary }]}>Clear</Text>
         </TouchableOpacity>
       </View>
