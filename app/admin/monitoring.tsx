@@ -57,7 +57,7 @@ function MetricCard({
           <Text
             style={[
               styles.trendText,
-              { color: trend.positive ? colors.success : colors.destructive },
+              { color: trend.positive ? colors.success : colors.error },
             ]}
           >
             {trend.value}%
