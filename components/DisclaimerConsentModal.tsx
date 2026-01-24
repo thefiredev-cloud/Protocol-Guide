@@ -85,7 +85,11 @@ export function DisclaimerConsentModal({ visible, onAcknowledged }: DisclaimerCo
       // Cannot dismiss without acknowledging - critical for legal compliance
       onRequestClose={() => {}}
     >
-      <View className="flex-1 bg-background">
+      <View
+        ref={containerRef}
+        className="flex-1 bg-background"
+        {...containerProps}
+      >
         {/* Header */}
         <View
           className="px-4 pt-4 pb-3 border-b"
