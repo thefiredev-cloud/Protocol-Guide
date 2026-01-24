@@ -214,6 +214,10 @@ export function useOfflineCacheWithAccess() {
   const cache = useOfflineCache();
   const access = useOfflineAccess();
 
+  // Extract just the functions we need to avoid dependency on entire objects
+  const cacheableFunc = cache.saveToCache;
+  const checkAccess = access.checkOfflineAccess;
+
   // Wrap save function to check access first
   const saveToCache = useCallback(
     async (
@@ -223,13 +227,13 @@ export function useOfflineCacheWithAccess() {
       countyId: number,
       countyName: string
     ): Promise<OfflineCacheResult> => {
-      const accessResult = access.checkOfflineAccess();
+      const accessResult = checkAccess();
       if (!accessResult.success) {
         return accessResult;
       }
 
       try {
-        await cache.saveToCache(query, response, protocolRefs, countyId, countyName);
+        await cacheableFunc(query, response, protocolRefs, countyId, countyName);
         return { success: true };
       } catch (error) {
         return {
@@ -239,7 +243,7 @@ export function useOfflineCacheWithAccess() {
         };
       }
     },
-    [cache, access]
+    [cacheableFunc, checkAccess]
   );
 
   return {
