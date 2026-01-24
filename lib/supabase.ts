@@ -13,7 +13,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    autoRefreshToken: true,
+    // Disable auto-refresh to prevent race conditions with our custom refresh logic
+    autoRefreshToken: false,
     persistSession: true,
     detectSessionInUrl: true,
   },
