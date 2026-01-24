@@ -176,6 +176,9 @@ export default function HistoryScreen() {
             onPress={() => handleDelete(item.id)}
             style={styles.deleteButton}
             activeOpacity={0.7}
+            accessibilityLabel="Delete query from history"
+            accessibilityRole="button"
+            accessibilityHint={`Deletes ${item.query} from your search history`}
           >
             <IconSymbol name="xmark" size={16} color={colors.muted} />
           </TouchableOpacity>
