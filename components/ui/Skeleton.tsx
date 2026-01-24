@@ -223,12 +223,12 @@ export const SkeletonCard = memo(function SkeletonCard({
       </View>
     </View>
   );
-}
+});
 
 /**
  * List item skeleton with avatar and text
  */
-export function SkeletonListItem({
+export const SkeletonListItem = memo(function SkeletonListItem({
   showAvatar = true,
   avatarSize = 48,
   lines = 2,
