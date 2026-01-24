@@ -156,7 +156,7 @@ export async function findOrCreateUserBySupabaseId(
         role: "user",
         queryCountToday: 0,
       })
-      .$returningId();
+      .returning({ id: users.id });
 
     // Fetch and return the created user
     const created = await db
