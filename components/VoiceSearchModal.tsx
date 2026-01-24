@@ -94,33 +94,18 @@ export function VoiceSearchModal({
   const transcribeMutation = trpc.voice.transcribe.useMutation();
 
   // Animation values
-  const pulseScale1 = useSharedValue(1);
-  const pulseScale2 = useSharedValue(1);
-  const pulseScale3 = useSharedValue(1);
-  const pulseOpacity1 = useSharedValue(0.4);
-  const pulseOpacity2 = useSharedValue(0.3);
-  const pulseOpacity3 = useSharedValue(0.2);
-  const micScale = useSharedValue(1);
+  const animationValues: RippleAnimationValues = {
+    pulseScale1: useSharedValue(1),
+    pulseScale2: useSharedValue(1),
+    pulseScale3: useSharedValue(1),
+    pulseOpacity1: useSharedValue(0.4),
+    pulseOpacity2: useSharedValue(0.3),
+    pulseOpacity3: useSharedValue(0.2),
+    micScale: useSharedValue(1),
+  };
 
   // Animated styles for ripple effect
-  const pulseStyle1 = useAnimatedStyle(() => ({
-    transform: [{ scale: pulseScale1.value }],
-    opacity: pulseOpacity1.value,
-  }));
-
-  const pulseStyle2 = useAnimatedStyle(() => ({
-    transform: [{ scale: pulseScale2.value }],
-    opacity: pulseOpacity2.value,
-  }));
-
-  const pulseStyle3 = useAnimatedStyle(() => ({
-    transform: [{ scale: pulseScale3.value }],
-    opacity: pulseOpacity3.value,
-  }));
-
-  const micAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: micScale.value }],
-  }));
+  const { pulseStyle1, pulseStyle2, pulseStyle3, micAnimatedStyle } = createRippleStyles(animationValues);
 
   // Clear only timeouts/intervals (safe to call anytime)
   const clearTimers = useCallback(() => {
