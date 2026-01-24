@@ -3,7 +3,7 @@ import { useColors } from "@/hooks/use-colors";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "@/lib/haptics";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, memo } from "react";
 import { IconSymbol } from "./ui/icon-symbol";
 import { useRouter } from "expo-router";
 import { MedicalDisclaimer } from "./MedicalDisclaimer";
