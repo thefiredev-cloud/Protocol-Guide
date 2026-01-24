@@ -40,7 +40,7 @@ export const ComparisonCard = React.memo(function ComparisonCard({ label, value,
       <Text style={styles.cardDescription}>{description}</Text>
     </Pressable>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {
