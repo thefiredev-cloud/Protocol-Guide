@@ -22,7 +22,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Pressable,
-  StyleSheet,
 } from "react-native";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
