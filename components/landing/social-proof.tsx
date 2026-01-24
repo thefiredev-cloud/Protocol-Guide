@@ -109,7 +109,7 @@ export function TrustedBadge({
         accessibilityRole="text"
         accessibilityLabel={`Trusted by ${userCount} EMS professionals, rated ${rating} out of 5 stars`}
       >
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+        <View style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 6 }}>
           <View
             style={{
               width: 8,
