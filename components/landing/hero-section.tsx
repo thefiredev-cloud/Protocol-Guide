@@ -18,7 +18,8 @@ import { View, Text, Animated, useWindowDimensions, Platform } from "react-nativ
 import { ProtocolGuideLogo } from "@/components/icons/protocol-guide-logo";
 import { AnimatedPressable, AnimatedNavLink } from "./animated-pressable";
 import { injectSmoothScrollCSS, scrollToElement } from "./animation-utils";
-import { StarRating, TrustedBadge, TestimonialQuote, DepartmentUsage } from "./social-proof";
+// Social proof components available: StarRating, TrustedBadge, TestimonialQuote, DepartmentUsage
+// import { StarRating, TrustedBadge, TestimonialQuote, DepartmentUsage } from "./social-proof";
 
 const COLORS = {
   primaryRed: "#EF4444",
