@@ -20,6 +20,7 @@ class TokenCache {
   private cache: TokenCacheEntry | null = null;
   private refreshInProgress: Promise<Session | null> | null = null;
   private fetchInProgress: Promise<Session | null> | null = null;
+  private cleared = false; // Flag to signal cache was cleared
   private readonly CACHE_BUFFER_MS = 30000; // 30 seconds buffer before expiry
 
   /**
