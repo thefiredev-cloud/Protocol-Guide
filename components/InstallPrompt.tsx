@@ -34,6 +34,8 @@ export function InstallPrompt() {
     // Don't show if already installed
     if (standalone) return;
 
+    let promptTimer: NodeJS.Timeout | null = null;
+
     // Handle beforeinstallprompt event (Chrome/Edge)
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
@@ -41,7 +43,7 @@ export function InstallPrompt() {
       setDeferredPrompt(event);
 
       // Show prompt after a delay
-      setTimeout(() => {
+      promptTimer = setTimeout(() => {
         setShowPrompt(true);
       }, 3000);
     };
@@ -50,13 +52,14 @@ export function InstallPrompt() {
 
     // For iOS, show manual install instructions
     if (iOS && !standalone) {
-      setTimeout(() => {
+      promptTimer = setTimeout(() => {
         setShowPrompt(true);
       }, 3000);
     }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      if (promptTimer) clearTimeout(promptTimer);
     };
   }, []);
 
