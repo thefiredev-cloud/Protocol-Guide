@@ -16,13 +16,13 @@ const PRICE_IDS = {
   proMonthly: process.env.STRIPE_PRO_MONTHLY_PRICE_ID || "",
   proAnnual: process.env.STRIPE_PRO_ANNUAL_PRICE_ID || "",
 
-  // Department subscriptions (5-20 users)
-  departmentSmallMonthly: process.env.STRIPE_DEPT_SMALL_MONTHLY_PRICE_ID || "",
-  departmentSmallAnnual: process.env.STRIPE_DEPT_SMALL_ANNUAL_PRICE_ID || "",
+  // Department subscriptions - Starter tier (5-20 users)
+  departmentStarterMonthly: process.env.STRIPE_DEPT_STARTER_MONTHLY_PRICE_ID || "",
+  departmentStarterAnnual: process.env.STRIPE_DEPT_STARTER_ANNUAL_PRICE_ID || "",
 
-  // Department subscriptions (20+ users)
-  departmentLargeMonthly: process.env.STRIPE_DEPT_LARGE_MONTHLY_PRICE_ID || "",
-  departmentLargeAnnual: process.env.STRIPE_DEPT_LARGE_ANNUAL_PRICE_ID || "",
+  // Department subscriptions - Professional tier (20+ users)
+  departmentProfessionalMonthly: process.env.STRIPE_DEPT_PROFESSIONAL_MONTHLY_PRICE_ID || "",
+  departmentProfessionalAnnual: process.env.STRIPE_DEPT_PROFESSIONAL_ANNUAL_PRICE_ID || "",
 };
 
 // Trial period configuration - default 7 days, can be overridden via env var
