@@ -108,10 +108,12 @@ export function createMockRequest(overrides: Record<string, unknown> = {}) {
 export function createMockResponse() {
   const cookies: { name: string; value?: string; options: Record<string, unknown> }[] = [];
   const headers: Record<string, string | number> = {};
+  let headersSent = false;
 
   return {
     cookies,
     headers,
+    get headersSent() { return headersSent; },
     cookie: vi.fn((name: string, value: string, options: Record<string, unknown>) => {
       cookies.push({ name, value, options });
     }),
@@ -122,10 +124,10 @@ export function createMockResponse() {
       headers[name] = value;
     }),
     getHeader: vi.fn((name: string) => headers[name]),
-    json: vi.fn(),
+    json: vi.fn(function(this: unknown) { headersSent = true; return this; }),
     status: vi.fn().mockReturnThis(),
-    send: vi.fn(),
-    end: vi.fn(),
+    send: vi.fn(function(this: unknown) { headersSent = true; return this; }),
+    end: vi.fn(function(this: unknown) { headersSent = true; return this; }),
   };
 }
 
