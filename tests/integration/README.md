@@ -9,6 +9,105 @@ This directory contains two types of integration tests:
 
 Both types validate critical flows from user signup through subscription to protocol search and bookmarking.
 
+---
+
+## Database Integration Tests (NEW)
+
+### Test Files
+
+- **`db-users.integration.test.ts`** - User CRUD operations with real database
+- **`db-protocols.integration.test.ts`** - Protocol chunks and agency relationships
+- **`db-search.integration.test.ts`** - Search functionality including pgvector semantic search
+- **`db-subscriptions.integration.test.ts`** - Subscription state transitions and billing
+- **`db-test-utils.ts`** - Shared utilities for transaction management
+
+### Key Features
+
+**Transaction Rollback Pattern** - Each test runs in its own transaction and rolls back automatically:
+- Zero test pollution
+- No manual cleanup required
+- Safe to run against any database
+- Complete test isolation
+
+**Real Database Operations:**
+- Actual PostgreSQL queries with Drizzle ORM
+- Real constraints and foreign key validation
+- Performance testing with actual query times
+- pgvector semantic search (if extension available)
+
+### Setup Requirements
+
+1. Set `DATABASE_URL` in `.env`:
+```bash
+DATABASE_URL=postgresql://postgres:password@db.supabase.co:5432/postgres
+```
+
+2. Run migrations:
+```bash
+pnpm db:push
+```
+
+3. (Optional) Enable pgvector for semantic search tests:
+```sql
+CREATE EXTENSION IF NOT EXISTS vector;
+```
+
+### Running Database Integration Tests
+
+```bash
+# Run all database integration tests
+pnpm test:integration
+
+# Run in watch mode
+pnpm test:integration:watch
+
+# Run specific test file
+pnpm test:integration db-users
+
+# Run unit tests only (exclude integration)
+pnpm test:unit
+```
+
+### Usage Example
+
+```typescript
+import { withTestTransaction, createTestUser } from './db-test-utils';
+
+it('should create and update user', async () => {
+  await withTestTransaction(async (db) => {
+    // Create user
+    const user = await createTestUser(db, {
+      email: 'test@example.com',
+      tier: 'free'
+    });
+
+    // Update user
+    await db.update(users)
+      .set({ tier: 'pro' })
+      .where(eq(users.id, user.id));
+
+    // Verify update
+    const [updated] = await db.select()
+      .from(users)
+      .where(eq(users.id, user.id));
+
+    expect(updated.tier).toBe('pro');
+
+    // Transaction automatically rolls back - no cleanup needed!
+  });
+});
+```
+
+### Performance
+
+- Single test: < 100ms
+- Full DB integration suite: 5-10 seconds
+- Tests run sequentially to avoid conflicts
+
+---
+
+## User Journey Tests
+
 ## Test File
 
 **`user-journey.test.ts`** - Comprehensive integration tests covering:
