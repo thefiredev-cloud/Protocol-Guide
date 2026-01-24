@@ -7,6 +7,7 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Platfo
 import { useState } from "react";
 import { useColors } from "@/hooks/use-colors";
 import { trpc } from "@/lib/trpc";
+import { uriToBase64 } from "@/lib/blob-utils";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useRouter } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
