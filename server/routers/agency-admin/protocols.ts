@@ -208,9 +208,9 @@ export const protocolProcedures = router({
       await db.logAuditEvent({
         userId: ctx.user.id,
         action: "PROTOCOL_MODIFIED",
-        targetType: "protocol_version",
-        targetId: String(input.versionId),
-        details: {
+        entityType: "protocol_version",
+        entityId: String(input.versionId),
+        metadata: {
           action: "published",
           protocolNumber: version.protocolNumber,
           title: version.title,
