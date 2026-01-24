@@ -204,10 +204,11 @@ export const agencyMembers = mysqlTable("agency_members", {
 	id: int().autoincrement().primaryKey().notNull(),
 	agencyId: int().notNull(),
 	userId: int().notNull(),
-	role: varchar({ length: 50 }).notNull().default('member'),
+	role: mysqlEnum(['owner','admin','protocol_author','member']).notNull().default('member'),
 	invitedBy: int(),
 	invitedAt: timestamp({ mode: 'string' }),
-	joinedAt: timestamp({ mode: 'string' }),
+	acceptedAt: timestamp({ mode: 'string' }),
+	status: mysqlEnum(['pending','active','suspended']).default('pending'),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 },
 (table) => [
