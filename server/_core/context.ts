@@ -61,6 +61,11 @@ export async function createContext(opts: CreateExpressContextOptions): Promise<
           email: supabaseUser.email,
           name: supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name,
         });
+
+        // Check if user's tokens have been revoked
+        if (user && await isTokenRevoked(user.id.toString())) {
+          user = null;
+        }
       }
     }
   } catch (error) {
