@@ -33,6 +33,14 @@ export function DisclaimerConsentModal({ visible, onAcknowledged }: DisclaimerCo
 
   const trpcUtils = trpc.useUtils();
 
+  // Focus trap for accessibility (WCAG 2.4.3)
+  // Note: allowEscapeClose is false because this modal requires acknowledgment
+  const { containerRef, containerProps } = useFocusTrap({
+    visible,
+    onClose: () => {}, // Cannot be dismissed - legal compliance requirement
+    allowEscapeClose: false,
+  });
+
   const handleCheckboxToggle = async () => {
     setIsChecked(!isChecked);
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
