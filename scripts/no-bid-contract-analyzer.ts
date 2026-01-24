@@ -193,11 +193,11 @@ function detectSuspiciousPatterns(contracts: Contract[]): SuspiciousPattern[] {
     byVendorAgencyDate.get(key)!.push(contract);
   }
 
-  for (const [_, group] of byVendorAgencyDate) {
+  Array.from(byVendorAgencyDate.entries()).forEach(([_, group]) => {
     if (group.length >= 3) {
       dailyDuplicates.push(...group);
     }
-  }
+  });
 
   if (dailyDuplicates.length > 0) {
     patterns.push({
