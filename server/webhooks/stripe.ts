@@ -4,6 +4,7 @@ import { constructWebhookEvent } from "../stripe";
 import * as db from "../db";
 import { users, stripeWebhookEvents } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
+import { sendTierUpgradeEmail, sendCancellationEmail } from "../_core/email";
 
 /**
  * Stripe webhook handler for subscription events
