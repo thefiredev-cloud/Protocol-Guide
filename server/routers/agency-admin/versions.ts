@@ -71,6 +71,11 @@ export const versionProcedures = router({
       }
 
       // Create new version
+      // Safely merge existing metadata (unknown type from json column) with new fields
+      const existingMetadata = (source.metadata && typeof source.metadata === "object" && !Array.isArray(source.metadata))
+        ? source.metadata as Record<string, unknown>
+        : {};
+
       const newVersionId = await db.createProtocolVersion({
         agencyId: input.agencyId,
         protocolNumber: source.protocolNumber,
@@ -79,7 +84,7 @@ export const versionProcedures = router({
         status: "draft",
         sourceFileUrl: source.sourceFileUrl,
         metadata: {
-          ...source.metadata,
+          ...existingMetadata,
           changeLog: input.changes,
           supersedes: source.version,
         },
