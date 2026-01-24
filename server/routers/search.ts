@@ -14,7 +14,7 @@ import {
   highAccuracySearch,
   latencyMonitor,
   type OptimizedSearchOptions,
-} from "../_core/rag-optimizer";
+} from "../_core/rag";
 import {
   getSearchCacheKey,
   getCachedSearchResults,
