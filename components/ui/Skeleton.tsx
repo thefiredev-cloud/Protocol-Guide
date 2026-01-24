@@ -607,18 +607,18 @@ export const SkeletonQueryItem = memo(function SkeletonQueryItem({
       ]}
       testID={testID}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-        <View style={{ flex: 1, marginRight: spacing.md }}>
+      <View style={skeletonStyles.rowAlignedStart}>
+        <View style={skeletonStyles.flex1MarginRight}>
           {/* Query text */}
           <Skeleton
             variant="text"
             width="80%"
             height={15}
-            style={{ marginBottom: spacing.sm }}
+            style={skeletonStyles.marginBottomSm}
           />
 
           {/* Protocol badge */}
-          <View style={{ flexDirection: 'row', marginBottom: spacing.sm }}>
+          <View style={[skeletonStyles.row, skeletonStyles.marginBottomSm]}>
             <Skeleton
               width={120}
               height={24}
@@ -631,17 +631,17 @@ export const SkeletonQueryItem = memo(function SkeletonQueryItem({
             variant="text"
             width="100%"
             height={13}
-            style={{ marginBottom: spacing.xs }}
+            style={skeletonStyles.marginBottomXs}
           />
           <Skeleton
             variant="text"
             width="70%"
             height={13}
-            style={{ marginBottom: spacing.md }}
+            style={skeletonStyles.marginBottomMd}
           />
 
           {/* Meta row */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+          <View style={[skeletonStyles.rowAligned, skeletonStyles.gapMd]}>
             <Skeleton width={80} height={20} borderRadius={radii.sm} />
             <Skeleton width={60} height={11} />
           </View>
