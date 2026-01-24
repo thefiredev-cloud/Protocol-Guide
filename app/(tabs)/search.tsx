@@ -23,7 +23,6 @@ import {
   createSearchA11y,
   createButtonA11y,
   createStatusA11y,
-  announceForAccessibility,
   MEDICAL_A11Y_LABELS,
 } from "@/lib/accessibility";
 import {
@@ -31,22 +30,15 @@ import {
   VoiceErrorBoundary,
   ProtocolViewerErrorBoundary,
 } from "@/components/ErrorBoundary";
-
-type SearchResult = {
-  id: number;
-  protocolNumber: string;
-  protocolTitle: string;
-  section: string | null;
-  content: string;
-  fullContent: string;
-  sourcePdfUrl: string | null;
-  relevanceScore: number;
-  countyId: number;
-  // Protocol currency information
-  protocolEffectiveDate: string | null;
-  lastVerifiedAt: string | null;
-  protocolYear: number | null;
-};
+import { SearchResult } from "@/types/search.types";
+import {
+  getScoreColor,
+  getScoreLabel,
+  getDateColor,
+  formatProtocolDate,
+  getCurrencyAdvice,
+} from "@/utils/search-formatters";
+import { useSearchAnnouncements } from "@/hooks/use-search-announcements";
 
 export default function SearchScreen() {
   const colors = useColors();
