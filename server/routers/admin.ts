@@ -47,9 +47,9 @@ export const adminRouter = router({
       await db.logAuditEvent({
         userId: ctx.user.id,
         action: "FEEDBACK_STATUS_CHANGED",
-        targetType: "feedback",
-        targetId: String(input.feedbackId),
-        details: {
+        entityType: "feedback",
+        entityId: String(input.feedbackId),
+        metadata: {
           oldStatus,
           newStatus: input.status,
           adminNotes: input.adminNotes,
