@@ -131,14 +131,14 @@ export async function createDepartmentCheckoutSession({
 
   // Get the appropriate price ID
   let priceId: string;
-  if (tier === "small") {
+  if (tier === "starter") {
     priceId = interval === "monthly"
-      ? PRICE_IDS.departmentSmallMonthly
-      : PRICE_IDS.departmentSmallAnnual;
-  } else if (tier === "large") {
+      ? PRICE_IDS.departmentStarterMonthly
+      : PRICE_IDS.departmentStarterAnnual;
+  } else if (tier === "professional") {
     priceId = interval === "monthly"
-      ? PRICE_IDS.departmentLargeMonthly
-      : PRICE_IDS.departmentLargeAnnual;
+      ? PRICE_IDS.departmentProfessionalMonthly
+      : PRICE_IDS.departmentProfessionalAnnual;
   } else {
     return { error: "Invalid subscription tier" };
   }
