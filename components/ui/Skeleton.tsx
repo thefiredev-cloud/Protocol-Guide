@@ -275,12 +275,12 @@ export const SkeletonCard = memo(function SkeletonCard({
           testID={testID ? `${testID}-image` : undefined}
         />
       )}
-      <View style={{ padding: spacing.lg }}>
+      <View style={skeletonStyles.paddingLg}>
         <Skeleton
           variant="text"
           width="70%"
           height={20}
-          style={{ marginBottom: spacing.md }}
+          style={skeletonStyles.marginBottomMd}
           testID={testID ? `${testID}-title` : undefined}
         />
         <SkeletonText
