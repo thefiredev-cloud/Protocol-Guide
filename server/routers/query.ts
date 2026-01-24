@@ -181,8 +181,8 @@ export const queryRouter = router({
           protocolRefs,
         });
 
-        // Increment usage
-        await db.incrementUserQueryCount(ctx.user.id);
+        // Note: Query count already incremented atomically before query execution
+        // This prevents TOCTOU race condition where parallel requests could exceed limits
 
         // Record latency for monitoring
         latencyMonitor.record('totalRetrieval', responseTimeMs);
