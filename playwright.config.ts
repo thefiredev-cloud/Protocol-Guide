@@ -84,5 +84,25 @@ export default defineConfig({
   // Expect timeout
   expect: {
     timeout: 10 * 1000,
+    // Visual regression testing configuration
+    toHaveScreenshot: {
+      // Maximum allowed pixel difference (0.0 - 1.0)
+      // 0.2% allows for minor anti-aliasing and font rendering differences
+      maxDiffPixelRatio: 0.002,
+      // Maximum number of pixels that can differ
+      maxDiffPixels: 100,
+      // Threshold for individual pixel color difference (0-1)
+      threshold: 0.2,
+      // Animations: wait for animations to finish
+      animations: "disabled",
+      // CSS animations and transitions
+      scale: "css",
+    },
   },
+
+  // Snapshot path template for visual regression tests
+  snapshotPathTemplate: "{testDir}/__screenshots__/{testFilePath}/{arg}{-projectName}{-snapshotSuffix}{ext}",
+
+  // Update snapshots with --update-snapshots flag
+  updateSnapshots: process.env.UPDATE_SNAPSHOTS === "true" ? "all" : "missing",
 });
