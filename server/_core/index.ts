@@ -91,6 +91,23 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
+  // Security headers middleware
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"], // Required for React
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "https:"],
+      },
+    },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+  }));
+
   // Request timeout middleware (30s default)
   app.use(createTimeoutMiddleware({ timeout: 30000 }));
 
