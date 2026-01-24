@@ -299,7 +299,7 @@ jobs:
     name: Deploy to Netlify
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: [build, e2e-tests]
+    needs: [build, e2e-tests, visual-regression-tests]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
