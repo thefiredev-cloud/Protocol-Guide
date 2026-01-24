@@ -249,11 +249,16 @@ async function importProtocols() {
     console.log(`Imported ${chunks.length} chunks from ${sourceName}`);
   }
 
-  console.log(`\n=== Import Complete ===`);
-  console.log(`Successful sources: ${successfulSources}`);
-  console.log(`Total protocol chunks imported: ${totalChunks}`);
-
-  await pool.end();
+    console.log(`\n=== Import Complete ===`);
+    console.log(`Successful sources: ${successfulSources}`);
+    console.log(`Total protocol chunks imported: ${totalChunks}`);
+  } catch (error) {
+    console.error("Error importing protocols:", error);
+    throw error;
+  } finally {
+    // Always close pool, even on error
+    await pool.end();
+  }
 }
 
 importProtocols().catch(console.error);
