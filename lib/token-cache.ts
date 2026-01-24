@@ -19,6 +19,7 @@ interface TokenCacheEntry {
 class TokenCache {
   private cache: TokenCacheEntry | null = null;
   private refreshInProgress: Promise<Session | null> | null = null;
+  private fetchInProgress: Promise<Session | null> | null = null;
   private readonly CACHE_BUFFER_MS = 30000; // 30 seconds buffer before expiry
 
   /**
@@ -32,30 +33,44 @@ class TokenCache {
       return this.refreshInProgress;
     }
 
+    // If fetch is in progress, wait for it
+    if (this.fetchInProgress) {
+      console.log("[TokenCache] Fetch in progress, waiting...");
+      return this.fetchInProgress;
+    }
+
     // Check cache validity
     if (this.cache && this.isValidCache(this.cache)) {
       console.log("[TokenCache] Returning cached session");
       return this.cache.session;
     }
 
-    // Cache is invalid or doesn't exist - fetch from Supabase
+    // Cache is invalid or doesn't exist - fetch from Supabase with mutex
     console.log("[TokenCache] Cache miss or expired, fetching session");
 
-    const { data, error } = await supabase.auth.getSession();
+    this.fetchInProgress = (async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
 
-    if (error) {
-      console.error("[TokenCache] Error fetching session:", error);
-      this.cache = null;
-      return null;
-    }
+        if (error) {
+          console.error("[TokenCache] Error fetching session:", error);
+          this.cache = null;
+          return null;
+        }
 
-    if (data.session) {
-      this.updateCache(data.session);
-      return data.session;
-    }
+        if (data.session) {
+          this.updateCache(data.session);
+          return data.session;
+        }
 
-    this.cache = null;
-    return null;
+        this.cache = null;
+        return null;
+      } finally {
+        this.fetchInProgress = null;
+      }
+    })();
+
+    return this.fetchInProgress;
   }
 
   /**
