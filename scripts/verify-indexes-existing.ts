@@ -73,12 +73,13 @@ async function verifyIndexes() {
       }
     }
 
-    await connection.end();
     console.log("\n✅ Index verification complete!");
   } catch (error) {
     console.error("❌ Verification failed:", error);
+    throw error;
+  } finally {
+    // Always close connection, even on error
     await connection.end();
-    process.exit(1);
   }
 }
 
