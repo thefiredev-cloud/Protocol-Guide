@@ -9,7 +9,7 @@ interface StateModalProps {
   onClose: () => void;
   states: StateCoverage[];
   loading: boolean;
-  error?: Error | null;
+  error?: unknown;
   onSelectState: (state: string | null) => void;
 }
 
