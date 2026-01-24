@@ -201,6 +201,26 @@ const envSchema = z.object({
     .describe('Log level for application logs'),
 
   // ===========================================
+  // EMAIL (Optional - Required for notifications)
+  // ===========================================
+  RESEND_API_KEY: z
+    .string()
+    .startsWith('re_', 'RESEND_API_KEY must start with "re_"')
+    .optional()
+    .describe('Resend API key for transactional emails - Get from: https://resend.com/api-keys'),
+
+  EMAIL_FROM_ADDRESS: z
+    .string()
+    .default('Protocol Guide <noreply@protocol-guide.com>')
+    .describe('Email from address in format "Display Name <email@domain.com>"'),
+
+  EMAIL_REPLY_TO: z
+    .string()
+    .email('EMAIL_REPLY_TO must be a valid email address')
+    .optional()
+    .describe('Reply-to email address for user responses'),
+
+  // ===========================================
   // VITE CLIENT ENV VARS (Optional)
   // ===========================================
   VITE_APP_ID: z
