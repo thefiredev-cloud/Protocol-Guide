@@ -401,9 +401,9 @@ export function VoiceSearchButton({
     // Don't do anything while processing
   }, [recordingState, disabled]);
 
-  // Size configurations
+  // Size configurations (all sizes meet 48pt minimum for EMS glove accessibility)
   const sizeConfig = {
-    small: { button: 40, icon: 18, ring: 48 },
+    small: { button: 48, icon: 18, ring: 56 },
     medium: { button: 48, icon: 22, ring: 56 },
     large: { button: 56, icon: 26, ring: 66 },
   };
