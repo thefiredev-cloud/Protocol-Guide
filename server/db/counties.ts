@@ -71,13 +71,13 @@ export async function getProtocolCoverageByState(): Promise<StateCoverage[]> {
       c.state,
       COUNT(pc.id) as chunk_count,
       COUNT(DISTINCT c.id) as county_count
-    FROM protocolChunks pc
-    JOIN counties c ON pc.countyId = c.id
+    FROM protocol_chunks pc
+    JOIN counties c ON pc.county_id = c.id
     GROUP BY c.state
     ORDER BY chunk_count DESC
   `);
 
-  const rows = (results[0] as unknown as any[]) || [];
+  const rows = (results.rows as any[]) || [];
 
   // Merge duplicate states (e.g., "California" and "CA")
   const mergedMap = new Map<string, { chunks: number; counties: number; displayName: string }>();
