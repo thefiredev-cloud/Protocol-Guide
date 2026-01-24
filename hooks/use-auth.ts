@@ -44,20 +44,13 @@ export function useAuth(options?: UseAuthOptions) {
       setLoading(true);
       setError(null);
 
-      const { data, error: sessionError } = await supabase.auth.getSession();
+      // Use cached session to prevent race conditions
+      const cachedSession = await getCachedSession();
 
-      if (sessionError) {
-        console.error("[useAuth] Session error:", sessionError);
-        setError(sessionError);
-        setUser(null);
-        setSession(null);
-        return;
-      }
-
-      if (data.session) {
-        console.log("[useAuth] Session found:", data.session.user?.email);
-        setSession(data.session);
-        setUser(mapSupabaseUser(data.session.user));
+      if (cachedSession) {
+        console.log("[useAuth] Session found:", cachedSession.user?.email);
+        setSession(cachedSession);
+        setUser(mapSupabaseUser(cachedSession.user));
       } else {
         console.log("[useAuth] No session");
         setSession(null);
