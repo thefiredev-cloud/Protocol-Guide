@@ -437,7 +437,7 @@ export const SkeletonProfileHeader = memo(function SkeletonProfileHeader({
         variant="circle"
         width={80}
         height={80}
-        style={{ marginBottom: spacing.md }}
+        style={skeletonStyles.marginBottomMd}
       />
 
       {/* Name */}
@@ -445,7 +445,7 @@ export const SkeletonProfileHeader = memo(function SkeletonProfileHeader({
         variant="text"
         width={140}
         height={22}
-        style={{ marginBottom: spacing.sm }}
+        style={skeletonStyles.marginBottomSm}
       />
 
       {/* Email */}
@@ -453,7 +453,7 @@ export const SkeletonProfileHeader = memo(function SkeletonProfileHeader({
         variant="text"
         width={180}
         height={14}
-        style={{ marginBottom: spacing.md }}
+        style={skeletonStyles.marginBottomMd}
       />
 
       {/* Tier badge */}
