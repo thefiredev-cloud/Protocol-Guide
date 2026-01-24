@@ -128,9 +128,18 @@ export function ChatInput({
             {showClear && (
               <TouchableOpacity
                 onPress={handleClear}
-                className="ml-2 w-6 h-6 rounded-full items-center justify-center"
-                style={{ backgroundColor: colors.border }}
+                style={{
+                  marginLeft: 8,
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  backgroundColor: colors.border,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
                 activeOpacity={0.7}
+                accessibilityLabel="Clear search input"
+                accessibilityRole="button"
               >
                 <IconSymbol name="xmark" size={14} color={colors.muted} />
               </TouchableOpacity>
