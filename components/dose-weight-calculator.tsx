@@ -223,8 +223,10 @@ export function DoseWeightCalculator({
               onPress={toggleWeightUnit}
               style={[styles.unitToggle, { backgroundColor: `${colors.primary}15` }]}
               activeOpacity={0.7}
-              accessibilityLabel={`Weight unit: ${displayUnit}. Tap to switch.`}
+              accessibilityLabel={`Weight unit: ${displayUnit}`}
+              accessibilityHint="Switches between kilograms and pounds"
               accessibilityRole="button"
+              accessibilityState={{ selected: true }}
             >
               <Text style={[styles.unitText, { color: colors.primary }]}>{displayUnit}</Text>
               <IconSymbol name="arrow.left.arrow.right" size={12} color={colors.primary} />

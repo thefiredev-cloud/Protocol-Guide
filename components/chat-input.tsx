@@ -134,9 +134,11 @@ export function ChatInput({
                 onPress={handleClear}
                 style={{
                   marginLeft: 8,
-                  width: 32,
-                  height: 32,
-                  borderRadius: 16,
+                  minWidth: 44,
+                  minHeight: 44,
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
                   backgroundColor: colors.border,
                   alignItems: 'center',
                   justifyContent: 'center',
