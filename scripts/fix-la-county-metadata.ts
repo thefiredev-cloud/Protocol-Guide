@@ -173,8 +173,9 @@ async function main() {
     }
 
     console.log('Protocol number extraction summary:');
-    for (const [num, count] of [...byNumber.entries()].sort()) {
-      console.log(`  ${num}: ${count} chunk(s)`);
+    const entries = Array.from(byNumber.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+    for (const entry of entries) {
+      console.log(`  ${entry[0]}: ${entry[1]} chunk(s)`);
     }
     console.log();
 
