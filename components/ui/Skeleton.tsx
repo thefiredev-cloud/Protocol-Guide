@@ -119,7 +119,7 @@ export const Skeleton = memo(function Skeleton({
           backgroundColor: colors.surface,
           opacity: pulseAnim,
         },
-        getVariantStyles(),
+        variantStyles,
         style,
       ]}
       accessibilityRole="none"
@@ -127,12 +127,12 @@ export const Skeleton = memo(function Skeleton({
       testID={testID}
     />
   );
-}
+});
 
 /**
  * Text skeleton with multiple lines
  */
-export function SkeletonText({
+export const SkeletonText = memo(function SkeletonText({
   lines = 3,
   lastLineWidth = "60%",
   lineHeight = 16,
