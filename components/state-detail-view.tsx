@@ -47,6 +47,13 @@ export function StateDetailView({
   const colors = useColors();
   const router = useRouter();
 
+  // Focus trap for accessibility (WCAG 2.4.3)
+  const { containerRef, containerProps } = useFocusTrap({
+    visible,
+    onClose,
+    allowEscapeClose: true,
+  });
+
   useEffect(() => {
     if (visible && stateName) {
       fetchAgencies();
