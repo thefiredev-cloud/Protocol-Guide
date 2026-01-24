@@ -469,7 +469,6 @@ export function useFocusTrap(options: UseFocusTrapOptions): UseFocusTrapReturn {
 
     if (visible && containerRef.current) {
       // Use React Native's AccessibilityInfo to set focus
-      const { AccessibilityInfo, findNodeHandle } = require("react-native");
       const node = findNodeHandle(containerRef.current);
       if (node) {
         AccessibilityInfo.setAccessibilityFocus(node);
