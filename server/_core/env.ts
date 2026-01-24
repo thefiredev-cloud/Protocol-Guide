@@ -70,10 +70,10 @@ const envSchema = z.object({
 
   DATABASE_URL: z
     .string()
-    .url('DATABASE_URL must be a valid connection string')
+    .min(1, 'DATABASE_URL is required')
     .refine(
-      (url) => url.startsWith('postgresql://') || url.startsWith('mysql://'),
-      'DATABASE_URL must be a PostgreSQL or MySQL connection string'
+      (url) => url.startsWith('postgresql://') || url.startsWith('postgres://') || url.startsWith('mysql://'),
+      'DATABASE_URL must be a PostgreSQL or MySQL connection string (starts with postgresql://, postgres://, or mysql://)'
     )
     .describe('Database connection string for Drizzle ORM (PostgreSQL or MySQL/TiDB)'),
 
