@@ -82,6 +82,13 @@ export function Modal({
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
 
+  // Focus trap for accessibility (WCAG 2.4.3)
+  const { containerRef, containerProps } = useFocusTrap({
+    visible,
+    onClose: onDismiss,
+    allowEscapeClose: true,
+  });
+
   // Default buttons based on variant
   const defaultButtons: ModalButton[] = variant === 'confirm'
     ? [
