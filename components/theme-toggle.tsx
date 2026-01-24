@@ -73,8 +73,15 @@ export function ThemeToggle({ showLabels = false, compact = false }: ThemeToggle
           <TouchableOpacity
             key={option.value}
             onPress={() => setThemePreference(option.value)}
-            className="flex-1 flex-row items-center justify-center rounded-lg py-2 px-3"
             style={{
+              flex: 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 8,
+              paddingVertical: 12,
+              paddingHorizontal: 12,
+              minHeight: 48,
               backgroundColor: isActive ? colors.primary : "transparent",
             }}
             accessibilityRole="radio"
@@ -88,8 +95,12 @@ export function ThemeToggle({ showLabels = false, compact = false }: ThemeToggle
             />
             {showLabels && (
               <Text
-                className="ml-2 text-sm font-medium"
-                style={{ color: isActive ? colors.background : colors.muted }}
+                style={{
+                  color: isActive ? colors.background : colors.muted,
+                  fontSize: 14,
+                  fontWeight: '500',
+                  marginLeft: 8,
+                }}
               >
                 {option.label}
               </Text>
