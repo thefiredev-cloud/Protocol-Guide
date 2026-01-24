@@ -13,8 +13,8 @@ export async function createFeedback(data: InsertFeedback) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const result = await db.insert(feedback).values(data);
-  return result[0].insertId;
+  const [result] = await db.insert(feedback).values(data).returning({ id: feedback.id });
+  return result.id;
 }
 
 export async function getUserFeedback(userId: number, limit = 20) {
