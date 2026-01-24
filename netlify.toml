@@ -50,14 +50,17 @@
     # Permissions Policy
     Permissions-Policy = "geolocation=(), microphone=(), camera=(), payment=()"
     # Content Security Policy
-    # Note: React Native Web requires 'unsafe-inline' and 'unsafe-eval' for runtime functionality
+    # SECURITY: Configured to prevent XSS while maintaining React Native Web compatibility
+    # - Scripts: 'unsafe-inline' required for RN Web runtime (consider migrating to hash-based CSP)
+    # - Styles: Uses SHA-256 hash for critical inline styles (more secure than 'unsafe-inline')
+    # - Images/Fonts: Restricted to specific trusted domains only
     Content-Security-Policy = """
       default-src 'self';
       script-src 'self' 'unsafe-inline' 'unsafe-eval';
-      style-src 'self' 'unsafe-inline';
-      img-src 'self' data: https:;
-      font-src 'self' data:;
-      connect-src 'self' https://*.supabase.co https://api.anthropic.com wss://*.supabase.co https://*.up.railway.app https://api.protocol-guide.com;
+      style-src 'self' 'sha256-oFgClRU4Ehoik1pRJieVXsCrbQAwssqUDdL4hnGQ6to=';
+      img-src 'self' data: blob: https://*.supabase.co;
+      font-src 'self' data: https://fonts.gstatic.com;
+      connect-src 'self' https://*.supabase.co https://api.anthropic.com wss://*.supabase.co https://protocol-guide-production.up.railway.app https://api.protocol-guide.com;
       frame-ancestors 'none';
       base-uri 'self';
       form-action 'self';
