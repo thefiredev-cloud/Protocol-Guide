@@ -178,9 +178,18 @@ export const agencies = mysqlTable("agencies", {
 	id: int().autoincrement().primaryKey().notNull(),
 	name: varchar({ length: 255 }).notNull(),
 	slug: varchar({ length: 100 }).notNull(),
+	stateCode: varchar({ length: 2 }).notNull(),
 	state: varchar({ length: 2 }),
 	county: varchar({ length: 100 }),
-	logoUrl: text(),
+	agencyType: mysqlEnum(['fire_dept','ems_agency','hospital','state_office','regional_council']),
+	logoUrl: varchar({ length: 500 }),
+	contactEmail: varchar({ length: 320 }),
+	contactPhone: varchar({ length: 20 }),
+	address: text(),
+	supabaseAgencyId: int(),
+	stripeCustomerId: varchar({ length: 255 }),
+	subscriptionTier: mysqlEnum(['starter','professional','enterprise']).default('starter'),
+	subscriptionStatus: varchar({ length: 50 }),
 	settings: json(),
 	createdAt: timestamp({ mode: 'string' }).default('CURRENT_TIMESTAMP').notNull(),
 	updatedAt: timestamp({ mode: 'string' }).defaultNow().onUpdateNow().notNull(),
@@ -188,6 +197,7 @@ export const agencies = mysqlTable("agencies", {
 (table) => [
 	index("idx_agencies_slug").on(table.slug),
 	index("idx_agencies_state").on(table.state),
+	index("idx_agencies_state_code").on(table.stateCode),
 ]);
 
 export const agencyMembers = mysqlTable("agency_members", {
