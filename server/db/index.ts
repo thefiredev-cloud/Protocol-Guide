@@ -41,6 +41,7 @@ export {
   canUserAccessOffline,
   getUserBookmarkLimit,
   canUserAddCounty,
+  incrementAndCheckQueryLimit,
 } from "./users-usage";
 
 // County operations
