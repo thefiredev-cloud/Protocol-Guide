@@ -32,7 +32,7 @@ export async function findOrCreateUserBySupabaseAuth(
     let existing = await db
       .select()
       .from(users)
-      .where(eq(users.supabaseId, supabaseId))
+      .where(eq(users.authId, supabaseId))
       .limit(1);
 
     // If not found by supabaseId, try by email for account linking
