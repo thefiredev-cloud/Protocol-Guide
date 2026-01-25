@@ -145,29 +145,30 @@ export interface AgencyInfo {
 }
 
 /**
- * Get all agencies (counties) for a specific state with protocol counts
+ * Get all agencies for a specific state with protocol counts
+ * Uses manus_protocol_chunks which has agency_id and state_code directly
  */
 export async function getAgenciesByState(state: string): Promise<AgencyInfo[]> {
   const db = await getDb();
 
+  // state can be either state code (CA) or state name (California)
   const results = await db.execute(sql`
     SELECT
-      c.id,
-      c.name,
-      c.state,
-      COUNT(pc.id) as protocol_count
-    FROM counties c
-    LEFT JOIN protocol_chunks pc ON pc.county_id = c.id
-    WHERE c.state = ${state}
-    GROUP BY c.id, c.name, c.state
-    ORDER BY protocol_count DESC, c.name ASC
+      agency_id as id,
+      agency_name as name,
+      COALESCE(state_name, state_code) as state,
+      COUNT(id) as protocol_count
+    FROM manus_protocol_chunks
+    WHERE state_code = ${state} OR state_name = ${state}
+    GROUP BY agency_id, agency_name, state_name, state_code
+    ORDER BY protocol_count DESC, agency_name ASC
   `);
 
   const rows = (results.rows as any[]) || [];
 
   return rows.map(row => ({
     id: row.id,
-    name: row.name,
+    name: row.name || 'Unknown Agency',
     state: row.state,
     protocolCount: parseInt(row.protocol_count) || 0,
   }));
@@ -175,6 +176,7 @@ export async function getAgenciesByState(state: string): Promise<AgencyInfo[]> {
 
 /**
  * Get all agencies with protocol data (agencies that have at least one protocol)
+ * Uses manus_protocol_chunks which has agency_id and state_code directly
  */
 export async function getAgenciesWithProtocols(state?: string): Promise<AgencyInfo[]> {
   const db = await getDb();
@@ -183,29 +185,29 @@ export async function getAgenciesWithProtocols(state?: string): Promise<AgencyIn
   if (state) {
     query = sql`
       SELECT
-        c.id,
-        c.name,
-        c.state,
-        COUNT(pc.id) as protocol_count
-      FROM counties c
-      INNER JOIN protocol_chunks pc ON pc.county_id = c.id
-      WHERE c.state = ${state}
-      GROUP BY c.id, c.name, c.state
-      HAVING COUNT(pc.id) > 0
-      ORDER BY protocol_count DESC, c.name ASC
+        agency_id as id,
+        agency_name as name,
+        COALESCE(state_name, state_code) as state,
+        COUNT(id) as protocol_count
+      FROM manus_protocol_chunks
+      WHERE (state_code = ${state} OR state_name = ${state})
+        AND agency_id IS NOT NULL
+      GROUP BY agency_id, agency_name, state_name, state_code
+      HAVING COUNT(id) > 0
+      ORDER BY protocol_count DESC, agency_name ASC
     `;
   } else {
     query = sql`
       SELECT
-        c.id,
-        c.name,
-        c.state,
-        COUNT(pc.id) as protocol_count
-      FROM counties c
-      INNER JOIN protocol_chunks pc ON pc.county_id = c.id
-      GROUP BY c.id, c.name, c.state
-      HAVING COUNT(pc.id) > 0
-      ORDER BY c.state ASC, protocol_count DESC, c.name ASC
+        agency_id as id,
+        agency_name as name,
+        COALESCE(state_name, state_code) as state,
+        COUNT(id) as protocol_count
+      FROM manus_protocol_chunks
+      WHERE agency_id IS NOT NULL
+      GROUP BY agency_id, agency_name, state_name, state_code
+      HAVING COUNT(id) > 0
+      ORDER BY state ASC, protocol_count DESC, agency_name ASC
     `;
   }
 
@@ -214,7 +216,7 @@ export async function getAgenciesWithProtocols(state?: string): Promise<AgencyIn
 
   return rows.map(row => ({
     id: row.id,
-    name: row.name,
+    name: row.name || 'Unknown Agency',
     state: row.state,
     protocolCount: parseInt(row.protocol_count) || 0,
   }));

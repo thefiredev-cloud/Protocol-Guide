@@ -66,14 +66,15 @@ export async function getTotalProtocolStats(): Promise<{
   const db = await getDb();
   if (!db) return { totalChunks: 0, totalCounties: 0, statesWithCoverage: 0, chunksWithYear: 0 };
 
-  const totalResult = await db.execute(sql`SELECT COUNT(*) as total FROM protocol_chunks`);
-  const countiesResult = await db.execute(sql`SELECT COUNT(DISTINCT id) as total FROM counties`);
-  const statesResult = await db.execute(sql`SELECT COUNT(DISTINCT state) as total FROM counties`);
-  const yearResult = await db.execute(sql`SELECT COUNT(*) as total FROM protocol_chunks WHERE protocol_year IS NOT NULL`);
+  // Use manus_protocol_chunks which is the production table
+  const totalResult = await db.execute(sql`SELECT COUNT(*) as total FROM manus_protocol_chunks`);
+  const agenciesResult = await db.execute(sql`SELECT COUNT(DISTINCT agency_id) as total FROM manus_protocol_chunks WHERE agency_id IS NOT NULL`);
+  const statesResult = await db.execute(sql`SELECT COUNT(DISTINCT state_code) as total FROM manus_protocol_chunks WHERE state_code IS NOT NULL`);
+  const yearResult = await db.execute(sql`SELECT COUNT(*) as total FROM manus_protocol_chunks WHERE protocol_year IS NOT NULL`);
 
   return {
     totalChunks: parseInt((totalResult.rows[0] as any)?.total || '0'),
-    totalCounties: parseInt((countiesResult.rows[0] as any)?.total || '0'),
+    totalCounties: parseInt((agenciesResult.rows[0] as any)?.total || '0'), // agencies, not counties
     statesWithCoverage: parseInt((statesResult.rows[0] as any)?.total || '0'),
     chunksWithYear: parseInt((yearResult.rows[0] as any)?.total || '0'),
   };
