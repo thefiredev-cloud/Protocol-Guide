@@ -11,6 +11,7 @@ import {
   getTraceResponseHeaders,
 } from "./tracing";
 import { isTokenRevoked } from "./token-blacklist";
+import { logger } from "./logger";
 
 const supabaseAdmin = createClient(
   process.env.SUPABASE_URL!,
