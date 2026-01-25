@@ -423,7 +423,7 @@ jobs:
 
       - name: Health check
         run: |
-          echo "Waiting for deployment to stabilize..."
+          echo "Waiting for production deployment to stabilize..."
           sleep 30
           curl -f ${{ vars.RAILWAY_URL }}/api/health || exit 1
-          echo "Health check passed!"
+          echo "Production health check passed!"
