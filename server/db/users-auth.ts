@@ -43,10 +43,10 @@ export async function findOrCreateUserBySupabaseAuth(
         .where(eq(users.email, metadata.email))
         .limit(1);
 
-      // If found by email, link the Supabase ID
+      // If found by email, link the Supabase auth ID
       if (existing.length > 0) {
         await db.update(users)
-          .set({ supabaseId })
+          .set({ authId: supabaseId })
           .where(eq(users.id, existing[0].id));
       }
     }
