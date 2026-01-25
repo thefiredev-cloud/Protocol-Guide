@@ -6,6 +6,7 @@
 import { eq, sql } from "drizzle-orm";
 import { counties, protocolChunks, type InsertCounty } from "../../drizzle/schema";
 import { getDb } from "./connection";
+import { logger } from "../_core/logger";
 
 export async function getAllCounties() {
   const db = await getDb();
