@@ -10,7 +10,7 @@
  * @see /docs/database/SCHEMA_CONSOLIDATION.md - Architecture docs
  */
 
-import { pgTable, pgEnum, serial, integer, varchar, text, timestamp, index, json, boolean, smallint } from "drizzle-orm/pg-core"
+import { pgTable, pgEnum, serial, integer, varchar, text, timestamp, index, json, boolean, smallint, uuid, date } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 // ========================================
