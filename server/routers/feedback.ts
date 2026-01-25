@@ -24,7 +24,7 @@ export const feedbackRouter = router({
           subject: input.subject,
           message: input.message,
           protocolRef: input.protocolRef || null,
-          countyId: user?.selectedCountyId || null,
+          countyId: user?.selectedAgencyId || null,
         });
         return { success: true, error: null };
       } catch (error) {
