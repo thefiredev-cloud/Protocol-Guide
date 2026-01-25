@@ -143,33 +143,27 @@ export const queries = pgTable("queries", {
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 });
 
-export const users = pgTable("users", {
+// Note: This maps to the manus_users table in production Supabase
+export const users = pgTable("manus_users", {
 	id: serial("id").primaryKey(),
-	openId: varchar("open_id", { length: 64 }).notNull(),
+	authId: uuid("auth_id"), // Supabase auth.users.id
+	openId: text("manus_open_id"), // Legacy Manus OAuth ID
 	name: text("name"),
-	email: varchar("email", { length: 320 }),
-	loginMethod: varchar("login_method", { length: 64 }),
-	role: userRoleEnum("role").default('user').notNull(),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
-	lastSignedIn: timestamp("last_signed_in", { mode: 'string' }).defaultNow().notNull(),
-	tier: userTierEnum("tier").default('free').notNull(),
-	queryCountToday: integer("query_count_today").notNull(),
-	lastQueryDate: varchar("last_query_date", { length: 10 }),
-	selectedCountyId: integer("selected_county_id"),
-	stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
-	subscriptionId: varchar("subscription_id", { length: 255 }),
-	subscriptionStatus: varchar("subscription_status", { length: 50 }),
-	subscriptionEndDate: timestamp("subscription_end_date", { mode: 'string' }),
-	homeCountyId: integer("home_county_id"),
-	supabaseId: varchar("supabase_id", { length: 36 }),
-	disclaimerAcknowledgedAt: timestamp("disclaimer_acknowledged_at", { mode: 'string' }),
-},
-(table) => [
-	index("users_open_id_unique").on(table.openId),
-	index("users_supabase_id_unique").on(table.supabaseId),
-	index("idx_users_disclaimer_acknowledged").on(table.disclaimerAcknowledgedAt),
-]);
+	email: text("email"),
+	loginMethod: text("login_method"),
+	role: text("role").default('user'),
+	createdAt: timestamp("created_at", { mode: 'string', withTimezone: true }).defaultNow(),
+	updatedAt: timestamp("updated_at", { mode: 'string', withTimezone: true }).defaultNow(),
+	lastSignedIn: timestamp("last_signed_in", { mode: 'string', withTimezone: true }),
+	tier: text("tier").default('free'),
+	queryCountToday: integer("query_count_today").default(0),
+	lastQueryDate: date("last_query_date"),
+	selectedAgencyId: integer("selected_agency_id"),
+	stripeCustomerId: text("stripe_customer_id"),
+	subscriptionId: text("subscription_id"),
+	subscriptionStatus: text("subscription_status"),
+	subscriptionEndDate: timestamp("subscription_end_date", { mode: 'string', withTimezone: true }),
+});
 
 // ========================================
 // Tables added for server/db.ts imports
