@@ -8,8 +8,8 @@ import Stripe from "stripe";
 import * as dotenv from "dotenv";
 import * as path from "path";
 
-// Load environment variables
-dotenv.config({ path: path.join(process.cwd(), ".env") });
+// Load environment variables - override any existing env vars
+dotenv.config({ path: path.join(process.cwd(), ".env"), override: true });
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 
