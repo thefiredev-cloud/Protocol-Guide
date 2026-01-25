@@ -12,7 +12,7 @@ export async function updateUserCounty(userId: number, countyId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  await db.update(users).set({ selectedCountyId: countyId }).where(eq(users.id, userId));
+  await db.update(users).set({ selectedAgencyId: countyId }).where(eq(users.id, userId));
 }
 
 export async function incrementUserQueryCount(userId: number) {
