@@ -52,11 +52,11 @@ export const TIER_LIMITS = {
     pro: { max: 50, windowMs: 60000 },     // 50/min
     premium: { max: 200, windowMs: 60000 }, // 200/min
   },
-  // Public endpoints
+  // Public endpoints (temporarily increased for testing)
   public: {
-    free: { max: 100, windowMs: 60000 },   // 100/min
-    pro: { max: 300, windowMs: 60000 },    // 300/min
-    premium: { max: 1000, windowMs: 60000 }, // 1000/min
+    free: { max: 500, windowMs: 60000 },   // 500/min (was 100)
+    pro: { max: 1000, windowMs: 60000 },   // 1000/min (was 300)
+    premium: { max: 2000, windowMs: 60000 }, // 2000/min (was 1000)
   },
 } as const;
 
