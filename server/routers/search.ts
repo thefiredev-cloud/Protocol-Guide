@@ -250,7 +250,15 @@ export const searchRouter = router({
   // Get protocol coverage by state
   // Rate limited to prevent abuse of coverage queries (expensive aggregations)
   coverageByState: publicRateLimitedProcedure.query(async () => {
-    return db.getProtocolCoverageByState();
+    try {
+      return await db.getProtocolCoverageByState();
+    } catch (error) {
+      console.error('[Search] coverageByState endpoint error:', error);
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Unable to fetch coverage data',
+      });
+    }
   }),
 
   // Get total protocol statistics
