@@ -295,8 +295,83 @@ jobs:
           path: e2e/__screenshots__/
           retention-days: 90
 
+  # =============================================================================
+  # STAGING DEPLOYMENTS (develop branch)
+  # =============================================================================
+
+  deploy-netlify-staging:
+    name: Deploy to Netlify (Staging)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [build, e2e-tests, visual-regression-tests]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: dist/
+
+      - name: Copy public assets to dist
+        run: cp -r public/* dist/ 2>/dev/null || true
+
+      - name: Deploy to Netlify (Staging Preview)
+        id: netlify-deploy
+        uses: netlify/actions/cli@v1
+        with:
+          args: deploy --dir=dist --alias=staging
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Post staging deployment notification
+        if: success()
+        run: |
+          echo "Staging deployment completed successfully"
+          echo "Preview URL: https://staging--${{ vars.NETLIFY_SITE_NAME }}.netlify.app"
+
+  # NOTE: Railway staging deployment requires additional setup:
+  # 1. Create a staging environment in Railway project settings
+  # 2. Generate a staging-specific RAILWAY_TOKEN_STAGING secret
+  # 3. Set RAILWAY_STAGING_URL repository variable for health checks
+  # 4. Uncomment the deploy-railway-staging job below
+  #
+  # deploy-railway-staging:
+  #   name: Deploy to Railway (Staging)
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 15
+  #   needs: [build, e2e-tests, visual-regression-tests]
+  #   if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+  #
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Install Railway CLI
+  #       run: curl -fsSL https://railway.app/install.sh | sh
+  #
+  #     - name: Deploy to Railway Staging
+  #       run: railway up --detach --environment staging
+  #       env:
+  #         RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_STAGING }}
+  #
+  #     - name: Health check (staging)
+  #       run: |
+  #         echo "Waiting for staging deployment to stabilize..."
+  #         sleep 30
+  #         curl -f ${{ vars.RAILWAY_STAGING_URL }}/api/health || exit 1
+  #         echo "Staging health check passed!"
+
+  # =============================================================================
+  # PRODUCTION DEPLOYMENTS (main branch)
+  # =============================================================================
+
   deploy-netlify:
-    name: Deploy to Netlify
+    name: Deploy to Netlify (Production)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: [build, e2e-tests, visual-regression-tests]
@@ -325,7 +400,7 @@ jobs:
 
       - name: Post deployment notification
         if: success()
-        run: echo "Deployment completed successfully"
+        run: echo "Production deployment completed successfully"
 
   deploy-railway:
     name: Deploy to Railway
