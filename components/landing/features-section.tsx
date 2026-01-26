@@ -5,7 +5,7 @@
  * Accessibility: Semantic headings, reduced-motion support, descriptive labels
  */
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, memo } from "react";
 import { View, Text, Platform, Pressable, useWindowDimensions } from "react-native";
 import Animated, {
   useSharedValue,
@@ -209,7 +209,7 @@ interface FeatureCardProps {
   isTablet?: boolean;
 }
 
-function FeatureCard({ feature, index, isVisible, isMobile, isTablet = false }: FeatureCardProps) {
+const FeatureCard = memo(function FeatureCard({ feature, index, isVisible, isMobile, isTablet = false }: FeatureCardProps) {
   const progress = useSharedValue(0);
   const hoverScale = useSharedValue(1);
   const hoverElevation = useSharedValue(0);
@@ -400,9 +400,9 @@ function FeatureCard({ feature, index, isVisible, isMobile, isTablet = false }: 
       </Animated.View>
     </Pressable>
   );
-}
+});
 
-export function FeaturesSection() {
+export const FeaturesSection = memo(function FeaturesSection() {
   const { width } = useWindowDimensions();
   // Three-tier responsive breakpoints
   const isMobile = width < 640;
@@ -567,6 +567,6 @@ export function FeaturesSection() {
       </View>
     </View>
   );
-}
+});
 
 export default FeaturesSection;

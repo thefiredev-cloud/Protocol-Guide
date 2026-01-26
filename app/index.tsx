@@ -3,23 +3,38 @@
  *
  * If authenticated → redirect to (tabs) main app
  * If not authenticated → show marketing landing page
+ *
+ * Performance optimizations:
+ * - React.lazy() for below-the-fold sections (reduces initial bundle)
+ * - Suspense boundaries with minimal fallbacks
+ * - HeroSection loaded eagerly (above the fold)
  */
 
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense, lazy } from "react";
 import { View, ScrollView, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
 import { useAuth } from "@/hooks/use-auth";
 import { ScreenContainer } from "@/components/screen-container";
-import {
-  HeroSection,
-  SimulationSection,
-  TimeCalculatorSection,
-  FeaturesSection,
-  EmailCaptureSection,
-  FooterSection,
-} from "@/components/landing";
+// Hero section loaded eagerly - it's above the fold
+import { HeroSection } from "@/components/landing/hero-section";
+
+// Lazy load below-the-fold sections to reduce initial bundle size
+const SimulationSection = lazy(() => import("@/components/landing/simulation-section"));
+const TimeCalculatorSection = lazy(() => import("@/components/landing/time-calculator-section"));
+const FeaturesSection = lazy(() => import("@/components/landing/features-section"));
+const EmailCaptureSection = lazy(() => import("@/components/landing/email-capture-section"));
+const FooterSection = lazy(() => import("@/components/landing/footer-section"));
+
+// Minimal loading placeholder for lazy sections
+function SectionPlaceholder() {
+  return (
+    <View style={{ height: 200, justifyContent: "center", alignItems: "center", backgroundColor: "#0F172A" }}>
+      <ActivityIndicator size="small" color="#EF4444" />
+    </View>
+  );
+}
 
 export default function LandingPage() {
   const { isAuthenticated, loading } = useAuth();
@@ -74,27 +89,30 @@ export default function LandingPage() {
         style={{ flex: 1, backgroundColor: "#0F172A" }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Hero Section */}
+        {/* Hero Section - loaded eagerly (above the fold) */}
         <HeroSection onSignIn={handleSignIn} />
 
-        {/* Simulation Section - The Cognitive Load Gap */}
-        <View nativeID="simulation-section">
-          <SimulationSection />
-        </View>
+        {/* Below-the-fold sections wrapped in Suspense for code splitting */}
+        <Suspense fallback={<SectionPlaceholder />}>
+          {/* Simulation Section - The Cognitive Load Gap */}
+          <View nativeID="simulation-section">
+            <SimulationSection />
+          </View>
 
-        {/* Time Calculator Section - Impact */}
-        <View nativeID="impact-section">
-          <TimeCalculatorSection />
-        </View>
+          {/* Time Calculator Section - Impact */}
+          <View nativeID="impact-section">
+            <TimeCalculatorSection />
+          </View>
 
-        {/* Features Section */}
-        <FeaturesSection />
+          {/* Features Section */}
+          <FeaturesSection />
 
-        {/* Email Capture CTA */}
-        <EmailCaptureSection />
+          {/* Email Capture CTA */}
+          <EmailCaptureSection />
 
-        {/* Footer */}
-        <FooterSection />
+          {/* Footer */}
+          <FooterSection />
+        </Suspense>
       </ScrollView>
     </ScreenContainer>
   );

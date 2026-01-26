@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { View, Text } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 import { SummaryCard } from "./SummaryCard";
@@ -7,7 +8,7 @@ interface MessageBubbleProps {
   message: Message;
 }
 
-export function MessageBubble({ message }: MessageBubbleProps) {
+export const MessageBubble = memo(function MessageBubble({ message }: MessageBubbleProps) {
   const colors = useColors();
 
   if (message.type === "user") {
@@ -35,4 +36,4 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       </View>
     </View>
   );
-}
+});

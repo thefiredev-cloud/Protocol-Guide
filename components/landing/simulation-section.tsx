@@ -5,7 +5,7 @@
  * Accessibility: Reduced-motion support, ARIA labels, keyboard accessible button
  */
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, memo } from "react";
 import {
   View,
   Text,
@@ -26,7 +26,7 @@ import {
 import type { SimulationState } from "./simulation";
 import { styles } from "./simulation/simulation-section-styles";
 
-export function SimulationSection() {
+export const SimulationSection = memo(function SimulationSection() {
   const { width } = useWindowDimensions();
 
   // Three-tier responsive breakpoints
@@ -380,6 +380,6 @@ export function SimulationSection() {
       </View>
     </View>
   );
-}
+});
 
 export default SimulationSection;
