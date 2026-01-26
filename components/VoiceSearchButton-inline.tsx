@@ -28,9 +28,11 @@ export function VoiceSearchButtonInline({
 }: VoiceSearchButtonInlineProps) {
   const colors = useColors();
 
+  // Touch targets sized for WCAG 2.1 AAA compliance (44px minimum)
+  // and gloved EMS use cases
   const sizeConfig = {
-    small: { button: 32, icon: 16 },
-    medium: { button: 40, icon: 20 },
+    small: { button: 44, icon: 18 },   // Was 32 - now meets minimum
+    medium: { button: 44, icon: 20 },  // Was 40 - now meets minimum
   };
 
   const config = sizeConfig[size];

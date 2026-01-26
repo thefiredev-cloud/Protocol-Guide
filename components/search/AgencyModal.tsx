@@ -56,7 +56,12 @@ export function AgencyModal({
           style={{ borderBottomColor: colors.border }}
         >
           <Text className="text-lg font-semibold text-foreground">Select Agency</Text>
-          <TouchableOpacity onPress={onClose}>
+          <TouchableOpacity 
+            onPress={onClose}
+            style={{ minWidth: 44, minHeight: 44, alignItems: "center", justifyContent: "center" }}
+            accessibilityLabel="Close agency selector"
+            accessibilityRole="button"
+          >
             <IconSymbol name="xmark.circle.fill" size={26} color={colors.muted} />
           </TouchableOpacity>
         </View>
@@ -76,8 +81,10 @@ export function AgencyModal({
             renderItem={({ item }) => (
               <TouchableOpacity
                 onPress={() => handleSelectAgency(item)}
-                className="flex-row items-center justify-between px-4 py-3 border-b"
-                style={{ borderBottomColor: colors.border }}
+                className="flex-row items-center justify-between px-4 border-b"
+                style={{ borderBottomColor: colors.border, minHeight: 48, paddingVertical: 12 }}
+                accessibilityLabel={`Select ${item.name}, ${item.protocolCount} protocols`}
+                accessibilityRole="button"
               >
                 <Text className="text-base text-foreground flex-1 mr-2" numberOfLines={1}>
                   {item.name}
@@ -91,8 +98,10 @@ export function AgencyModal({
                   onSelectAgency(null);
                   onClose();
                 }}
-                className="flex-row items-center justify-between px-4 py-3 border-b bg-surface"
-                style={{ borderBottomColor: colors.border }}
+                className="flex-row items-center justify-between px-4 border-b bg-surface"
+                style={{ borderBottomColor: colors.border, minHeight: 48, paddingVertical: 12 }}
+                accessibilityLabel="Select all agencies"
+                accessibilityRole="button"
               >
                 <Text className="text-base text-foreground">All Agencies</Text>
               </TouchableOpacity>

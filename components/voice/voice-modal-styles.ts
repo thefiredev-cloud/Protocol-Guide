@@ -27,8 +27,13 @@ export const styles = StyleSheet.create({
     position: "absolute",
     top: 64,
     right: 24,
+    // Ensure minimum 44x44 touch target (WCAG 2.1 AAA)
+    minWidth: 44,
+    minHeight: 44,
     padding: 12,
-    borderRadius: 24,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
   },
   card: {
     width: "100%",
@@ -116,10 +121,13 @@ export const styles = StyleSheet.create({
   },
   retryButton: {
     marginTop: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    // Ensure minimum 44px height for touch target (WCAG 2.1 AAA)
+    minHeight: 44,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
     alignSelf: "flex-start",
+    justifyContent: "center",
   },
   retryButtonText: {
     fontSize: 14,

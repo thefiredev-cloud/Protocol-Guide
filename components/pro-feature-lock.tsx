@@ -226,9 +226,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
   },
   ctaButton: {
+    // Ensure minimum touch target (WCAG 2.1 AAA - 44px)
+    minHeight: 44,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderRadius: radii.lg,
+    alignItems: "center",
+    justifyContent: "center",
   },
   ctaText: {
     color: "#FFFFFF",

@@ -36,7 +36,12 @@ export function StateModal({
           style={{ borderBottomColor: colors.border }}
         >
           <Text className="text-lg font-semibold text-foreground">Select State</Text>
-          <TouchableOpacity onPress={onClose}>
+          <TouchableOpacity 
+            onPress={onClose}
+            style={{ minWidth: 44, minHeight: 44, alignItems: "center", justifyContent: "center" }}
+            accessibilityLabel="Close state selector"
+            accessibilityRole="button"
+          >
             <IconSymbol name="xmark.circle.fill" size={26} color={colors.muted} />
           </TouchableOpacity>
         </View>
@@ -69,8 +74,10 @@ export function StateModal({
                   onSelectState(item.state);
                   onClose();
                 }}
-                className="flex-row items-center justify-between px-4 py-3 border-b"
-                style={{ borderBottomColor: colors.border }}
+                className="flex-row items-center justify-between px-4 border-b"
+                style={{ borderBottomColor: colors.border, minHeight: 48, paddingVertical: 12 }}
+                accessibilityLabel={`Select ${item.state}, ${item.chunks.toLocaleString()} protocols`}
+                accessibilityRole="button"
               >
                 <Text className="text-base text-foreground">{item.state}</Text>
                 <Text className="text-sm text-muted">{item.chunks.toLocaleString()}</Text>
@@ -82,8 +89,10 @@ export function StateModal({
                   onSelectState(null);
                   onClose();
                 }}
-                className="flex-row items-center justify-between px-4 py-3 border-b bg-surface"
-                style={{ borderBottomColor: colors.border }}
+                className="flex-row items-center justify-between px-4 border-b bg-surface"
+                style={{ borderBottomColor: colors.border, minHeight: 48, paddingVertical: 12 }}
+                accessibilityLabel="Select all states"
+                accessibilityRole="button"
               >
                 <Text className="text-base text-foreground">All States</Text>
               </TouchableOpacity>

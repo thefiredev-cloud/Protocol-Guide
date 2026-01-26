@@ -24,8 +24,12 @@ export function FilterRow({
     <View className="flex-row px-4 py-2 gap-2">
       <TouchableOpacity
         onPress={onOpenStateModal}
-        className="flex-1 flex-row items-center justify-between bg-surface rounded-lg px-3 py-2 border border-border"
+        className="flex-1 flex-row items-center justify-between bg-surface rounded-xl px-4 border border-border"
+        style={{ minHeight: 44, paddingVertical: 10 }}
         activeOpacity={0.7}
+        accessibilityLabel={selectedState ? `State filter: ${selectedState}` : "Select state filter"}
+        accessibilityRole="button"
+        accessibilityHint="Opens state selection menu"
       >
         <Text
           className="text-sm"
@@ -40,8 +44,12 @@ export function FilterRow({
       {selectedState && (
         <TouchableOpacity
           onPress={onOpenAgencyModal}
-          className="flex-1 flex-row items-center justify-between bg-surface rounded-lg px-3 py-2 border border-border"
+          className="flex-1 flex-row items-center justify-between bg-surface rounded-xl px-4 border border-border"
+          style={{ minHeight: 44, paddingVertical: 10 }}
           activeOpacity={0.7}
+          accessibilityLabel={selectedAgency ? `Agency filter: ${selectedAgency.name}` : "Select agency filter"}
+          accessibilityRole="button"
+          accessibilityHint="Opens agency selection menu"
         >
           <Text
             className="text-sm"

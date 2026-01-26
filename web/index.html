@@ -85,5 +85,14 @@
 
     <!-- The root element for your Expo app -->
     <div id="root"></div>
+
+    <!-- Accessibility announcer for screen readers (WCAG 2.1) -->
+    <div 
+      id="a11y-announcer" 
+      role="status" 
+      aria-live="polite" 
+      aria-atomic="true"
+      style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;"
+    ></div>
   </body>
 </html>

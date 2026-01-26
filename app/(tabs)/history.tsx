@@ -383,7 +383,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   clearButton: {
-    padding: 4,
+    // WCAG 2.1 AAA - 44px minimum touch target
+    minWidth: 44,
+    minHeight: 44,
+    padding: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: -8,
   },
   filterRow: {
     flexDirection: 'row',
@@ -395,12 +401,16 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   filterChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
+    // WCAG 2.1 AAA - 44px minimum touch target
+    minHeight: 44,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 22,
     marginRight: 8,
     marginBottom: 8,
     borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
   filterText: {
     fontSize: 13,
@@ -478,9 +488,14 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   deleteButton: {
-    padding: 8,
-    marginTop: -4,
-    marginRight: -4,
+    // WCAG 2.1 AAA - 44px minimum touch target
+    minWidth: 44,
+    minHeight: 44,
+    padding: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: -8,
+    marginRight: -8,
   },
   emptyContainer: {
     flex: 1,

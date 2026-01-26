@@ -150,6 +150,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Prepare metro cache
+        run: |
+          mkdir -p node_modules/react-native-css-interop/.cache
+          touch node_modules/react-native-css-interop/.cache/web.css
+
       # Extract Playwright version for precise cache invalidation
       - name: Get Playwright version
         id: playwright-version
@@ -242,6 +247,11 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Prepare metro cache
+        run: |
+          mkdir -p node_modules/react-native-css-interop/.cache
+          touch node_modules/react-native-css-interop/.cache/web.css
 
       - name: Get Playwright version
         id: playwright-version
