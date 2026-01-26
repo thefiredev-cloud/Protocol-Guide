@@ -392,10 +392,12 @@ const enforcePublicRateLimit = (options?: { maxRequests?: number; windowMs?: num
       // Check if limit exceeded
       if (rateLimitData.count >= maxRequests) {
         const retryAfter = Math.ceil((rateLimitData.resetTime - now) / 1000);
-        ctx.res.setHeader(RATE_LIMIT_HEADERS.RETRY_AFTER, retryAfter);
-        ctx.res.setHeader(RATE_LIMIT_HEADERS.LIMIT, maxRequests);
-        ctx.res.setHeader(RATE_LIMIT_HEADERS.REMAINING, 0);
-        ctx.res.setHeader(RATE_LIMIT_HEADERS.RESET, Math.floor(rateLimitData.resetTime / 1000));
+        if (ctx.res) {
+          ctx.res.setHeader(RATE_LIMIT_HEADERS.RETRY_AFTER, retryAfter);
+          ctx.res.setHeader(RATE_LIMIT_HEADERS.LIMIT, maxRequests);
+          ctx.res.setHeader(RATE_LIMIT_HEADERS.REMAINING, 0);
+          ctx.res.setHeader(RATE_LIMIT_HEADERS.RESET, Math.floor(rateLimitData.resetTime / 1000));
+        }
 
         throw new TRPCError({
           code: "TOO_MANY_REQUESTS",
@@ -409,10 +411,12 @@ const enforcePublicRateLimit = (options?: { maxRequests?: number; windowMs?: num
     }
 
     // Set rate limit headers
-    const currentData = publicRateLimitStore.get(ip)!;
-    ctx.res.setHeader(RATE_LIMIT_HEADERS.LIMIT, maxRequests);
-    ctx.res.setHeader(RATE_LIMIT_HEADERS.REMAINING, Math.max(0, maxRequests - currentData.count));
-    ctx.res.setHeader(RATE_LIMIT_HEADERS.RESET, Math.floor(currentData.resetTime / 1000));
+    if (ctx.res) {
+      const currentData = publicRateLimitStore.get(ip)!;
+      ctx.res.setHeader(RATE_LIMIT_HEADERS.LIMIT, maxRequests);
+      ctx.res.setHeader(RATE_LIMIT_HEADERS.REMAINING, Math.max(0, maxRequests - currentData.count));
+      ctx.res.setHeader(RATE_LIMIT_HEADERS.RESET, Math.floor(currentData.resetTime / 1000));
+    }
 
     return next();
   });

@@ -15,7 +15,7 @@
     "docker:dev": "docker compose --profile dev up dev",
     "build": "esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "prebuild:web": "node -e \"const fs=require('fs');const p='node_modules/react-native-css-interop/.cache';fs.mkdirSync(p,{recursive:true});fs.writeFileSync(p+'/web.css','')\"",
-    "build:web": "NODE_ENV=production npx expo export --platform web && node scripts/inject-pwa-meta.js && cp -r public/* dist/",
+    "build:web": "NODE_ENV=production npx expo export --platform web && node scripts/inject-pwa-meta.js && node -e \"const fs=require('fs');const path=require('path');const copy=(s,d)=>{fs.readdirSync(s).forEach(f=>{const sp=path.join(s,f),dp=path.join(d,f);fs.statSync(sp).isDirectory()?(!fs.existsSync(dp)&&fs.mkdirSync(dp),copy(sp,dp)):fs.copyFileSync(sp,dp)})};copy('public','dist')\"",
     "build:rust": "cd rust-server && cargo build --release",
     "start": "NODE_ENV=production node dist/index.js",
     "start:rust": "cd rust-server && ./target/release/protocol_guide_server",
