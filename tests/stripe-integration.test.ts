@@ -49,12 +49,34 @@ vi.mock("stripe", () => {
   };
 });
 
-// Mock database
+// Mock database with all required exports
 vi.mock("../server/db", () => ({
   PRICING: {
     monthly: 9.99,
     annual: 99.99,
   },
+  TIER_CONFIG: {
+    free: { queriesPerDay: 10, bookmarkLimit: 10, offlineAccess: false },
+    pro: { queriesPerDay: 100, bookmarkLimit: 100, offlineAccess: true },
+    enterprise: { queriesPerDay: -1, bookmarkLimit: -1, offlineAccess: true },
+  },
+  getDb: vi.fn(),
+  getUserById: vi.fn().mockResolvedValue({
+    id: 1,
+    email: "test@example.com",
+    tier: "free",
+    stripeCustomerId: "cus_test_123",
+  }),
+  getUserByStripeCustomerId: vi.fn().mockResolvedValue({
+    id: 1,
+    email: "test@example.com",
+    tier: "free",
+    stripeCustomerId: "cus_test_123",
+  }),
+  updateUserTier: vi.fn().mockResolvedValue(undefined),
+  updateUserStripeCustomerId: vi.fn().mockResolvedValue(undefined),
+  getUserUsage: vi.fn().mockResolvedValue({ tier: "free", count: 0, limit: 10 }),
+  canUserQuery: vi.fn().mockResolvedValue(true),
 }));
 
 describe("Stripe Checkout Sessions", () => {

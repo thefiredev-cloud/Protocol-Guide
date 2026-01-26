@@ -283,7 +283,7 @@ export async function addAgencySubscription(
       userId,
       agencyId,
       accessLevel: options?.accessLevel || "view",
-      isPrimary: options?.isPrimary ? 1 : 0,
+      isPrimary: options?.isPrimary ?? false,
       role: options?.role,
       expiresAt: options?.expiresAt?.toISOString(),
     });

@@ -38,7 +38,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
   console.log(`[Stripe Webhook] Received event: ${event.type} (ID: ${(event as any).id})`);
 
   const eventId = (event as any).id;
-  let dbInstance: Awaited<ReturnType<typeof db.getDb>> = null;
+  let dbInstance: Awaited<ReturnType<typeof db.getDb>> | null = null;
 
   try {
     // Idempotency check: prevent processing duplicate events
@@ -46,7 +46,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
       dbInstance = await db.getDb();
       if (dbInstance) {
         // Check if event already processed successfully
-        const existingEvent = await dbInstance.query.stripeWebhookEvents.findFirst({
+        const existingEvent = await (dbInstance as any).query.stripeWebhookEvents.findFirst({
           where: eq(stripeWebhookEvents.eventId, eventId),
         });
 
@@ -91,19 +91,19 @@ export async function handleStripeWebhook(req: Request, res: Response) {
       }
 
       case "charge.dispute.created": {
-        const dispute = event.data.object as Stripe.Dispute;
+        const dispute = event.data.object as unknown as Stripe.Dispute;
         await handleDisputeCreated(dispute);
         break;
       }
 
       case "charge.dispute.closed": {
-        const dispute = event.data.object as Stripe.Dispute;
+        const dispute = event.data.object as unknown as Stripe.Dispute;
         await handleDisputeClosed(dispute);
         break;
       }
 
       case "customer.deleted": {
-        const customer = event.data.object as Stripe.Customer;
+        const customer = event.data.object as unknown as Stripe.Customer;
         await handleCustomerDeleted(customer);
         break;
       }
@@ -246,7 +246,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
       subscriptionId: subscription.id,
       subscriptionStatus: subscription.status,
       subscriptionEndDate: periodEnd
-        ? new Date(periodEnd * 1000)
+        ? new Date(periodEnd * 1000).toISOString()
         : null,
     }).where(eq(users.id, user.id));
   }
@@ -318,11 +318,14 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 
   // Send cancellation email (fire and forget)
   if (user?.email) {
-    const endDate = new Date(subscription.current_period_end * 1000).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    const periodEnd = (subscription as unknown as { current_period_end?: number }).current_period_end;
+    const endDate = periodEnd 
+      ? new Date(periodEnd * 1000).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })
+      : 'soon';
 
     sendCancellationEmail(user.email, user.name || undefined, endDate).catch((err) => {
       console.error('[Stripe] Failed to send cancellation email:', err);

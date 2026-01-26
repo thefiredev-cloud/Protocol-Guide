@@ -18,12 +18,26 @@ vi.mock("../server/stripe", () => ({
   constructWebhookEvent: vi.fn(),
 }));
 
-// Mock database functions
+// Mock database functions with all required exports
 vi.mock("../server/db", () => ({
   getDb: vi.fn(),
   getUserByStripeCustomerId: vi.fn(),
   updateUserStripeCustomerId: vi.fn(),
   updateUserTier: vi.fn(),
+  getUserById: vi.fn().mockResolvedValue({
+    id: 1,
+    email: "test@example.com",
+    tier: "free",
+    stripeCustomerId: "cus_test_123",
+  }),
+  getUserUsage: vi.fn().mockResolvedValue({ tier: "free", count: 0, limit: 10 }),
+  canUserQuery: vi.fn().mockResolvedValue(true),
+  TIER_CONFIG: {
+    free: { queriesPerDay: 10, bookmarkLimit: 10, offlineAccess: false },
+    pro: { queriesPerDay: 100, bookmarkLimit: 100, offlineAccess: true },
+    enterprise: { queriesPerDay: -1, bookmarkLimit: -1, offlineAccess: true },
+  },
+  PRICING: { monthly: 9.99, annual: 99.99 },
 }));
 
 // Helper to create mock Request/Response
