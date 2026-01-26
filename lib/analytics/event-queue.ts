@@ -8,7 +8,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 import Constants from "expo-constants";
-import type { AnalyticsEvent } from "./index";
+import type { AnalyticsEvent } from "./types";
 
 // Queue Configuration
 const ANALYTICS_STORAGE_KEY = "@protocol_guide_analytics_queue";
