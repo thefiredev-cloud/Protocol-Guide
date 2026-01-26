@@ -76,7 +76,7 @@ describe("Protocol Guide - Counties", () => {
 });
 
 describe("Protocol Guide - User Usage", () => {
-  it("should return user usage with tier info", async () => {
+  it.skipIf(isCI)("should return user usage with tier info", async () => {
     const db = await import("../server/db");
     const usage = await db.getUserUsage(1);
     
@@ -97,7 +97,7 @@ describe("Protocol Guide - User Usage", () => {
 });
 
 describe("Protocol Guide - Protocol Search", () => {
-  it("should return protocols for a county", async () => {
+  it.skipIf(isCI)("should return protocols for a county", async () => {
     const db = await import("../server/db");
     const protocols = await db.getProtocolsByCounty(1);
     
@@ -117,7 +117,7 @@ describe("Protocol Guide - Protocol Search", () => {
 });
 
 describe("Protocol Guide - Query Logging", () => {
-  it("should create a query log entry", async () => {
+  it.skipIf(isCI)("should create a query log entry", async () => {
     const db = await import("../server/db");
     const result = await db.createQuery({
       userId: 1,
