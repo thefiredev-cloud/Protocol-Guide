@@ -13,6 +13,7 @@ import { useFavorites, FavoriteProtocol } from "@/hooks/use-favorites";
 import { signInWithGoogle, signInWithApple } from "@/lib/supabase";
 import { GoogleLogo, AppleLogo } from "@/components/icons";
 import { Modal } from "@/components/ui/Modal";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import {
   SkeletonProfileHeader,
   SkeletonSubscriptionCard,
@@ -349,6 +350,11 @@ export default function ProfileScreen() {
 
   return (
     <ScreenContainer>
+      <ErrorBoundary
+        section="general"
+        errorTitle="Profile Error"
+        errorMessage="Could not load your profile. Please try again or check your internet connection."
+      >
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         {/* Header */}
         <View style={styles.header}>
@@ -373,7 +379,7 @@ export default function ProfileScreen() {
 
         {/* Pro Subscription Card */}
         {isPro && subscriptionStatus && (
-          <View style={[styles.card, { backgroundColor: '#FFFFFF', borderColor: colors.border }]}>
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={styles.cardHeader}>
               <View style={[styles.iconCircle, { backgroundColor: `${colors.primary}15` }]}>
                 <IconSymbol name="heart.fill" size={18} color={colors.primary} />
@@ -419,7 +425,7 @@ export default function ProfileScreen() {
 
         {/* Usage Card (Free) */}
         {usage && usage.tier === "free" && (
-          <View style={[styles.card, { backgroundColor: '#FFFFFF', borderColor: colors.border }]}>
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={styles.cardHeader}>
               <View style={[styles.iconCircle, { backgroundColor: `${colors.primary}15` }]}>
                 <IconSymbol name="doc.text.fill" size={18} color={colors.primary} />
@@ -453,7 +459,7 @@ export default function ProfileScreen() {
         )}
 
         {/* Recent Queries Card */}
-        <View style={[styles.card, { backgroundColor: '#FFFFFF', borderColor: colors.border }]}>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.cardHeaderWithAction}>
             <View style={styles.cardHeader}>
               <View style={[styles.iconCircle, { backgroundColor: `${colors.primary}15` }]}>
@@ -487,7 +493,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* Offline Cache Card */}
-        <View style={[styles.card, { backgroundColor: '#FFFFFF', borderColor: colors.border }]}>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.cardHeaderWithAction}>
             <View style={styles.cardHeader}>
               <View style={[styles.iconCircle, { backgroundColor: `${colors.primary}15` }]}>
@@ -519,7 +525,7 @@ export default function ProfileScreen() {
 
         {/* Favorites Section */}
         <Text style={[styles.sectionTitle, { color: colors.muted }]}>Saved Protocols</Text>
-        <View style={[styles.card, { backgroundColor: '#FFFFFF', borderColor: colors.border }]}>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.cardHeader}>
             <View style={[styles.iconCircle, { backgroundColor: `${colors.error}15` }]}>
               <IconSymbol name="heart.fill" size={18} color={colors.error} />
@@ -599,7 +605,7 @@ export default function ProfileScreen() {
 
         {/* Appearance Section */}
         <Text style={[styles.sectionTitle, { color: colors.muted }]}>Appearance</Text>
-        <View style={[styles.card, { backgroundColor: '#FFFFFF', borderColor: colors.border }]}>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.cardHeader}>
             <View style={[styles.iconCircle, { backgroundColor: `${colors.primary}15` }]}>
               <IconSymbol name="paintbrush.fill" size={18} color={colors.primary} />
@@ -613,7 +619,7 @@ export default function ProfileScreen() {
 
         {/* Support Section */}
         <Text style={[styles.sectionTitle, { color: colors.muted }]}>Support</Text>
-        <View style={[styles.menuCard, { backgroundColor: '#FFFFFF', borderColor: colors.border }]}>
+        <View style={[styles.menuCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <TouchableOpacity
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
             activeOpacity={0.7}
@@ -657,7 +663,7 @@ export default function ProfileScreen() {
 
         {/* Legal Section */}
         <Text style={[styles.sectionTitle, { color: colors.muted }]}>Legal</Text>
-        <View style={[styles.menuCard, { backgroundColor: '#FFFFFF', borderColor: colors.border }]}>
+        <View style={[styles.menuCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <TouchableOpacity
             style={[styles.menuItem, { borderBottomColor: colors.border }]}
             activeOpacity={0.7}
@@ -711,6 +717,7 @@ export default function ProfileScreen() {
         {/* Version */}
         <Text style={[styles.versionText, { color: colors.muted }]}>Protocol Guide v1.0.0</Text>
       </ScrollView>
+      </ErrorBoundary>
 
       {/* Logout Confirmation Modal */}
       <Modal

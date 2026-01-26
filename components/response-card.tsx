@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Platform, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, Platform, StyleSheet, Animated as AnimatedRN } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import * as Clipboard from "expo-clipboard";
@@ -207,20 +207,91 @@ export const UserMessageCard = memo(function UserMessageCard({ text, timestamp }
   );
 });
 
-// Loading indicator
+// Loading indicator with animated dots
 export const LoadingCard = memo(function LoadingCard() {
   const colors = useColors();
+  
+  // Animated values for each dot
+  const dot1Opacity = useRef(new AnimatedRN.Value(0.3)).current;
+  const dot2Opacity = useRef(new AnimatedRN.Value(0.3)).current;
+  const dot3Opacity = useRef(new AnimatedRN.Value(0.3)).current;
+  const dot1Scale = useRef(new AnimatedRN.Value(0.8)).current;
+  const dot2Scale = useRef(new AnimatedRN.Value(0.8)).current;
+  const dot3Scale = useRef(new AnimatedRN.Value(0.8)).current;
+
+  useEffect(() => {
+    const createDotAnimation = (opacityValue: AnimatedRN.Value, scaleValue: AnimatedRN.Value, delay: number) => {
+      return AnimatedRN.loop(
+        AnimatedRN.sequence([
+          AnimatedRN.delay(delay),
+          AnimatedRN.parallel([
+            AnimatedRN.timing(opacityValue, { toValue: 1, duration: 400, useNativeDriver: true }),
+            AnimatedRN.timing(scaleValue, { toValue: 1, duration: 400, useNativeDriver: true }),
+          ]),
+          AnimatedRN.parallel([
+            AnimatedRN.timing(opacityValue, { toValue: 0.3, duration: 400, useNativeDriver: true }),
+            AnimatedRN.timing(scaleValue, { toValue: 0.8, duration: 400, useNativeDriver: true }),
+          ]),
+          AnimatedRN.delay(600 - delay), // Keep total cycle at 1400ms
+        ])
+      );
+    };
+
+    const anim1 = createDotAnimation(dot1Opacity, dot1Scale, 0);
+    const anim2 = createDotAnimation(dot2Opacity, dot2Scale, 160);
+    const anim3 = createDotAnimation(dot3Opacity, dot3Scale, 320);
+
+    anim1.start();
+    anim2.start();
+    anim3.start();
+
+    return () => {
+      anim1.stop();
+      anim2.stop();
+      anim3.stop();
+    };
+  }, [dot1Opacity, dot2Opacity, dot3Opacity, dot1Scale, dot2Scale, dot3Scale]);
 
   return (
     <Animated.View 
       entering={FadeIn.duration(200)}
       style={[styles.loadingCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+      accessibilityRole="progressbar"
+      accessibilityLabel="Searching protocols"
+      accessibilityLiveRegion="polite"
     >
       <View style={styles.loadingContent}>
         <View style={styles.loadingDots}>
-          <View style={[styles.dot, { backgroundColor: colors.primary }]} />
-          <View style={[styles.dot, { backgroundColor: colors.primary, opacity: 0.6 }]} />
-          <View style={[styles.dot, { backgroundColor: colors.primary, opacity: 0.3 }]} />
+          <AnimatedRN.View 
+            style={[
+              styles.dot, 
+              { 
+                backgroundColor: colors.primary,
+                opacity: dot1Opacity,
+                transform: [{ scale: dot1Scale }],
+              }
+            ]} 
+          />
+          <AnimatedRN.View 
+            style={[
+              styles.dot, 
+              { 
+                backgroundColor: colors.primary,
+                opacity: dot2Opacity,
+                transform: [{ scale: dot2Scale }],
+              }
+            ]} 
+          />
+          <AnimatedRN.View 
+            style={[
+              styles.dot, 
+              { 
+                backgroundColor: colors.primary,
+                opacity: dot3Opacity,
+                transform: [{ scale: dot3Scale }],
+              }
+            ]} 
+          />
         </View>
         <Text style={[styles.loadingText, { color: colors.muted }]}>Searching protocols...</Text>
       </View>
