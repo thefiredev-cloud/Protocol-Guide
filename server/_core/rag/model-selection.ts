@@ -6,7 +6,7 @@
  */
 
 import type { NormalizedQuery } from '../ems-query-normalizer';
-import { RAG_CONFIG } from './index';
+import { RAG_CONFIG } from './config';
 
 // ============================================================================
 // SIMILARITY THRESHOLD SELECTION

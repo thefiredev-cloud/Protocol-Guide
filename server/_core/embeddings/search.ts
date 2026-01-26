@@ -4,7 +4,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { generateEmbedding } from './index';
+import { generateEmbedding } from './generate';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.SUPABASE_URL || '';

@@ -13,29 +13,35 @@ try {
 
 // Set ALL required environment variables for testing
 // These override any real values to ensure test isolation
+// IMPORTANT: Values must match validation patterns in server/_core/env.ts
 const testEnvDefaults: Record<string, string> = {
   NODE_ENV: "test",
-  // Database
-  DATABASE_URL: "postgresql://test:test@localhost:5432/test_db",
-  // Auth
-  JWT_SECRET: "test-jwt-secret-for-unit-tests-only-32chars",
-  NEXT_AUTH_SECRET: "test-next-auth-secret-for-tests-32",
-  // Stripe
-  STRIPE_SECRET_KEY: "sk_test_placeholder_12345678901234567890",
-  STRIPE_WEBHOOK_SECRET: "whsec_test_placeholder_12345678901234",
-  STRIPE_PUBLISHABLE_KEY: "pk_test_placeholder_1234567890123456",
-  STRIPE_PRO_MONTHLY_PRICE_ID: "price_test_monthly_123456789012",
-  STRIPE_PRO_ANNUAL_PRICE_ID: "price_test_annual_1234567890123",
-  // Supabase
+  PORT: "3000",
+  // Database (postgres:// format required)
+  DATABASE_URL: "postgres://test:test@localhost:5432/test_db",
+  // Auth (32 char minimum for secrets)
+  JWT_SECRET: "test-jwt-secret-for-unit-tests-only-32charslongstring",
+  NEXT_AUTH_SECRET: "test-next-auth-secret-for-tests-32charslongstring",
+  // Stripe (must match sk_test_, whsec_, pk_test_, price_ prefixes)
+  STRIPE_SECRET_KEY: "sk_test_placeholder12345678901234567890123456789012345678901234",
+  STRIPE_WEBHOOK_SECRET: "whsec_test_placeholder1234567890123456789012345678901234",
+  STRIPE_PUBLISHABLE_KEY: "pk_test_placeholder12345678901234567890123456789012345678",
+  STRIPE_PRO_MONTHLY_PRICE_ID: "price_test_monthly_123456789012345678901234567890",
+  STRIPE_PRO_ANNUAL_PRICE_ID: "price_test_annual_1234567890123456789012345678901",
+  STRIPE_ENTERPRISE_MONTHLY_PRICE_ID: "price_test_enterprise_12345678901234567890",
+  STRIPE_ENTERPRISE_ANNUAL_PRICE_ID: "price_test_enterprise_annual_1234567890",
+  // Supabase (must be https URL and proper JWT format)
   SUPABASE_URL: "https://test-project.supabase.co",
-  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test-anon-key",
-  SUPABASE_SERVICE_ROLE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test-service-role",
-  // Anthropic
-  ANTHROPIC_API_KEY: "sk-ant-api-test-placeholder-key-12345",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3QiLCJyb2xlIjoiYW5vbiJ9.test-signature",
+  SUPABASE_SERVICE_ROLE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3QiLCJyb2xlIjoic2VydmljZV9yb2xlIn0.test-signature",
+  // Anthropic (must start with sk-ant-)
+  ANTHROPIC_API_KEY: "sk-ant-test-placeholder-key-1234567890abcdef1234567890abcdef",
+  // Voyage AI (must start with pa-)
+  VOYAGE_API_KEY: "pa-test-voyage-key-1234567890abcdef",
   // URLs
   APP_URL: "http://localhost:8081",
   SERVER_URL: "http://localhost:3000",
-  // Optional but often needed
+  // Optional but often needed (can be empty strings)
   RESEND_API_KEY: "",
   UPSTASH_REDIS_REST_URL: "",
   UPSTASH_REDIS_REST_TOKEN: "",

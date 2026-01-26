@@ -8,16 +8,45 @@
  * - Embedding generation time (Voyage AI)
  * - pgvector query time (Supabase)
  * - Cache hit vs miss performance
+ *
+ * NOTE: These benchmarks require a real database and API keys.
+ * Skipped in CI/test environments without real infrastructure.
  */
 
 import { describe, it, expect, beforeAll, afterAll, bench } from "vitest";
-import "../../scripts/load-env.js";
-import {
-  semanticSearchProtocols,
-  generateEmbedding,
-  embeddingCache,
-} from "../../server/_core/embeddings";
-import { getProtocolStats } from "../../server/db";
+
+// Try to load real env, but don't fail if not available
+try {
+  await import("../../scripts/load-env.js");
+} catch {
+  // Ignore - will check if env is available
+}
+
+// Check if we have real environment configured
+const hasRealEnv = Boolean(
+  process.env.DATABASE_URL &&
+  !process.env.DATABASE_URL.includes("localhost:5432/test_db") &&
+  process.env.VOYAGE_API_KEY &&
+  !process.env.VOYAGE_API_KEY.includes("test-voyage")
+);
+
+// Dynamic imports for when tests run
+let semanticSearchProtocols: typeof import("../../server/_core/embeddings").semanticSearchProtocols;
+let generateEmbedding: typeof import("../../server/_core/embeddings").generateEmbedding;
+let embeddingCache: typeof import("../../server/_core/embeddings").embeddingCache;
+let getProtocolStats: typeof import("../../server/db").getProtocolStats;
+
+if (hasRealEnv) {
+  const embeddings = await import("../../server/_core/embeddings");
+  const db = await import("../../server/db");
+  semanticSearchProtocols = embeddings.semanticSearchProtocols;
+  generateEmbedding = embeddings.generateEmbedding;
+  embeddingCache = embeddings.embeddingCache;
+  getProtocolStats = db.getProtocolStats;
+}
+
+// Skip all benchmarks if we don't have real environment
+const describeOrSkip = hasRealEnv ? describe : describe.skip;
 
 // Performance thresholds (in milliseconds)
 const THRESHOLDS = {
@@ -84,7 +113,7 @@ async function measureExecution<T>(
   return { result, durationMs };
 }
 
-describe("Search Performance Benchmarks", () => {
+describeOrSkip("Search Performance Benchmarks", () => {
   let dbStats: { totalProtocols: number; totalCounties: number } | null = null;
 
   beforeAll(async () => {

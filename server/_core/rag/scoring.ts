@@ -12,7 +12,7 @@
 import type { NormalizedQuery } from '../ems-query-normalizer';
 import { MEDICAL_SYNONYMS, expandWithSynonyms } from '../ems-query-normalizer';
 import type { RetrievalResult } from './index';
-import { RAG_CONFIG } from './index';
+import { RAG_CONFIG } from './config';
 
 // ============================================================================
 // MEDICAL TERM SCORING HELPERS

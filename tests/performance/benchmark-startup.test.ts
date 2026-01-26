@@ -6,10 +6,30 @@
  * - Provider initialization
  * - Database connection establishment
  * - Service worker registration (web)
+ *
+ * NOTE: These benchmarks require a real database and properly configured
+ * environment. They are skipped in CI/test environments without real infrastructure.
  */
 
 import { describe, it, expect, beforeAll } from "vitest";
-import "../../scripts/load-env.js";
+
+// Try to load real env, but don't fail if not available
+try {
+  await import("../../scripts/load-env.js");
+} catch {
+  // Ignore - will check if env is available
+}
+
+// Check if we have real environment configured
+const hasRealEnv = Boolean(
+  process.env.DATABASE_URL &&
+  !process.env.DATABASE_URL.includes("localhost:5432/test_db") &&
+  process.env.ANTHROPIC_API_KEY &&
+  !process.env.ANTHROPIC_API_KEY.includes("test-placeholder")
+);
+
+// Skip all benchmarks if we don't have real environment
+const describeOrSkip = hasRealEnv ? describe : describe.skip;
 
 // Performance thresholds (in milliseconds)
 const THRESHOLDS = {
@@ -33,7 +53,7 @@ async function measureModuleImport(modulePath: string): Promise<number> {
   return performance.now() - start;
 }
 
-describe("App Startup Performance", () => {
+describeOrSkip("App Startup Performance", () => {
   describe("Module Import Times", () => {
     it("server/db module loads within threshold", async () => {
       const duration = await measureModuleImport("../../server/db");
@@ -148,7 +168,7 @@ describe("App Startup Performance", () => {
   });
 });
 
-describe("Initialization Dependency Chain", () => {
+describeOrSkip("Initialization Dependency Chain", () => {
   it("maps startup dependency order", async () => {
     const timeline: { step: string; duration: number; cumulative: number }[] = [];
     let cumulative = 0;
@@ -178,7 +198,7 @@ describe("Initialization Dependency Chain", () => {
   }, 30000);
 });
 
-describe("Memory Usage During Startup", () => {
+describeOrSkip("Memory Usage During Startup", () => {
   it("estimates heap usage after initialization", async () => {
     // Note: This is a rough estimate - actual heap measurement requires native tools
     const initialHeap = process.memoryUsage().heapUsed;

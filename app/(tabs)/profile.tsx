@@ -116,7 +116,7 @@ export default function ProfileScreen() {
     router.push("/(tabs)/?showUpgrade=true" as any);
   };
 
-  const getTierBadgeColor = (tier: string) => {
+  const getTierBadgeColor = (tier: string | null | undefined) => {
     switch (tier) {
       case "pro":
         return colors.primary;
@@ -127,7 +127,7 @@ export default function ProfileScreen() {
     }
   };
 
-  const getTierLabel = (tier: string) => {
+  const getTierLabel = (tier: string | null | undefined) => {
     switch (tier) {
       case "pro":
         return "Pro";

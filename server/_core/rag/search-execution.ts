@@ -16,7 +16,8 @@ import type {
   OptimizedSearchParams, 
   OptimizedSearchResult 
 } from './index';
-import { RAG_CONFIG, queryCache, latencyMonitor } from './index';
+import { RAG_CONFIG } from './config';
+import { queryCache, latencyMonitor } from './index';
 import { rerankResults, advancedRerank, applyContextBoost, reciprocalRankFusion } from './scoring';
 import { selectModel, selectSimilarityThreshold, selectResultLimit } from './model-selection';
 

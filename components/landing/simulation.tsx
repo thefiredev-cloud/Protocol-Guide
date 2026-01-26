@@ -32,6 +32,9 @@ export const MANUAL_SEARCH_TIME = 90;
 export const PROTOCOL_GUIDE_TIME = 2.3;
 export const MAX_TIME = 95;
 
+// State type for the simulation
+export type SimulationState = "idle" | "running" | "completed";
+
 /**
  * PulsingButton - Animated CTA button with continuous pulse effect
  */

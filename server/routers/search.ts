@@ -78,154 +78,172 @@ export const searchRouter = router({
     .query(async ({ input, ctx }) => {
       const searchStartTime = Date.now();
 
-      // Validate and enforce tier-based result limits
-      const userId = ctx.user?.id || null;
-      const effectiveLimit = await validateSearchLimit(userId, input.limit);
+      try {
+        // Validate and enforce tier-based result limits
+        const userId = ctx.user?.id || null;
+        const effectiveLimit = await validateSearchLimit(userId, input.limit);
 
-      // Step 1: Normalize the EMS query (expand abbreviations, fix typos)
-      const normalized = normalizeEmsQuery(input.query);
+        // Step 1: Normalize the EMS query (expand abbreviations, fix typos)
+        const normalized = normalizeEmsQuery(input.query);
 
-      // Log the normalization for debugging/monitoring
-      if (normalized.normalized !== normalized.original.toLowerCase()) {
-        console.log(`[Search] "${normalized.original}" -> "${normalized.normalized}"`);
-        if (normalized.expandedAbbreviations.length > 0) {
-          console.log(`[Search] Expanded: ${normalized.expandedAbbreviations.join(', ')}`);
+        // Log the normalization for debugging/monitoring
+        if (normalized.normalized !== normalized.original.toLowerCase()) {
+          console.log(`[Search] "${normalized.original}" -> "${normalized.normalized}"`);
+          if (normalized.expandedAbbreviations.length > 0) {
+            console.log(`[Search] Expanded: ${normalized.expandedAbbreviations.join(', ')}`);
+          }
+          if (normalized.correctedTypos.length > 0) {
+            console.log(`[Search] Corrected: ${normalized.correctedTypos.join(', ')}`);
+          }
         }
-        if (normalized.correctedTypos.length > 0) {
-          console.log(`[Search] Corrected: ${normalized.correctedTypos.join(', ')}`);
+
+        // Step 2: Check Redis cache first
+        const cacheKey = generateSearchCacheKey({
+          query: normalized.normalized,
+          agencyId: input.countyId,
+          stateFilter: input.stateFilter,
+        });
+
+        try {
+          const cachedResults = await getCachedSearchResults(cacheKey);
+          if (cachedResults) {
+            const latencyMs = Date.now() - searchStartTime;
+            latencyMonitor.record('totalRetrieval', latencyMs);
+
+            // Set cache headers for cache hit
+            if (ctx.res) {
+              setSearchCacheHeaders(ctx.res, true);
+            }
+
+            return {
+              ...cachedResults,
+              fromCache: true,
+              latencyMs,
+            };
+          }
+        } catch (cacheError) {
+          // Cache errors shouldn't fail the search - log and continue
+          console.warn('[Search] Cache read error, continuing with fresh search:', cacheError);
         }
-      }
 
-      // Step 2: Check Redis cache first
-      const cacheKey = generateSearchCacheKey({
-        query: normalized.normalized,
-        agencyId: input.countyId,
-        stateFilter: input.stateFilter,
-      });
+        // Step 3: Map MySQL county ID to Supabase agency_id (OPTIMIZED - single query)
+        let agencyId: number | null = null;
+        let agencyName: string | null = null;
+        let stateCode: string | null = null;
 
-      const cachedResults = await getCachedSearchResults(cacheKey);
-      if (cachedResults) {
+        if (input.countyId) {
+          const agency = await getAgencyByCountyIdOptimized(input.countyId);
+          if (agency) {
+            agencyId = agency.id;
+            agencyName = agency.name;
+            stateCode = agency.state_code;
+          }
+          console.log(`[Search] Mapped MySQL county ${input.countyId} -> Supabase agency ${agencyId}`);
+        } else if (input.stateFilter) {
+          // Convert state name (e.g., "California") to 2-letter code (e.g., "CA")
+          stateCode = toStateCode(input.stateFilter);
+          if (!stateCode) {
+            console.warn(`[Search] Invalid state filter: "${input.stateFilter}"`);
+          }
+        }
+
+        // Step 4: Determine optimization options based on query type
+        // Enable multi-query fusion for medication/safety queries (higher accuracy needed)
+        const isMedicationQuery = normalized.intent === 'medication_dosing' ||
+          normalized.intent === 'contraindication_check' ||
+          normalized.extractedMedications.length > 0;
+
+        const searchOptions: OptimizedSearchOptions = {
+          // Use multi-query fusion for medication queries (safety-critical)
+          enableMultiQueryFusion: isMedicationQuery || normalized.isComplex,
+          // Always use advanced re-ranking
+          enableAdvancedRerank: true,
+          // Enable context boost when agency/state is specified
+          enableContextBoost: !!(agencyId || stateCode),
+        };
+
+        // Step 5: Execute optimized search with the normalized query
+        const optimizedResult = await optimizedSearch(
+          {
+            query: normalized.normalized,
+            agencyId,
+            agencyName,
+            stateCode,
+            limit: effectiveLimit,
+          },
+          async (params) => {
+            const searchResults = await semanticSearchProtocols({
+              query: params.query,
+              agencyId: params.agencyId,
+              agencyName: params.agencyName,
+              stateCode: params.stateCode,
+              limit: params.limit,
+              threshold: params.threshold,
+            });
+
+            return searchResults.map(r => ({
+              id: r.id,
+              protocolNumber: r.protocol_number,
+              protocolTitle: r.protocol_title,
+              section: r.section,
+              content: r.content,
+              similarity: r.similarity,
+              imageUrls: r.image_urls,
+            }));
+          },
+          searchOptions
+        );
+
+        // Step 6: Build response
         const latencyMs = Date.now() - searchStartTime;
         latencyMonitor.record('totalRetrieval', latencyMs);
 
-        // Set cache headers for cache hit
-        if (ctx.res) {
-          setSearchCacheHeaders(ctx.res, true);
-        }
-
-        return {
-          ...cachedResults,
-          fromCache: true,
+        const response: CachedSearchResult = {
+          results: optimizedResult.results.map(r => ({
+            id: r.id,
+            protocolNumber: r.protocolNumber,
+            protocolTitle: r.protocolTitle,
+            section: r.section,
+            content: r.content.substring(0, 500) + (r.content.length > 500 ? '...' : ''),
+            fullContent: r.content,
+            sourcePdfUrl: null,
+            relevanceScore: r.rerankedScore ?? r.similarity,
+            countyId: agencyId ?? 0,
+            protocolEffectiveDate: null,
+            lastVerifiedAt: null,
+            protocolYear: null,
+          })),
+          totalFound: optimizedResult.results.length,
+          query: input.query,
+          normalizedQuery: normalized.normalized,
+          fromCache: false,
           latencyMs,
         };
-      }
 
-      // Step 3: Map MySQL county ID to Supabase agency_id (OPTIMIZED - single query)
-      let agencyId: number | null = null;
-      let agencyName: string | null = null;
-      let stateCode: string | null = null;
-
-      if (input.countyId) {
-        const agency = await getAgencyByCountyIdOptimized(input.countyId);
-        if (agency) {
-          agencyId = agency.id;
-          agencyName = agency.name;
-          stateCode = agency.state_code;
+        // Step 7: Cache results in Redis (1 hour TTL) - don't fail on cache error
+        try {
+          await cacheSearchResults(cacheKey, response);
+        } catch (cacheError) {
+          console.warn('[Search] Cache write error:', cacheError);
         }
-        console.log(`[Search] Mapped MySQL county ${input.countyId} -> Supabase agency ${agencyId}`);
-      } else if (input.stateFilter) {
-        // Convert state name (e.g., "California") to 2-letter code (e.g., "CA")
-        stateCode = toStateCode(input.stateFilter);
-        if (!stateCode) {
-          console.warn(`[Search] Invalid state filter: "${input.stateFilter}"`);
+
+        // Set cache headers for cache miss
+        if (ctx.res) {
+          setSearchCacheHeaders(ctx.res, false);
         }
+
+        // Log performance metrics
+        console.log(`[Search] Completed in ${latencyMs}ms (cache: ${optimizedResult.metrics.cacheHit}, rerank: ${optimizedResult.metrics.rerankingMs}ms)`);
+
+        return response;
+      } catch (error) {
+        console.error('[Search] semantic search error:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Search failed. Please try again.',
+          cause: error,
+        });
       }
-
-      // Step 4: Determine optimization options based on query type
-      // Enable multi-query fusion for medication/safety queries (higher accuracy needed)
-      const isMedicationQuery = normalized.intent === 'medication_dosing' ||
-        normalized.intent === 'contraindication_check' ||
-        normalized.extractedMedications.length > 0;
-
-      const searchOptions: OptimizedSearchOptions = {
-        // Use multi-query fusion for medication queries (safety-critical)
-        enableMultiQueryFusion: isMedicationQuery || normalized.isComplex,
-        // Always use advanced re-ranking
-        enableAdvancedRerank: true,
-        // Enable context boost when agency/state is specified
-        enableContextBoost: !!(agencyId || stateCode),
-      };
-
-      // Step 5: Execute optimized search with the normalized query
-      const optimizedResult = await optimizedSearch(
-        {
-          query: normalized.normalized,
-          agencyId,
-          agencyName,
-          stateCode,
-          limit: effectiveLimit,
-        },
-        async (params) => {
-          const searchResults = await semanticSearchProtocols({
-            query: params.query,
-            agencyId: params.agencyId,
-            agencyName: params.agencyName,
-            stateCode: params.stateCode,
-            limit: params.limit,
-            threshold: params.threshold,
-          });
-
-          return searchResults.map(r => ({
-            id: r.id,
-            protocolNumber: r.protocol_number,
-            protocolTitle: r.protocol_title,
-            section: r.section,
-            content: r.content,
-            similarity: r.similarity,
-            imageUrls: r.image_urls,
-          }));
-        },
-        searchOptions
-      );
-
-      // Step 6: Build response
-      const latencyMs = Date.now() - searchStartTime;
-      latencyMonitor.record('totalRetrieval', latencyMs);
-
-      const response: CachedSearchResult = {
-        results: optimizedResult.results.map(r => ({
-          id: r.id,
-          protocolNumber: r.protocolNumber,
-          protocolTitle: r.protocolTitle,
-          section: r.section,
-          content: r.content.substring(0, 500) + (r.content.length > 500 ? '...' : ''),
-          fullContent: r.content,
-          sourcePdfUrl: null,
-          relevanceScore: r.rerankedScore ?? r.similarity,
-          countyId: agencyId ?? 0,
-          protocolEffectiveDate: null,
-          lastVerifiedAt: null,
-          protocolYear: null,
-        })),
-        totalFound: optimizedResult.results.length,
-        query: input.query,
-        normalizedQuery: normalized.normalized,
-        fromCache: false,
-        latencyMs,
-      };
-
-      // Step 6: Cache results in Redis (1 hour TTL)
-      await cacheSearchResults(cacheKey, response);
-
-      // Set cache headers for cache miss
-      if (ctx.res) {
-        setSearchCacheHeaders(ctx.res, false);
-      }
-
-      // Log performance metrics
-      console.log(`[Search] Completed in ${latencyMs}ms (cache: ${optimizedResult.metrics.cacheHit}, rerank: ${optimizedResult.metrics.rerankingMs}ms)`);
-
-      return response;
     }),
 
   // Get protocol by ID
@@ -233,23 +251,47 @@ export const searchRouter = router({
   getProtocol: publicRateLimitedProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ input }) => {
-      const dbInstance = await db.getDb();
-      if (!dbInstance) return null;
+      try {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Database connection unavailable',
+          });
+        }
 
-      const { protocolChunks } = await import("../../drizzle/schema");
-      const { eq } = await import("drizzle-orm");
+        const { protocolChunks } = await import("../../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
 
-      const [protocol] = await dbInstance.select().from(protocolChunks)
-        .where(eq(protocolChunks.id, input.id))
-        .limit(1);
+        const [protocol] = await dbInstance.select().from(protocolChunks)
+          .where(eq(protocolChunks.id, input.id))
+          .limit(1);
 
-      return protocol || null;
+        return protocol || null;
+      } catch (error) {
+        if (error instanceof TRPCError) throw error;
+        console.error('[Search] getProtocol error:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to fetch protocol',
+          cause: error,
+        });
+      }
     }),
 
   // Get protocol statistics
   // Rate limited to prevent abuse of stats endpoint (expensive queries)
   stats: publicRateLimitedProcedure.query(async () => {
-    return db.getProtocolStats();
+    try {
+      return await db.getProtocolStats();
+    } catch (error) {
+      console.error('[Search] stats endpoint error:', error);
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Unable to fetch protocol statistics',
+        cause: error,
+      });
+    }
   }),
 
   // Get protocol coverage by state

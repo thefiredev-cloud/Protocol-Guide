@@ -36,7 +36,7 @@ import { useFocusTrap } from "@/lib/accessibility";
 import {
   ERROR_MESSAGES,
   stopPulseAnimation,
-  createRippleStyles,
+  useRippleStyles,
   RippleAnimationValues,
   formatDuration,
   getStatusText,
@@ -80,7 +80,7 @@ export function VoiceSearchModal({
   };
 
   // Animated styles for ripple effect
-  const { pulseStyle1, pulseStyle2, pulseStyle3, micAnimatedStyle } = createRippleStyles(animationValues);
+  const { pulseStyle1, pulseStyle2, pulseStyle3, micAnimatedStyle } = useRippleStyles(animationValues);
 
   // Recording hook
   const {

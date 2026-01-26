@@ -134,9 +134,10 @@ export function stopPulseAnimation(values: RippleAnimationValues): void {
 }
 
 /**
- * Create animated styles for the ripple rings
+ * Custom hook to create animated styles for the ripple rings
+ * Named with "use" prefix to comply with React hooks rules
  */
-export function createRippleStyles(values: RippleAnimationValues) {
+export function useRippleStyles(values: RippleAnimationValues) {
   const pulseStyle1 = useAnimatedStyle(() => ({
     transform: [{ scale: values.pulseScale1.value }],
     opacity: values.pulseOpacity1.value,
