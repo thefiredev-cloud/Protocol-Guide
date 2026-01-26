@@ -6,7 +6,7 @@
  *
  * Features:
  * - Audio recording with expo-audio
- * - Whisper API transcription (OpenAI or self-hosted)
+ * - Server-side Whisper API transcription via tRPC (secure, rate-limited)
  * - Visual feedback during recording
  * - Medical terminology post-processing
  *
@@ -25,6 +25,7 @@ import { Audio, Recording } from "@/lib/audio";
 import { uriToBase64 } from "@/lib/blob-utils";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
+import { trpc } from "@/lib/trpc";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -33,10 +34,6 @@ import Animated, {
   withSequence,
   cancelAnimation,
 } from "react-native-reanimated";
-
-// Configuration - Update these for your deployment
-const WHISPER_API_ENDPOINT = process.env.EXPO_PUBLIC_WHISPER_API_URL || "https://api.openai.com/v1/audio/transcriptions";
-const WHISPER_API_KEY = process.env.EXPO_PUBLIC_WHISPER_API_KEY || "";
 
 // Medical terminology corrections for common EMS/medical terms
 const MEDICAL_CORRECTIONS: Record<string, string> = {
@@ -129,6 +126,10 @@ export function VoiceInput({ onTranscription, onError, disabled = false }: Voice
   const recordingRef = useRef<Recording | null>(null);
   const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // tRPC mutations for server-side transcription
+  const uploadAudioMutation = trpc.voice.uploadAudio.useMutation();
+  const transcribeMutation = trpc.voice.transcribe.useMutation();
+
   // Use ref to track current state synchronously (prevents race conditions)
   const stateRef = useRef<RecordingState>("idle");
 
@@ -203,43 +204,47 @@ export function VoiceInput({ onTranscription, onError, disabled = false }: Voice
     return uriToBase64(uri);
   };
 
-  // Send audio to Whisper API (cross-platform)
+  // Get MIME type based on platform
+  const getMimeType = (): string => {
+    return Platform.OS === 'web' ? 'audio/webm' : 'audio/m4a';
+  };
+
+  // Send audio to server via tRPC for secure transcription
   const transcribeAudio = async (audioUri: string): Promise<string> => {
     try {
-      const formData = new FormData();
-
-      // Platform-specific file append
+      // Step 1: Convert audio to base64
+      let audioBase64: string;
       if (Platform.OS === 'web') {
         const audioResponse = await fetch(audioUri);
         const blob = await audioResponse.blob();
-        formData.append("file", blob, "recording.webm");
+        const arrayBuffer = await blob.arrayBuffer();
+        audioBase64 = btoa(
+          new Uint8Array(arrayBuffer).reduce(
+            (data, byte) => data + String.fromCharCode(byte),
+            ''
+          )
+        );
       } else {
-        // React Native - use file URI
-        formData.append("file", {
-          uri: audioUri,
-          type: "audio/m4a",
-          name: "recording.m4a",
-        } as any);
+        audioBase64 = await audioToBase64(audioUri);
       }
 
-      formData.append("model", "whisper-1");
-      formData.append("language", "en");
-
-      const response = await fetch(WHISPER_API_ENDPOINT, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${WHISPER_API_KEY}`,
-        },
-        body: formData,
+      // Step 2: Upload audio to server storage
+      const uploadResult = await uploadAudioMutation.mutateAsync({
+        audioBase64,
+        mimeType: getMimeType(),
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Transcription failed: ${response.status} - ${errorText}`);
+      // Step 3: Transcribe via server-side Whisper API
+      const transcribeResult = await transcribeMutation.mutateAsync({
+        audioUrl: uploadResult.url,
+        language: 'en',
+      });
+
+      if (!transcribeResult.success || !transcribeResult.text) {
+        throw new Error(transcribeResult.error || 'Transcription failed');
       }
 
-      const result = await response.json();
-      return result.text || "";
+      return transcribeResult.text;
     } catch (error) {
       console.error("Transcription error:", error);
       throw error;
