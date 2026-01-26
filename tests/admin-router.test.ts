@@ -149,6 +149,7 @@ vi.mock("../server/db", () => ({
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 
 function createAdminContext(userOverrides: Partial<AuthenticatedUser> = {}): { ctx: TrpcContext } {
+  const csrfToken = "test-csrf-token-12345";
   const user: AuthenticatedUser = {
     id: 1,
     openId: "admin-open-id",
@@ -176,10 +177,17 @@ function createAdminContext(userOverrides: Partial<AuthenticatedUser> = {}): { c
     req: {
       protocol: "https",
       hostname: "localhost",
-      headers: { authorization: "Bearer test_token" },
+      headers: {
+        authorization: "Bearer test_token",
+        "x-csrf-token": csrfToken,
+      },
+      cookies: {
+        csrf_token: csrfToken,
+      },
     } as TrpcContext["req"],
     res: {
       clearCookie: vi.fn(),
+      setHeader: vi.fn(),
     } as unknown as TrpcContext["res"],
     trace: createMockTraceContext(),
   };
@@ -188,6 +196,7 @@ function createAdminContext(userOverrides: Partial<AuthenticatedUser> = {}): { c
 }
 
 function createUserContext(userOverrides: Partial<AuthenticatedUser> = {}): { ctx: TrpcContext } {
+  const csrfToken = "test-csrf-token-12345";
   const user: AuthenticatedUser = {
     id: 2,
     openId: "user-open-id",
@@ -215,10 +224,17 @@ function createUserContext(userOverrides: Partial<AuthenticatedUser> = {}): { ct
     req: {
       protocol: "https",
       hostname: "localhost",
-      headers: { authorization: "Bearer test_token" },
+      headers: {
+        authorization: "Bearer test_token",
+        "x-csrf-token": csrfToken,
+      },
+      cookies: {
+        csrf_token: csrfToken,
+      },
     } as TrpcContext["req"],
     res: {
       clearCookie: vi.fn(),
+      setHeader: vi.fn(),
     } as unknown as TrpcContext["res"],
     trace: createMockTraceContext(),
   };

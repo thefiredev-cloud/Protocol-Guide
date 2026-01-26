@@ -17,7 +17,10 @@ import {
   closeTestPool,
 } from './db-test-utils';
 
-describe('Subscription State Integration Tests', () => {
+// Skip integration tests when database is not available
+const runIntegrationTests = process.env.RUN_INTEGRATION_TESTS === 'true';
+
+describe.skipIf(!runIntegrationTests)('Subscription State Integration Tests', () => {
   beforeAll(async () => {
     const connected = await verifyDatabaseConnection();
     if (!connected) {

@@ -21,14 +21,28 @@ vi.mock("../server/stripe", () => ({
 // Mock database functions with all required exports
 vi.mock("../server/db", () => ({
   getDb: vi.fn(),
-  getUserByStripeCustomerId: vi.fn(),
-  updateUserStripeCustomerId: vi.fn(),
-  updateUserTier: vi.fn(),
-  getUserById: vi.fn().mockResolvedValue({
-    id: 1,
-    email: "test@example.com",
-    tier: "free",
-    stripeCustomerId: "cus_test_123",
+  getUserByStripeCustomerId: vi.fn().mockImplementation((customerId: string) => {
+    // Return a mock user based on customer ID
+    if (customerId === "cus_test_456") {
+      return Promise.resolve({
+        id: 10,
+        email: "test@example.com",
+        tier: "free",
+        stripeCustomerId: customerId,
+      });
+    }
+    return Promise.resolve(null);
+  }),
+  updateUserStripeCustomerId: vi.fn().mockResolvedValue(undefined),
+  updateUserTier: vi.fn().mockResolvedValue(undefined),
+  getUserById: vi.fn().mockImplementation((id: number) => {
+    // Return a mock user that matches the requested ID
+    return Promise.resolve({
+      id: id,
+      email: `user${id}@example.com`,
+      tier: "free",
+      stripeCustomerId: null,
+    });
   }),
   getUserUsage: vi.fn().mockResolvedValue({ tier: "free", count: 0, limit: 10 }),
   canUserQuery: vi.fn().mockResolvedValue(true),

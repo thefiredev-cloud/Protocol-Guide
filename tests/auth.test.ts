@@ -60,6 +60,7 @@ function createAuthenticatedContext(userOverrides: Partial<AuthenticatedUser> = 
     ...userOverrides,
   };
 
+  const csrfToken = "test-csrf-token-12345";
   const ctx: TrpcContext = {
     user,
     req: {
@@ -67,12 +68,20 @@ function createAuthenticatedContext(userOverrides: Partial<AuthenticatedUser> = 
       hostname: "localhost",
       headers: {
         authorization: "Bearer test_token",
+        "x-csrf-token": csrfToken,
+      },
+      cookies: {
+        csrf_token: csrfToken,
+      },
+      socket: {
+        remoteAddress: "127.0.0.1",
       },
     } as TrpcContext["req"],
     res: {
       clearCookie: (name: string, options: Record<string, unknown>) => {
         clearedCookies.push({ name, options });
       },
+      setHeader: vi.fn(),
     } as TrpcContext["res"],
     trace: createMockTraceContext(),
   };
@@ -90,11 +99,15 @@ function createUnauthenticatedContext() {
       protocol: "https",
       hostname: "localhost",
       headers: {},
+      socket: {
+        remoteAddress: "127.0.0.1",
+      },
     } as TrpcContext["req"],
     res: {
       clearCookie: (name: string, options: Record<string, unknown>) => {
         clearedCookies.push({ name, options });
       },
+      setHeader: vi.fn(),
     } as TrpcContext["res"],
     trace: createMockTraceContext(),
   };

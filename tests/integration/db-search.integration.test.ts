@@ -19,7 +19,10 @@ import {
   closeTestPool,
 } from './db-test-utils';
 
-describe('Search Database Integration Tests', () => {
+// Skip integration tests when database is not available
+const runIntegrationTests = process.env.RUN_INTEGRATION_TESTS === 'true';
+
+describe.skipIf(!runIntegrationTests)('Search Database Integration Tests', () => {
   beforeAll(async () => {
     const connected = await verifyDatabaseConnection();
     if (!connected) {

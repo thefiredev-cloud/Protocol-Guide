@@ -41,10 +41,10 @@ const testEnvDefaults: Record<string, string> = {
   // URLs
   APP_URL: "http://localhost:8081",
   SERVER_URL: "http://localhost:3000",
-  // Optional but often needed (can be empty strings)
-  RESEND_API_KEY: "",
-  UPSTASH_REDIS_REST_URL: "",
-  UPSTASH_REDIS_REST_TOKEN: "",
+  // Optional but often needed - must match validation patterns
+  RESEND_API_KEY: "re_test_1234567890abcdef1234567890abcdef",
+  UPSTASH_REDIS_REST_URL: "https://test-redis.upstash.io",
+  UPSTASH_REDIS_REST_TOKEN: "test-upstash-token-1234567890",
 };
 
 for (const [key, value] of Object.entries(testEnvDefaults)) {
