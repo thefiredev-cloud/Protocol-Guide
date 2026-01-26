@@ -42,40 +42,48 @@ export default defineConfig({
   },
 
   // Configure projects for major browsers
-  projects: [
+  // Default to chromium-only for faster local development
+  // CI can run all browsers with --project flag
+  projects: process.env.E2E_ALL_BROWSERS ? [
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
     },
-
     {
       name: "firefox",
       use: { ...devices["Desktop Firefox"] },
     },
-
     {
       name: "webkit",
       use: { ...devices["Desktop Safari"] },
     },
-
     // Mobile viewports
     {
       name: "Mobile Chrome",
       use: { ...devices["Pixel 5"] },
     },
-
     {
       name: "Mobile Safari",
       use: { ...devices["iPhone 12"] },
     },
+  ] : [
+    // Default: chromium only for faster test runs
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+    },
   ],
 
   // Run local dev server before starting tests
-  webServer: {
+  // For local dev: Start server manually with `pnpm dev:metro` first
+  // For CI: The webServer will start automatically
+  webServer: process.env.E2E_SKIP_SERVER ? undefined : {
     command: "pnpm dev:metro",
     url: "http://localhost:8081",
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true,
     timeout: 120 * 1000,
+    stdout: "pipe",
+    stderr: "pipe",
   },
 
   // Global timeout for each test

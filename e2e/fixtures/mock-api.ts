@@ -220,6 +220,42 @@ function getMockResponse(
         { id: 2, name: "Orange County", state: "CA", protocolVersion: "v1.0" },
       ];
 
+    case "search.coverageByState":
+      return [
+        { state: "California", stateCode: "CA", chunks: 5420, counties: 58 },
+        { state: "Texas", stateCode: "TX", chunks: 3890, counties: 42 },
+        { state: "Florida", stateCode: "FL", chunks: 2150, counties: 35 },
+        { state: "New York", stateCode: "NY", chunks: 1870, counties: 28 },
+        { state: "Pennsylvania", stateCode: "PA", chunks: 1240, counties: 22 },
+      ];
+
+    case "search.totalStats":
+      return {
+        totalChunks: 25000,
+        totalCounties: 450,
+        statesWithCoverage: 32,
+      };
+
+    case "search.agenciesByState":
+      return [
+        { id: 1, name: "Los Angeles County Fire", state: "CA", chunks: 820, version: "2024.1" },
+        { id: 2, name: "Orange County EMS", state: "CA", chunks: 650, version: "2024.2" },
+        { id: 3, name: "San Diego County Fire", state: "CA", chunks: 580, version: "2024.1" },
+        { id: 4, name: "San Francisco Fire Department", state: "CA", chunks: 520, version: "2023.4" },
+        { id: 5, name: "Sacramento County EMS", state: "CA", chunks: 410, version: "2024.1" },
+      ];
+
+    case "agency.getById":
+      return {
+        id: 1,
+        name: "Los Angeles County Fire",
+        state: "CA",
+        stateCode: "CA",
+        chunks: 820,
+        version: "2024.1",
+        lastUpdated: new Date().toISOString(),
+      };
+
     default:
       // Return empty success for unknown procedures
       return { success: true };
