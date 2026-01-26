@@ -96,18 +96,27 @@ export async function semanticSearchProtocols(params: {
 
   if (protocolNumber) {
     // First, try exact match on protocol_number field
-    const { data: exactMatches } = await supabase
+    // Build query with location filters applied
+    let keywordQuery = supabase
       .from('manus_protocol_chunks')
-      .select('id, agency_id, protocol_number, protocol_title, section, content, image_urls')
-      .or(`protocol_number.ilike.%${protocolNumber}%,protocol_title.ilike.%${protocolNumber}%`)
-      .limit(5);
+      .select('id, agency_id, protocol_number, protocol_title, section, content, image_urls, state_code')
+      .or(`protocol_number.ilike.%${protocolNumber}%,protocol_title.ilike.%${protocolNumber}%`);
+    
+    // Apply location filters to keyword search (same as semantic search)
+    if (agencyId) {
+      keywordQuery = keywordQuery.eq('agency_id', agencyId);
+    } else if (stateCode) {
+      keywordQuery = keywordQuery.eq('state_code', stateCode);
+    }
+    
+    const { data: exactMatches } = await keywordQuery.limit(5);
 
     if (exactMatches && exactMatches.length > 0) {
       keywordResults = exactMatches.map(r => ({
         ...r,
         similarity: 1.0, // Perfect match for keyword
       }));
-      console.log(`[Search] Found ${keywordResults.length} keyword matches for protocol #${protocolNumber}`);
+      console.log(`[Search] Found ${keywordResults.length} keyword matches for protocol #${protocolNumber}${stateCode ? ` (state: ${stateCode})` : ''}${agencyId ? ` (agency: ${agencyId})` : ''}`);
     }
   }
 
