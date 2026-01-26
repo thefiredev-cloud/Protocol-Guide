@@ -2,6 +2,28 @@
 
 Welcome to the Protocol Guide API documentation. This directory contains comprehensive documentation for all tRPC procedures.
 
+## 📚 Documentation Index
+
+### Architecture & Design (NEW!)
+
+| Document | Description |
+|----------|-------------|
+| **[API Architecture](./api/API_ARCHITECTURE.md)** | System design, principles, technology stack |
+| **[Authentication Flow](./api/AUTHENTICATION_FLOW.md)** | Auth patterns, tokens, CSRF protection |
+| **[Rate Limiting Tiers](./api/RATE_LIMITING_TIERS.md)** | Rate limits by tier and endpoint |
+| **[Error Code Reference](./api/ERROR_CODE_REFERENCE.md)** | All error codes and handling strategies |
+| **[API Versioning Strategy](./api/API_VERSIONING_STRATEGY.md)** | Versioning approach and migration patterns |
+
+### Procedure Reference
+
+| Document | Description |
+|----------|-------------|
+| **[API Documentation](./API_DOCUMENTATION.md)** | Complete procedure reference |
+| **[API Quick Reference](./API_QUICK_REFERENCE.md)** | Condensed cheat sheet |
+| **[API Types Reference](./API_TYPES_REFERENCE.md)** | TypeScript type definitions |
+
+---
+
 ## Documentation Files
 
 ### [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)
