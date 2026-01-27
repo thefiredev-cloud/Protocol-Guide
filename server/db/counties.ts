@@ -160,8 +160,10 @@ export async function getAgenciesByState(state: string): Promise<AgencyInfo[]> {
       COALESCE(state_name, TRIM(state_code)) as state,
       COUNT(id) as protocol_count
     FROM manus_protocol_chunks
-    WHERE TRIM(state_code) = ${state} OR state_name = ${state}
+    WHERE (TRIM(state_code) = ${state} OR state_name = ${state})
+      AND agency_id IS NOT NULL
     GROUP BY agency_id, agency_name, state_name, state_code
+    HAVING COUNT(id) > 0
     ORDER BY protocol_count DESC, agency_name ASC
   `);
 
