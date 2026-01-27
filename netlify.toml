@@ -20,6 +20,12 @@
   # NativeWind's react-native-css-interop needs devDeps to generate .cache/web.css
   # CI = "true" suppresses interactive prompts
   CI = "true"
+  # Supabase client-side configuration (public keys, safe for build)
+  EXPO_PUBLIC_SUPABASE_URL = "https://dflmjilieokjkkqxrmda.supabase.co"
+  EXPO_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmbG1qaWxpZW9ramtrcXhybWRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzNzcxODMsImV4cCI6MjA4MTk1MzE4M30.XrmZjCRmnwxyJlzLMMwOv_MrlMrwIaCcXtirlDN_DYQ"
+  # Fallback for server config (in case app.config.ts needs them)
+  SUPABASE_URL = "https://dflmjilieokjkkqxrmda.supabase.co"
+  SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmbG1qaWxpZW9ramtrcXhybWRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzNzcxODMsImV4cCI6MjA4MTk1MzE4M30.XrmZjCRmnwxyJlzLMMwOv_MrlMrwIaCcXtirlDN_DYQ"
 
 # API routes proxy to Railway backend
 # Must come BEFORE the SPA catch-all redirect
