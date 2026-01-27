@@ -21,6 +21,14 @@
   # CI = "true" suppresses interactive prompts
   CI = "true"
 
+# API routes proxy to Railway backend
+# Must come BEFORE the SPA catch-all redirect
+[[redirects]]
+  from = "/api/*"
+  to = "https://protocol-guide-production.up.railway.app/api/:splat"
+  status = 200
+  force = true
+
 # SPA routing - all paths serve index.html for client-side routing
 [[redirects]]
   from = "/*"
@@ -28,13 +36,6 @@
   status = 200
   # Only redirect if no file exists at path
   force = false
-
-# API routes proxy to Netlify Functions (if using serverless)
-# For full Express server, deploy separately or use Netlify Functions adapter
-# [[redirects]]
-#   from = "/api/*"
-#   to = "/.netlify/functions/api/:splat"
-#   status = 200
 
 # Security headers for all pages
 [[headers]]
