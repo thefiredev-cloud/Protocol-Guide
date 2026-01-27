@@ -297,6 +297,26 @@ async function startServer() {
     }),
   );
 
+  // Serve static files from the web build (must be after API routes)
+  if (ENV.isProduction) {
+    const path = await import('path');
+    const distPath = path.join(process.cwd(), 'dist');
+    
+    logger.info({ distPath }, 'Serving static files from dist directory');
+    
+    // Serve static assets
+    app.use(express.static(distPath, {
+      maxAge: '1y', // Cache static assets for 1 year
+      etag: true,
+      lastModified: true,
+    }));
+    
+    // SPA fallback - serve index.html for all non-API routes
+    app.get('*', (_req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  }
+
   // Sentry error handler - MUST be registered LAST to catch all errors
   // Captures unhandled errors and sends to Sentry before responding
   app.use(sentryErrorHandler);

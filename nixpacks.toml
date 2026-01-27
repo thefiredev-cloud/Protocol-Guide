@@ -6,7 +6,10 @@ nixPkgs = ["nodejs_20"]
 cmds = ["corepack enable", "corepack prepare pnpm@latest --activate", "pnpm install"]
 
 [phases.build]
-cmds = ["pnpm exec esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=cjs --outdir=dist"]
+cmds = [
+  "pnpm run build:web",
+  "pnpm exec esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist"
+]
 
 [start]
 cmd = "node dist/index.js"
