@@ -77,7 +77,7 @@ export function AgencyModal({
         ) : (
           <FlatList
             data={agencies}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item, index) => item.id?.toString() ?? `agency-${index}`}
             renderItem={({ item }) => (
               <TouchableOpacity
                 onPress={() => handleSelectAgency(item)}

@@ -48,7 +48,7 @@ export function useFilterState(options: UseFilterStateOptions = {}) {
     }
     if (agenciesResult) {
       const agencies: Agency[] = agenciesResult
-        .filter((a: { protocolCount: number }) => a.protocolCount > 0)
+        .filter((a: { id: number | null; protocolCount: number }) => a.id != null && a.protocolCount > 0)
         .map((a: { id: number; name: string; state: string; protocolCount: number }) => ({
           id: a.id,
           name: a.name,
