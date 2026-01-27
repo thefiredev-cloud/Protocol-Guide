@@ -55,7 +55,7 @@ export function StateDetailView({
 
   // Transform and sort agencies
   const agencies: Agency[] = (agenciesData ?? [])
-    .filter((a: { protocolCount: number }) => a.protocolCount > 0)
+    .filter((a: { id: number | null; protocolCount: number }) => a.id != null && a.protocolCount > 0)
     .sort((a: { protocolCount: number }, b: { protocolCount: number }) => b.protocolCount - a.protocolCount)
     .map((a: { id: number; name: string; state: string; protocolCount: number }) => ({
       id: a.id,
@@ -256,7 +256,7 @@ export function StateDetailView({
             <FlatList
               data={agencies}
               renderItem={renderAgencyItem}
-              keyExtractor={(item) => item.id.toString()}
+              keyExtractor={(item, index) => item.id?.toString() ?? `agency-${index}`}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 24 }}
               ListHeaderComponent={
