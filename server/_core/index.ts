@@ -297,7 +297,7 @@ async function startServer() {
     }),
   );
 
-  // Serve static files from the web build (must be after API routes)
+  // Serve static files from the web build (must be after API routes, before error handler)
   if (ENV.isProduction) {
     const path = await import('path');
     const distPath = path.join(process.cwd(), 'dist');
