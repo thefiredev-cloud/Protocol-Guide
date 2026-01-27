@@ -10,9 +10,9 @@
  * - HeroSection loaded eagerly (above the fold)
  */
 
-import React, { useEffect, Suspense, lazy } from "react";
+import React, { Suspense, lazy } from "react";
 import { View, ScrollView, ActivityIndicator } from "react-native";
-import { router } from "expo-router";
+import { router, Redirect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
 import { useAuth } from "@/hooks/use-auth";
@@ -43,13 +43,6 @@ export default function LandingPage() {
     router.push("/login");
   };
 
-  // Redirect to main app if already authenticated
-  useEffect(() => {
-    if (!loading && isAuthenticated) {
-      router.replace("/(tabs)");
-    }
-  }, [isAuthenticated, loading]);
-
   // Show loading spinner while checking auth
   if (loading) {
     return (
@@ -66,20 +59,10 @@ export default function LandingPage() {
     );
   }
 
-  // If authenticated, don't render (we're redirecting)
+  // Redirect to main app if already authenticated
+  // Using Redirect component instead of router.replace() to avoid race conditions
   if (isAuthenticated) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "#0F172A",
-        }}
-      >
-        <ActivityIndicator size="large" color="#EF4444" />
-      </View>
-    );
+    return <Redirect href="/(tabs)" />;
   }
 
   return (

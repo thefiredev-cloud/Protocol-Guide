@@ -7,9 +7,9 @@
  * 3. OAuth flow proceeds normally
  */
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { View, Text, TextInput, ActivityIndicator, Platform, KeyboardAvoidingView } from "react-native";
-import { router } from "expo-router";
+import { router, Redirect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useAuth } from "@/hooks/use-auth";
 import { ScreenContainer } from "@/components/screen-container";
@@ -39,11 +39,7 @@ export default function LoginPage() {
   const [isSigningIn, setIsSigningIn] = useState(false);
 
   // Redirect to main app if already authenticated
-  useEffect(() => {
-    if (!loading && isAuthenticated) {
-      router.replace("/(tabs)");
-    }
-  }, [isAuthenticated, loading]);
+  // Note: Using Redirect component in render instead of useEffect for consistency
 
   const handleUnlock = () => {
     if (accessCode.toUpperCase().trim() === BETA_ACCESS_CODE.toUpperCase()) {
@@ -88,13 +84,9 @@ export default function LoginPage() {
     );
   }
 
-  // If authenticated, show loading (redirecting)
+  // Redirect to main app if already authenticated
   if (isAuthenticated) {
-    return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: COLORS.bgDark }}>
-        <ActivityIndicator size="large" color={COLORS.primaryRed} />
-      </View>
-    );
+    return <Redirect href="/(tabs)" />;
   }
 
   return (
