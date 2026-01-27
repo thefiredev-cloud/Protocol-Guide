@@ -1,5 +1,6 @@
-import { Tabs, Redirect } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useEffect, useRef } from "react";
 
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
@@ -13,13 +14,30 @@ export default function TabLayout() {
   const bottomPadding = Platform.OS === "web" ? 12 : Math.max(insets.bottom, 8);
   const tabBarHeight = 52 + bottomPadding;
   const { isAuthenticated, loading } = useAuth();
+  const router = useRouter();
+  const hasRedirected = useRef(false);
 
   // Allow E2E tests to bypass authentication
   const isE2ETest = Platform.OS === "web" && typeof window !== "undefined" &&
     (window.location.search.includes("e2e=true") || process.env.NODE_ENV === "test");
 
-  // Show loading while checking auth
-  if (!isE2ETest && loading) {
+  // Redirect to landing if not authenticated (imperative to avoid render loops)
+  useEffect(() => {
+    if (!isE2ETest && !loading && !isAuthenticated && !hasRedirected.current) {
+      hasRedirected.current = true;
+      router.replace("/");
+    }
+  }, [loading, isAuthenticated, router, isE2ETest]);
+
+  // Reset redirect flag when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      hasRedirected.current = false;
+    }
+  }, [isAuthenticated]);
+
+  // Show loading while checking auth or redirecting (unless E2E test)
+  if (!isE2ETest && (loading || (!isAuthenticated && !hasRedirected.current))) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: colors.background }}>
         <ActivityIndicator size="large" color={colors.primary} />
@@ -27,10 +45,13 @@ export default function TabLayout() {
     );
   }
 
-  // Redirect to landing if not authenticated
-  // Using Redirect component instead of router.replace() to avoid race conditions
+  // If not authenticated and already redirected, show loading (navigation in progress)
   if (!isE2ETest && !isAuthenticated) {
-    return <Redirect href="/" />;
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
   }
 
   return (

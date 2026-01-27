@@ -253,7 +253,8 @@ export function useAuth(options?: UseAuthOptions) {
       subscription.unsubscribe();
       stopMonitor();
     };
-  }, [autoFetch, fetchUser, mapSupabaseUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoFetch]); // Only re-run if autoFetch changes, not on fetchUser/mapSupabaseUser recreation
 
   return {
     user,
