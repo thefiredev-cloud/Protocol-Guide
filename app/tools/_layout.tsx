@@ -22,6 +22,12 @@ export default function ToolsLayout() {
           title: 'Pediatric Dosing Calculator',
         }}
       />
+      <Stack.Screen 
+        name="rosc-checklist" 
+        options={{
+          title: 'Post-ROSC Bundle Checklist',
+        }}
+      />
     </Stack>
   );
 }

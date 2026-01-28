@@ -192,20 +192,29 @@ export function PediatricDosingCalculator({
         keyboardShouldPersistTaps="handled"
       >
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { borderBottomColor: colors.border }]}>
           <View style={styles.headerRow}>
-            <IconSymbol name="figure.child" size={28} color={colors.primary} />
+            <View style={{
+              width: 36,
+              height: 36,
+              borderRadius: radii.lg,
+              backgroundColor: `${colors.primary}20`,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <IconSymbol name="figure.child" size={22} color={colors.primary} />
+            </View>
             <Text style={[styles.headerTitle, { color: colors.foreground }]}>
-              Pediatric Dosing
+              Peds Dosing
             </Text>
           </View>
-          <Text style={[styles.headerSubtitle, { color: colors.muted }]}>
-            LA County EMS Protocols
+          <Text style={[styles.headerSubtitle, { color: colors.primary }]}>
+            LA County EMS
           </Text>
         </View>
 
         {/* Weight Input Section */}
-        <View style={[styles.weightSection, { backgroundColor: colors.surface }]}>
+        <View style={[styles.weightSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           {/* Weight Display */}
           <TouchableOpacity
             onPress={() => setShowManualInput(true)}
@@ -428,24 +437,26 @@ export function PediatricDosingCalculator({
 
         {/* No medication selected state */}
         {!selectedMedication && (
-          <View style={[styles.emptyResult, { backgroundColor: colors.surface }]}>
-            <IconSymbol name="arrow.up.circle.fill" size={48} color={colors.muted} />
+          <View style={[styles.emptyResult, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <IconSymbol name="arrow.up.circle.fill" size={56} color={colors.muted} />
             <Text style={[styles.emptyText, { color: colors.muted }]}>
               Select a medication above
+            </Text>
+            <Text style={{ color: colors.muted, fontSize: 14, marginTop: spacing.sm, opacity: 0.7 }}>
+              Dose will calculate automatically
             </Text>
           </View>
         )}
 
         {/* Disclaimer */}
-        <View style={[styles.disclaimer, { backgroundColor: `${colors.warning}15` }]}>
-          <IconSymbol name="exclamationmark.triangle.fill" size={20} color={colors.warning} />
+        <View style={[styles.disclaimer, { backgroundColor: `${colors.warning}12`, borderLeftColor: colors.warning }]}>
+          <IconSymbol name="exclamationmark.triangle.fill" size={22} color={colors.warning} />
           <View style={styles.disclaimerContent}>
             <Text style={[styles.disclaimerTitle, { color: colors.foreground }]}>
               Clinical Reference Only
             </Text>
             <Text style={[styles.disclaimerText, { color: colors.muted }]}>
-              Always verify doses with your local protocols and base hospital.
-              This calculator does not replace clinical judgment.
+              Always verify with your local protocols and base hospital. Does not replace clinical judgment.
             </Text>
           </View>
         </View>
@@ -465,11 +476,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: spacing.base,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
   },
   header: {
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.lg,
+    borderBottomWidth: 1,
+    marginBottom: spacing.lg,
   },
   headerRow: {
     flexDirection: 'row',
@@ -477,262 +491,305 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    marginLeft: spacing.sm,
+    fontSize: 26,
+    fontWeight: '800',
+    marginLeft: spacing.md,
+    letterSpacing: -0.5,
   },
   headerSubtitle: {
-    fontSize: 14,
-    marginLeft: 40, // Align with title
+    fontSize: 13,
+    fontWeight: '500',
+    marginLeft: 46,
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
   },
   
-  // Weight Section
+  // Weight Section - Medical-grade card design
   weightSection: {
-    borderRadius: radii.xl,
-    padding: spacing.lg,
-    marginBottom: spacing.lg,
-    ...shadows.md,
+    borderRadius: radii['2xl'],
+    padding: spacing.xl,
+    marginBottom: spacing.xl,
+    borderWidth: 1,
+    ...shadows.lg,
   },
   weightDisplayTouchable: {
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
   },
   weightDisplay: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
   },
   weightValue: {
-    fontSize: 64,
-    fontWeight: '700',
-    letterSpacing: -2,
+    fontSize: 72,
+    fontWeight: '800',
+    letterSpacing: -3,
+    fontVariant: ['tabular-nums'],
   },
   unitToggle: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
     borderRadius: radii.full,
-    marginLeft: spacing.sm,
+    marginLeft: spacing.md,
+    minHeight: touchTargets.standard,
   },
   unitText: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginRight: spacing.xs,
+    fontSize: 20,
+    fontWeight: '700',
+    marginRight: spacing.sm,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   categoryBadge: {
     alignSelf: 'flex-start',
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
     borderRadius: radii.full,
   },
   categoryText: {
-    fontSize: 13,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: '600',
+    letterSpacing: 0.2,
   },
   manualInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.md,
-    gap: spacing.sm,
+    marginBottom: spacing.lg,
+    gap: spacing.md,
   },
   manualInput: {
     flex: 1,
-    height: touchTargets.standard,
-    borderWidth: 1,
-    borderRadius: radii.md,
-    paddingHorizontal: spacing.md,
-    fontSize: 18,
+    height: touchTargets.large,
+    borderWidth: 2,
+    borderRadius: radii.lg,
+    paddingHorizontal: spacing.lg,
+    fontSize: 20,
+    fontWeight: '600',
   },
   submitButton: {
-    height: touchTargets.standard,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radii.md,
+    height: touchTargets.large,
+    paddingHorizontal: spacing.xl,
+    borderRadius: radii.lg,
     justifyContent: 'center',
     alignItems: 'center',
   },
   submitButtonText: {
     color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
   cancelButton: {
-    width: touchTargets.standard,
-    height: touchTargets.standard,
-    borderRadius: radii.md,
+    width: touchTargets.large,
+    height: touchTargets.large,
+    borderRadius: radii.lg,
     justifyContent: 'center',
     alignItems: 'center',
   },
   cancelButtonText: {
     color: '#FFF',
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
   },
   sliderContainer: {
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
+    paddingHorizontal: spacing.xs,
   },
   slider: {
     width: '100%',
-    height: touchTargets.standard,
+    height: touchTargets.large,
   },
   sliderLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    marginTop: spacing.xs,
   },
   sliderLabel: {
-    fontSize: 12,
+    fontSize: 13,
+    fontWeight: '600',
   },
   quickWeights: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.sm,
+    gap: spacing.md,
+    justifyContent: 'center',
   },
   quickWeightBtn: {
-    minWidth: touchTargets.minimum,
-    height: touchTargets.minimum,
-    paddingHorizontal: spacing.md,
-    borderRadius: radii.md,
+    minWidth: touchTargets.standard,
+    height: touchTargets.standard,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radii.lg,
     justifyContent: 'center',
     alignItems: 'center',
   },
   quickWeightText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
+    fontVariant: ['tabular-nums'],
   },
   
-  // Medication Selection
+  // Medication Selection - Professional grid
   medsSection: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: spacing.md,
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: spacing.lg,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   medsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   medCard: {
-    width: '48%',
-    padding: spacing.md,
-    borderRadius: radii.lg,
+    width: '47%',
+    padding: spacing.lg,
+    borderRadius: radii.xl,
     alignItems: 'center',
+    minHeight: 140,
+    justifyContent: 'center',
   },
   medIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: radii.full,
+    width: 56,
+    height: 56,
+    borderRadius: radii.xl,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
   },
   medName: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
+    letterSpacing: -0.2,
   },
   medRoute: {
-    fontSize: 12,
+    fontSize: 13,
     textAlign: 'center',
+    fontWeight: '500',
   },
   
-  // Result Section - THE BIG OUTPUT
+  // Result Section - THE BIG OUTPUT (medical-grade prominence)
   resultSection: {
-    borderRadius: radii.xl,
-    padding: spacing.xl,
-    marginBottom: spacing.lg,
+    borderRadius: radii['2xl'],
+    padding: spacing['2xl'],
+    marginBottom: spacing.xl,
+    borderWidth: 3,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   primaryResult: {
     alignItems: 'center',
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
+    paddingBottom: spacing.xl,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.15)',
   },
   giveLabel: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: 'rgba(255,255,255,0.9)',
-    letterSpacing: 2,
-    marginBottom: spacing.xs,
+    fontSize: 16,
+    fontWeight: '800',
+    color: 'rgba(255,255,255,0.85)',
+    letterSpacing: 4,
+    marginBottom: spacing.sm,
+    textTransform: 'uppercase',
   },
   giveVolume: {
-    fontSize: 72,
-    fontWeight: '800',
+    fontSize: 84,
+    fontWeight: '900',
     color: '#FFFFFF',
-    letterSpacing: -2,
-    textShadowColor: 'rgba(0,0,0,0.2)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    letterSpacing: -3,
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 0, height: 4 },
+    textShadowRadius: 8,
+    fontVariant: ['tabular-nums'],
   },
   secondaryInfo: {
-    backgroundColor: 'rgba(0,0,0,0.15)',
-    borderRadius: radii.lg,
-    padding: spacing.md,
-    marginBottom: spacing.md,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    borderRadius: radii.xl,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: spacing.xs,
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.08)',
   },
   infoLabel: {
     fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
+    color: 'rgba(255,255,255,0.7)',
+    fontWeight: '500',
   },
   infoValue: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
     color: '#FFFFFF',
   },
   warningsContainer: {
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    borderRadius: radii.md,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    borderRadius: radii.lg,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+    borderLeftWidth: 4,
+    borderLeftColor: '#FBBF24',
   },
   warningRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   warningText: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
     color: '#FFFFFF',
     flex: 1,
+    lineHeight: 22,
   },
   notesContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: spacing.sm,
+    gap: spacing.md,
+    paddingTop: spacing.sm,
   },
   notesText: {
-    fontSize: 13,
+    fontSize: 14,
     color: 'rgba(255,255,255,0.85)',
     flex: 1,
-    lineHeight: 18,
+    lineHeight: 20,
+    fontWeight: '500',
   },
   
-  // Empty state
+  // Empty state - more inviting
   emptyResult: {
-    borderRadius: radii.xl,
-    padding: spacing['2xl'],
+    borderRadius: radii['2xl'],
+    padding: spacing['3xl'],
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
+    borderWidth: 2,
+    borderStyle: 'dashed',
   },
   emptyText: {
-    fontSize: 16,
-    marginTop: spacing.md,
+    fontSize: 17,
+    marginTop: spacing.lg,
+    fontWeight: '600',
   },
   
-  // Disclaimer
+  // Disclaimer - professional warning style
   disclaimer: {
     flexDirection: 'row',
-    padding: spacing.md,
-    borderRadius: radii.lg,
-    marginBottom: spacing.lg,
+    padding: spacing.lg,
+    borderRadius: radii.xl,
+    marginBottom: spacing.xl,
+    borderLeftWidth: 4,
   },
   disclaimerContent: {
     flex: 1,
@@ -740,15 +797,17 @@ const styles = StyleSheet.create({
   },
   disclaimerTitle: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
     marginBottom: spacing.xs,
+    letterSpacing: 0.2,
   },
   disclaimerText: {
-    fontSize: 12,
-    lineHeight: 18,
+    fontSize: 13,
+    lineHeight: 20,
+    fontWeight: '500',
   },
   
   bottomPadding: {
-    height: spacing['3xl'],
+    height: spacing['4xl'],
   },
 });
