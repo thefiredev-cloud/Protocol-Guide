@@ -1,14 +1,15 @@
 # Nixpacks configuration for Railway deployment
+[build]
+cacheDirectories = ["node_modules", ".pnpm-store"]
+
 [phases.setup]
 nixPkgs = ["nodejs_20"]
 
 [phases.install]
-cmds = ["corepack enable", "corepack prepare pnpm@latest --activate", "pnpm install"]
+cmds = ["corepack enable", "corepack prepare pnpm@latest --activate", "pnpm install --frozen-lockfile"]
 
 [phases.build]
-cmds = [
-  "pnpm run build"
-]
+cmds = ["pnpm run build"]
 
 [start]
 cmd = "NODE_ENV=production node dist/index.js"
