@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect } from "react";
+import { useRef, useCallback, useEffect, useMemo } from "react";
 import { View, FlatList } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import { ChatInput } from "@/components/chat-input";
@@ -13,6 +13,8 @@ import {
   SearchResultsErrorBoundary,
 } from "@/components/ErrorBoundary";
 import { useLocalSearchParams } from "expo-router";
+// SEO Components
+import { SEOHead, MedicalWebPageSchema } from "@/components/seo";
 
 // Extracted hooks
 import { useVoiceSearch } from "@/hooks/use-voice-search";
@@ -113,8 +115,53 @@ export default function HomeScreen() {
     return <MessageBubble message={item} />;
   };
 
+  // Generate dynamic SEO title based on selected filters
+  const seoTitle = useMemo(() => {
+    if (selectedAgency) {
+      return `${selectedAgency.name} EMS Protocols`;
+    }
+    if (selectedState) {
+      return `${selectedState} EMS Protocols`;
+    }
+    return "Search EMS Protocols";
+  }, [selectedState, selectedAgency]);
+
+  const seoDescription = useMemo(() => {
+    if (selectedAgency) {
+      return `Search ${selectedAgency.name} EMS protocols. Find cardiac arrest, pediatric, trauma, and medical protocols for paramedics and EMTs.`;
+    }
+    if (selectedState) {
+      return `Search ${selectedState} EMS protocols. Access county-specific prehospital treatment guidelines for paramedics and EMTs.`;
+    }
+    return "AI-powered EMS protocol search. Find LA County, California, and nationwide protocols for cardiac arrest, pediatric emergencies, trauma, and more.";
+  }, [selectedState, selectedAgency]);
+
   return (
     <ScreenContainer edges={["top", "left", "right"]}>
+      {/* SEO Meta Tags - Dynamic based on filters */}
+      <SEOHead
+        title={seoTitle}
+        description={seoDescription}
+        path="/search"
+        keywords={[
+          selectedState ? `${selectedState} EMS protocols` : "EMS protocols",
+          selectedAgency ? selectedAgency.name : "California protocols",
+          "paramedic protocols",
+          "EMT protocols",
+          "cardiac arrest protocol",
+          "pediatric dosing",
+        ]}
+      />
+      
+      {/* Medical Web Page Schema for protocol content */}
+      <MedicalWebPageSchema
+        name={seoTitle}
+        description={seoDescription}
+        url="/search"
+        medicalAudience={["Paramedics", "EMTs", "First Responders"]}
+        specialty="Emergency Medicine"
+      />
+
       <OfflineBanner />
 
       {/* Compact Header */}

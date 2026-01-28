@@ -44,7 +44,9 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "qr": "node scripts/generate_qr.mjs",
-    "analyze": "npx expo export --platform web --output-dir dist-analyze && du -sh dist-analyze/_expo/static/js/web/*"
+    "analyze": "npx expo export --platform web --output-dir dist-analyze && du -sh dist-analyze/_expo/static/js/web/*",
+    "sitemap": "tsx scripts/generate-sitemap.ts",
+    "prebuild:sitemap": "tsx scripts/generate-sitemap.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",

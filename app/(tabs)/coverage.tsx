@@ -7,6 +7,8 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { trpc } from "@/lib/trpc";
 import { StateDetailView } from "@/components/state-detail-view";
+// SEO Components
+import { SEOHead, BreadcrumbSchema } from "@/components/seo";
 
 // US State coordinates for simplified map (relative positions 0-100)
 const STATE_POSITIONS: Record<string, { x: number; y: number; width: number; height: number }> = {
@@ -159,6 +161,26 @@ export default function CoverageScreen() {
   
   return (
     <ScreenContainer className="p-4">
+      {/* SEO Meta Tags */}
+      <SEOHead
+        title="EMS Protocol Coverage by State"
+        description="View EMS protocol coverage across all 50 US states. Access California, Texas, New York, and other state paramedic and EMT protocols. Find your county's prehospital treatment guidelines."
+        path="/coverage"
+        keywords={[
+          "US EMS protocols by state",
+          "California EMS protocols",
+          "state paramedic protocols",
+          "county EMS coverage",
+          "prehospital protocols map",
+        ]}
+      />
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", url: "/" },
+          { name: "Protocol Coverage", url: "/coverage" },
+        ]}
+      />
+
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View className="mb-5">
