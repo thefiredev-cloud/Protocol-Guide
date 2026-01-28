@@ -21,26 +21,12 @@ export default function TabLayout() {
   const isE2ETest = Platform.OS === "web" && typeof window !== "undefined" &&
     (window.location.search.includes("e2e=true") || process.env.NODE_ENV === "test");
 
-  // Redirect to landing if not authenticated (imperative to avoid render loops)
-  // Only redirect once per mount - do NOT reset hasRedirected to prevent loops
-  useEffect(() => {
-    if (!isE2ETest && !loading && !isAuthenticated && !hasRedirected.current) {
-      hasRedirected.current = true;
-      router.replace("/");
-    }
-  }, [loading, isAuthenticated, router, isE2ETest]);
+  // Allow anonymous browsing - users can search without logging in
+  // Authentication is only required for profile/personalization features
+  // This enables "Try it now" from landing page without friction
 
   // Show loading spinner while auth state is being determined
   if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: colors.background }}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
-
-  // If not authenticated, show loading while redirect happens (unless E2E test)
-  if (!isE2ETest && !isAuthenticated) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: colors.background }}>
         <ActivityIndicator size="large" color={colors.primary} />

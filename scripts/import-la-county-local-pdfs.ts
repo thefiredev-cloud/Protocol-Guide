@@ -170,9 +170,8 @@ async function processPDF(filePath: string): Promise<ChunkInsert[]> {
   const section = categorizeProtocol(protocolNumber, filename);
   
   const dataBuffer = fs.readFileSync(filePath);
-  const { PDFParse } = await import('pdf-parse');
-  const parser = new PDFParse({ data: dataBuffer });
-  const data = await parser.getText();
+  const pdfParse = (await import('pdf-parse')).default;
+  const data = await pdfParse(dataBuffer);
   
   const text = data.text
     .replace(/\f/g, '\n')
