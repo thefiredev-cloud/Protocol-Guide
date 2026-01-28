@@ -293,10 +293,12 @@ async function checkRedis(): Promise<ServiceHealth> {
 
     if (health.redis) {
       ServiceRegistry.markHealthy('redis');
+      // Upstash REST-based Redis typically has 150-300ms latency (HTTP overhead)
+      // Use 300ms threshold for REST-based, would use 100ms for TCP-based
       return {
-        status: latency < 100 ? 'healthy' : 'degraded',
+        status: latency < 300 ? 'healthy' : 'degraded',
         latencyMs: latency,
-        message: latency >= 100 ? 'High latency detected' : undefined,
+        message: latency >= 300 ? 'High latency detected' : undefined,
         lastChecked: now,
       };
     }
