@@ -13,7 +13,7 @@
     "docker:logs": "docker compose logs -f",
     "docker:build": "docker compose build --no-cache",
     "docker:dev": "docker compose --profile dev up dev",
-    "build": "esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "build": "esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=cjs --outdir=dist",
     "prebuild:web": "node -e \"const fs=require('fs');const p='node_modules/react-native-css-interop/.cache';fs.mkdirSync(p,{recursive:true});fs.writeFileSync(p+'/web.css','')\"",
     "build:web": "NODE_ENV=production npx expo export --platform web && node scripts/inject-pwa-meta.js && node -e \"const fs=require('fs');const path=require('path');const copy=(s,d)=>{fs.readdirSync(s).forEach(f=>{const sp=path.join(s,f),dp=path.join(d,f);fs.statSync(sp).isDirectory()?(!fs.existsSync(dp)&&fs.mkdirSync(dp),copy(sp,dp)):fs.copyFileSync(sp,dp)})};copy('public','dist')\"",
     "build:rust": "cd rust-server && cargo build --release",
@@ -147,3 +147,4 @@
   },
   "packageManager": "pnpm@9.12.0"
 }
+
