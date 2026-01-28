@@ -8,7 +8,8 @@ interface UseFilterStateOptions {
 }
 
 export function useFilterState(options: UseFilterStateOptions = {}) {
-  const { initialState = null, initialAgencyId = null } = options;
+  // Default to California for LA County focus - user can change via filter
+  const { initialState = "CA", initialAgencyId = null } = options;
   const [selectedState, setSelectedState] = useState<string | null>(initialState);
   const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
   const [showStateDropdown, setShowStateDropdown] = useState(false);

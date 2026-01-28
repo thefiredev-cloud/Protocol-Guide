@@ -47,7 +47,8 @@ export default function SearchScreen() {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [selectedProtocol, setSelectedProtocol] = useState<SearchResult | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
-  const [selectedState, setSelectedState] = useState<string | null>(params.stateFilter || null);
+  // Default to California for LA County focus - user can change via filter
+  const [selectedState, setSelectedState] = useState<string | null>(params.stateFilter || "CA");
   const [showStateFilter, setShowStateFilter] = useState(false);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const inputRef = useRef<TextInput>(null);
@@ -80,8 +81,9 @@ export default function SearchScreen() {
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
 
-  const handleSearch = useCallback(async () => {
-    if (!query.trim()) return;
+  const handleSearch = useCallback(async (overrideQuery?: string) => {
+    const searchQuery = overrideQuery || query;
+    if (!searchQuery.trim()) return;
 
     Keyboard.dismiss();
     setHasSearched(true);
@@ -90,11 +92,11 @@ export default function SearchScreen() {
     setSearchError(null);
 
     // Announce search start for screen readers
-    announceSearchStart(query);
+    announceSearchStart(searchQuery);
 
     try {
       const result = await trpcUtils.search.semantic.fetch({
-        query,
+        query: searchQuery,
         limit: 20,
         stateFilter: selectedState || undefined,
       });
@@ -441,7 +443,7 @@ export default function SearchScreen() {
           className="flex-1 ml-3 text-foreground"
           style={{ fontSize: 16 }}
           returnKeyType="search"
-          onSubmitEditing={handleSearch}
+          onSubmitEditing={() => handleSearch()}
           autoCapitalize="none"
           autoCorrect={false}
           {...createSearchA11y(
@@ -560,7 +562,7 @@ export default function SearchScreen() {
 
       {/* Search Button */}
       <TouchableOpacity
-        onPress={handleSearch}
+        onPress={() => handleSearch()}
         disabled={!query.trim() || isSearching}
         className="rounded-2xl mb-4 items-center justify-center flex-row"
         style={{
@@ -686,8 +688,8 @@ export default function SearchScreen() {
                 key={example}
                 onPress={() => {
                   setQuery(example);
-                  // Direct call instead of setTimeout to avoid memory leak
-                  requestAnimationFrame(() => handleSearch());
+                  // Pass query directly to avoid state timing issues
+                  handleSearch(example);
                 }}
                 className="px-4 py-3 rounded-xl"
                 style={{ 
