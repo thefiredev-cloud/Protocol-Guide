@@ -649,7 +649,7 @@ export function PediatricDosingCalculator({
                   }
                   setOverrideActive(true);
                 }}
-                style={[styles.overrideButton, { backgroundColor: colors.destructive }]}
+                style={[styles.overrideButton, { backgroundColor: colors.error }]}
               >
                 <IconSymbol name="exclamationmark.shield.fill" size={20} color="#FFF" />
                 <Text style={styles.overrideButtonText}>
