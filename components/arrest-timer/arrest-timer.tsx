@@ -34,10 +34,8 @@ import { touchTargets, radii, spacing, shadows } from '@/lib/design-tokens';
 import { useArrestTimer } from './use-arrest-timer';
 import { RHYTHMS, type CardiacRhythm } from './types';
 import {
-  getStepsForRhythm,
   getContextualPrompts,
   REVERSIBLE_CAUSES,
-  TIME_TARGETS,
 } from './protocol-steps';
 
 // Format milliseconds to MM:SS
@@ -71,11 +69,6 @@ export function ArrestTimer() {
   const currentRhythmInfo = timer.state.currentRhythm 
     ? RHYTHMS[timer.state.currentRhythm] 
     : null;
-  
-  const protocolSteps = useMemo(
-    () => getStepsForRhythm(timer.state.currentRhythm),
-    [timer.state.currentRhythm]
-  );
   
   const contextualPrompts = useMemo(
     () => getContextualPrompts(

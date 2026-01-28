@@ -221,11 +221,6 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
     router.push("/(tabs)");
   };
 
-  const handleSignIn = () => {
-    setMenuOpen(false);
-    onSignIn?.();
-  };
-
   // Responsive typography helpers
   const getHeadlineFontSize = () => {
     if (isMobile) return 36;

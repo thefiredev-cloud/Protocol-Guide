@@ -218,7 +218,6 @@ function ChecklistItemRow({
   const [expanded, setExpanded] = useState(false);
   
   const isOverdue = item.timing && elapsedMinutes > (item.timing.max ?? item.timing.target);
-  const isUpcoming = item.timing && !isCompleted && elapsedMinutes <= item.timing.target;
   
   const handlePress = useCallback(() => {
     if (Platform.OS !== 'web') {

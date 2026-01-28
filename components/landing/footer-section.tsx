@@ -68,7 +68,6 @@ function FooterLink({ label, onPress }: FooterLinkProps) {
 export function FooterSection() {
   const { width } = useWindowDimensions();
   const isMobile = width < 640;
-  const isTablet = width >= 640 && width < 1024;
 
   const [isVisible, setIsVisible] = useState(false);
   const sectionOpacity = useRef(new Animated.Value(0)).current;

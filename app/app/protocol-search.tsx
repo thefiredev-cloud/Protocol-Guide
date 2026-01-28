@@ -20,11 +20,10 @@ import { useLocalSearchParams, router } from "expo-router";
 import { useColors } from "@/hooks/use-colors";
 import { trpc } from "@/lib/trpc";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { ScreenContainer } from "@/components/screen-container";
 import { MedicalDisclaimer } from "@/components/MedicalDisclaimer";
 import { SearchResult } from "@/types/search.types";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 
 export default function ProtocolSearchScreen() {
   const colors = useColors();
@@ -51,6 +50,7 @@ export default function ProtocolSearchScreen() {
     if (params.query) {
       handleSearch();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.query]);
 
   const handleSearch = useCallback(async () => {

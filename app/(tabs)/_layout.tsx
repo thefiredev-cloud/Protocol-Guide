@@ -1,6 +1,5 @@
-import { Tabs, useRouter } from "expo-router";
+import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useEffect, useRef } from "react";
 
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
@@ -13,13 +12,7 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const bottomPadding = Platform.OS === "web" ? 12 : Math.max(insets.bottom, 8);
   const tabBarHeight = 52 + bottomPadding;
-  const { isAuthenticated, loading } = useAuthContext();
-  const router = useRouter();
-  const hasRedirected = useRef(false);
-
-  // Allow E2E tests to bypass authentication
-  const isE2ETest = Platform.OS === "web" && typeof window !== "undefined" &&
-    (window.location.search.includes("e2e=true") || process.env.NODE_ENV === "test");
+  const { loading } = useAuthContext();
 
   // Allow anonymous browsing - users can search without logging in
   // Authentication is only required for profile/personalization features

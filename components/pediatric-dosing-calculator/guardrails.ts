@@ -14,7 +14,6 @@
 
 import type { 
   PatientType, 
-  MedicationGuardrail, 
   DrugInteraction,
   ContraindicationCheck,
   WeightSanityResult,
@@ -277,10 +276,6 @@ export function checkWeightSanity(
   if (!range) {
     return { isPlausible: true, alertLevel: 'none', message: null, expectedRange: null };
   }
-
-  // Check if significantly outside range
-  const percentBelow = ((range.min - weightKg) / range.min) * 100;
-  const percentAbove = ((weightKg - range.max) / range.max) * 100;
 
   if (weightKg < range.min * 0.5) {
     return {

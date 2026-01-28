@@ -14,7 +14,7 @@
  * - Works fully offline
  */
 
-import { Platform, View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
 import { ArrestTimer } from '@/components/arrest-timer';

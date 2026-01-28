@@ -20,7 +20,7 @@ import Animated, {
   interpolate,
   interpolateColor,
 } from "react-native-reanimated";
-import Svg, { Path, Circle, G, Rect } from "react-native-svg";
+import Svg, { Path, Circle, Rect } from "react-native-svg";
 
 const COLORS = {
   bgSurface: "#1E293B",

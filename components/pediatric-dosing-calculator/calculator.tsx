@@ -33,7 +33,7 @@ import * as Haptics from 'expo-haptics';
 import { useColors } from '@/hooks/use-colors';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { touchTargets, radii, spacing, shadows } from '@/lib/design-tokens';
-import { PEDIATRIC_MEDICATIONS, getMedicationsByPatientType } from './medications';
+import { getMedicationsByPatientType } from './medications';
 import { 
   runGuardrailChecks, 
   getAvailableConditions, 

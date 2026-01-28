@@ -11,7 +11,7 @@
  */
 
 import React, { useState } from "react";
-import { View, Text, Pressable, Platform } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { FAQPageSchema, type FAQItem } from "./StructuredData";
 
