@@ -58,13 +58,22 @@ async function validateImageTrendAgency(
 
   try {
     // Look up agency in manus_agencies table
-    // Use maybeSingle() to handle case where multiple agencies match
-    const { data: agencies, error } = await supabase
+    // First try name match (most common case for ImageTrend integration)
+    // Only try ID match if agencyId is numeric to avoid type errors
+    const isNumericId = /^\d+$/.test(agencyId);
+    
+    let query = supabase
       .from("manus_agencies")
       .select("id, name, integration_partner")
-      .or(`name.ilike.%${agencyId}%,id.eq.${agencyId}`)
-      .eq("integration_partner", "imagetrend")
-      .limit(1);
+      .eq("integration_partner", "imagetrend");
+    
+    if (isNumericId) {
+      query = query.or(`name.ilike.%${agencyId}%,id.eq.${agencyId}`);
+    } else {
+      query = query.ilike("name", `%${agencyId}%`);
+    }
+    
+    const { data: agencies, error } = await query.limit(1);
 
     const data = agencies?.[0];
     if (error || !data) {
