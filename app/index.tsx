@@ -1,33 +1,38 @@
 /**
- * Landing Page - Marketing page for unauthenticated users
+ * Landing Page - Protocol Guide for LA County Firefighter/Paramedics
  *
- * If authenticated → redirect to (tabs) main app
- * If not authenticated → show marketing landing page
+ * Redesigned for firefighter audience:
+ * - Dark mode default (night calls are real)
+ * - Mobile-first (used on phones, not desktops)
+ * - No tech jargon - speak their language
+ * - CTA goes straight to search (no signup friction)
  *
- * Performance optimizations:
- * - React.lazy() for below-the-fold sections (reduces initial bundle)
- * - Suspense boundaries with minimal fallbacks
- * - HeroSection loaded eagerly (above the fold)
+ * Section order:
+ * 1. Hero - "The protocol you need. Now."
+ * 2. Features - Practical benefits (no SaaS-speak)
+ * 3. Simulation - See how fast it works
+ * 4. CTA - Ready when you are
+ * 5. Footer - Built by firefighters, for firefighters
  */
 
 import React, { Suspense, lazy } from "react";
 import { View, ScrollView, ActivityIndicator } from "react-native";
-import { router, Redirect } from "expo-router";
+import { Redirect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
 import { useAuthContext } from "@/lib/auth-context";
 import { ScreenContainer } from "@/components/screen-container";
 // Hero section loaded eagerly - it's above the fold
 import { HeroSection } from "@/components/landing/hero-section";
+// Features loaded eagerly - usually visible on first scroll
+import { FeaturesSection } from "@/components/landing/features-section";
 
-// Lazy load below-the-fold sections to reduce initial bundle size
+// Lazy load below-the-fold sections
 const SimulationSection = lazy(() => import("@/components/landing/simulation-section"));
-const TimeCalculatorSection = lazy(() => import("@/components/landing/time-calculator-section"));
-const FeaturesSection = lazy(() => import("@/components/landing/features-section"));
 const EmailCaptureSection = lazy(() => import("@/components/landing/email-capture-section"));
 const FooterSection = lazy(() => import("@/components/landing/footer-section"));
 
-// Minimal loading placeholder for lazy sections
+// Minimal loading placeholder
 function SectionPlaceholder() {
   return (
     <View style={{ height: 200, justifyContent: "center", alignItems: "center", backgroundColor: "#0F172A" }}>
@@ -38,10 +43,6 @@ function SectionPlaceholder() {
 
 export default function LandingPage() {
   const { isAuthenticated, loading } = useAuthContext();
-
-  const handleSignIn = () => {
-    router.push("/login");
-  };
 
   // Show loading spinner while checking auth
   if (loading) {
@@ -60,7 +61,6 @@ export default function LandingPage() {
   }
 
   // Redirect to main app if already authenticated
-  // Using Redirect component instead of router.replace() to avoid race conditions
   if (isAuthenticated) {
     return <Redirect href="/(tabs)" />;
   }
@@ -72,25 +72,20 @@ export default function LandingPage() {
         style={{ flex: 1, backgroundColor: "#0F172A" }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Hero Section - loaded eagerly (above the fold) */}
-        <HeroSection onSignIn={handleSignIn} />
+        {/* Hero Section - "The protocol you need. Now." */}
+        <HeroSection />
 
-        {/* Below-the-fold sections wrapped in Suspense for code splitting */}
+        {/* Features Section - Practical benefits for firefighters */}
+        <FeaturesSection />
+
+        {/* Below-the-fold sections */}
         <Suspense fallback={<SectionPlaceholder />}>
-          {/* Simulation Section - The Cognitive Load Gap */}
+          {/* Simulation Section - See how fast it works */}
           <View nativeID="simulation-section">
             <SimulationSection />
           </View>
 
-          {/* Time Calculator Section - Impact */}
-          <View nativeID="impact-section">
-            <TimeCalculatorSection />
-          </View>
-
-          {/* Features Section */}
-          <FeaturesSection />
-
-          {/* Email Capture CTA */}
+          {/* CTA Section - Ready when you are */}
           <EmailCaptureSection />
 
           {/* Footer */}

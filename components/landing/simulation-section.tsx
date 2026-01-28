@@ -225,14 +225,14 @@ export const SimulationSection = memo(function SimulationSection() {
 
       <View style={[styles.content, isMobile && { paddingHorizontal: 16 }, isTablet && { paddingHorizontal: 32 }]}>
         {/* Section Label */}
-        <Text style={styles.sectionLabel}>Live Simulation</Text>
+        <Text style={styles.sectionLabel}>See It Work</Text>
 
         {/* Title */}
-        <Text style={[styles.title, isMobile && { fontSize: 24 }, isTablet && { fontSize: 30 }]}>The Cognitive Load Gap</Text>
+        <Text style={[styles.title, isMobile && { fontSize: 24 }, isTablet && { fontSize: 30 }]}>90 seconds vs 2 seconds.</Text>
 
         {/* Subtitle */}
         <Text style={[styles.subtitle, isMobile && { fontSize: 15 }, isTablet && { fontSize: 16, marginBottom: 28 }]}>
-          {`Click "Simulate Call" to visualize the time difference\nin a cardiac arrest scenario.`}
+          {`Hit "Simulate Call" and watch the difference.\nCardiac arrest scenario.`}
         </Text>
 
         {/* Live Timer Display */}
@@ -365,15 +365,15 @@ export const SimulationSection = memo(function SimulationSection() {
         {/* Comparison Cards - stack on mobile, side by side on tablet/desktop */}
         <View style={[styles.cardsRow, isMobile && styles.cardsRowMobile, isTablet && { gap: 16 }]}>
           <ComparisonCard
-            label="Current Standard"
+            label="The Binder"
             value="~90s"
-            description="PDF Scrolling / App Fumbling"
+            description="Flipping pages, squinting at PDFs"
             variant="standard"
           />
           <ComparisonCard
             label="Protocol Guide"
             value="2.3s"
-            description="Natural Language AI"
+            description="Type it, find it, done"
             variant="protocol"
           />
         </View>

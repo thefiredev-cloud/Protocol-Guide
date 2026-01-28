@@ -1,8 +1,11 @@
 /**
- * Features Section - Three key features: Instant Retrieval, 100% Offline, Always Current
- * Enhanced with staggered animations, gradient borders, sophisticated shadows, and polished hover effects
+ * Features Section - Practical benefits for firefighter/paramedics
  *
- * Accessibility: Semantic headings, reduced-motion support, descriptive labels
+ * Reframed for LA County firefighter audience:
+ * - NO tech jargon (no "semantic search", "PWA", "deep linking")
+ * - Speak their language: "on scene", "in the back", "during transport"
+ * - Focus on practical problems they actually face
+ * - Blue collar, no-nonsense tone
  */
 
 import React, { useEffect, useRef, useState, memo } from "react";
@@ -17,13 +20,14 @@ import Animated, {
   interpolate,
   interpolateColor,
 } from "react-native-reanimated";
-import Svg, { Path, Circle, G, Defs, LinearGradient, Stop, RadialGradient } from "react-native-svg";
+import Svg, { Path, Circle, G, Rect } from "react-native-svg";
 
 const COLORS = {
   bgSurface: "#1E293B",
   bgDark: "#0F172A",
   bgAccentRed: "#451a1a",
   bgAccentBlue: "#1e3a5f",
+  bgAccentGreen: "#14532d",
   textWhite: "#F1F5F9",
   textMuted: "#94A3B8",
   border: "#334155",
@@ -32,8 +36,9 @@ const COLORS = {
   primaryRedLight: "#F87171",
   primaryBlue: "#3B82F6",
   primaryBlueLight: "#60A5FA",
+  primaryGreen: "#22C55E",
+  primaryGreenLight: "#4ADE80",
   shadowColor: "#000000",
-  accentGlow: "#F87171",
 };
 
 // Check for reduced motion preference
@@ -44,104 +49,64 @@ const getReducedMotion = (): boolean => {
   return false;
 };
 
-// SVG Icon Components with enhanced visual detail
-function BoltIcon({ size = 28, color = COLORS.primaryRed }: { size?: number; color?: string }) {
+// SVG Icons - Simple, recognizable
+function SearchIcon({ size = 28, color = COLORS.primaryRed }: { size?: number; color?: string }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Defs>
-        <LinearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <Stop offset="0%" stopColor={COLORS.primaryRedLight} />
-          <Stop offset="100%" stopColor={color} />
-        </LinearGradient>
-      </Defs>
+      <Circle cx="11" cy="11" r="7" stroke={color} strokeWidth={2.5} />
+      <Path d="M21 21l-4.35-4.35" stroke={color} strokeWidth={2.5} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+function WifiOffIcon({ size = 28, color = COLORS.primaryBlue }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M12 20h.01" stroke={color} strokeWidth={3} strokeLinecap="round" />
+      <Path d="M8.53 16.11a6 6 0 0 1 6.95 0" stroke={color} strokeWidth={2} strokeLinecap="round" />
+      <Path d="M5.06 12.68a10 10 0 0 1 13.88 0" stroke={color} strokeWidth={2} strokeLinecap="round" />
+      <Path d="M1.59 9.25a14 14 0 0 1 20.82 0" stroke={color} strokeWidth={2} strokeLinecap="round" opacity={0.5} />
+      {/* Offline slash */}
+      <Path d="M2 2l20 20" stroke={color} strokeWidth={2.5} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+function CalculatorIcon({ size = 28, color = COLORS.primaryGreen }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Rect x="4" y="2" width="16" height="20" rx="2" stroke={color} strokeWidth={2} />
+      <Rect x="7" y="5" width="10" height="4" rx="1" fill={color} opacity={0.3} stroke={color} strokeWidth={1} />
+      <Circle cx="8" cy="13" r="1" fill={color} />
+      <Circle cx="12" cy="13" r="1" fill={color} />
+      <Circle cx="16" cy="13" r="1" fill={color} />
+      <Circle cx="8" cy="17" r="1" fill={color} />
+      <Circle cx="12" cy="17" r="1" fill={color} />
+      <Circle cx="16" cy="17" r="1" fill={color} />
+    </Svg>
+  );
+}
+
+function LinkIcon({ size = 28, color = COLORS.primaryBlue }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
-        d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
-        fill="url(#boltGrad)"
+        d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
         stroke={color}
-        strokeWidth={1.5}
+        strokeWidth={2}
         strokeLinecap="round"
-        strokeLinejoin="round"
+      />
+      <Path
+        d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
       />
     </Svg>
   );
 }
 
-function SignalIcon({ size = 28, color = COLORS.primaryBlue }: { size?: number; color?: string }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Defs>
-        <RadialGradient id="signalGrad" cx="50%" cy="30%">
-          <Stop offset="0%" stopColor={COLORS.primaryBlueLight} />
-          <Stop offset="100%" stopColor={color} />
-        </RadialGradient>
-      </Defs>
-      <G stroke={color} strokeWidth={2} strokeLinecap="round">
-        <Path d="M12 20v-4" opacity={0.4} />
-        <Path d="M8 20v-8" opacity={0.6} />
-        <Path d="M16 20v-8" opacity={0.6} />
-        <Path d="M4 20v-12" opacity={0.8} />
-        <Path d="M20 20v-12" opacity={0.8} />
-      </G>
-      <Circle cx="12" cy="6" r="3" fill="url(#signalGrad)" />
-      <Path
-        d="M8.5 3.5a5 5 0 0 1 7 0M6 1a8 8 0 0 1 12 0"
-        stroke={color}
-        strokeWidth={1.5}
-        strokeLinecap="round"
-        fill="none"
-        opacity={0.7}
-      />
-    </Svg>
-  );
-}
-
-function RefreshIcon({ size = 28, color = COLORS.primaryBlue }: { size?: number; color?: string }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Defs>
-        <LinearGradient id="refreshGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <Stop offset="0%" stopColor={COLORS.primaryBlueLight} />
-          <Stop offset="50%" stopColor={color} />
-          <Stop offset="100%" stopColor={COLORS.primaryRed} />
-        </LinearGradient>
-      </Defs>
-      <Path
-        d="M21 12a9 9 0 0 1-15.36 6.36L3 16"
-        stroke="url(#refreshGrad)"
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-      <Path
-        d="M3 12a9 9 0 0 1 15.36-6.36L21 8"
-        stroke="url(#refreshGrad)"
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-      <Path
-        d="M3 21v-5h5"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-      <Path
-        d="M21 3v5h-5"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-    </Svg>
-  );
-}
-
-type FeatureIconType = "bolt" | "signal" | "refresh";
+type FeatureIconType = "search" | "offline" | "calculator" | "link";
 
 interface Feature {
   icon: FeatureIconType;
@@ -150,54 +115,58 @@ interface Feature {
   iconBg: string;
   iconColor: string;
   accentColor: string;
-  gradientStart: string;
-  gradientEnd: string;
 }
 
+// Features reframed for firefighters - no tech jargon
 const features: Feature[] = [
   {
-    icon: "bolt",
-    title: "Instant Retrieval",
+    icon: "search",
+    title: "Type it. Find it.",
     description:
-      "Don't memorize page numbers. Type 'Pediatric seizure' or 'Chest pain' and get the exact protocol card instantly.",
+      "Type \"chest pain\" or \"peds seizure\" and get the protocol. No more flipping through the binder. No more guessing page numbers.",
     iconBg: COLORS.bgAccentRed,
     iconColor: COLORS.primaryRed,
     accentColor: COLORS.primaryRed,
-    gradientStart: COLORS.bgAccentRed,
-    gradientEnd: COLORS.bgSurface,
   },
   {
-    icon: "signal",
-    title: "100% Offline",
+    icon: "offline",
+    title: "Works without signal.",
     description:
-      "Cell towers go down. Your protocols shouldn't. The entire database lives locally on your device. Zero latency.",
+      "Dead zone on the 14? Middle of Angeles Forest? Doesn't matter. Everything's on your phone. No bars, no problem.",
     iconBg: COLORS.bgAccentBlue,
     iconColor: COLORS.primaryBlue,
     accentColor: COLORS.primaryBlue,
-    gradientStart: COLORS.bgAccentBlue,
-    gradientEnd: COLORS.bgSurface,
   },
   {
-    icon: "refresh",
-    title: "Always Current",
+    icon: "calculator",
+    title: "Peds doses in seconds.",
     description:
-      "No more outdated binders. When your Medical Director updates a protocol, it pushes to every device instantly.",
+      "Stop doing math on peds calls. Enter the weight, get the dose in mL. Epi, atropine, whatever—it's already calculated.",
+    iconBg: COLORS.bgAccentGreen,
+    iconColor: COLORS.primaryGreen,
+    accentColor: COLORS.primaryGreen,
+  },
+  {
+    icon: "link",
+    title: "One tap from ImageTrend.",
+    description:
+      "Writing your ePCR and need a protocol? One tap. Get the reference, get back to documentation. No switching apps.",
     iconBg: COLORS.bgAccentBlue,
     iconColor: COLORS.primaryBlue,
     accentColor: COLORS.primaryBlue,
-    gradientStart: COLORS.bgAccentBlue,
-    gradientEnd: COLORS.bgSurface,
   },
 ];
 
 function FeatureIcon({ type, color }: { type: FeatureIconType; color: string }) {
   switch (type) {
-    case "bolt":
-      return <BoltIcon color={color} />;
-    case "signal":
-      return <SignalIcon color={color} />;
-    case "refresh":
-      return <RefreshIcon color={color} />;
+    case "search":
+      return <SearchIcon color={color} />;
+    case "offline":
+      return <WifiOffIcon color={color} />;
+    case "calculator":
+      return <CalculatorIcon color={color} />;
+    case "link":
+      return <LinkIcon color={color} />;
   }
 }
 
@@ -214,7 +183,6 @@ const FeatureCard = memo(function FeatureCard({ feature, index, isVisible, isMob
   const hoverScale = useSharedValue(1);
   const hoverElevation = useSharedValue(0);
   const borderGlow = useSharedValue(0);
-  const iconGlow = useSharedValue(0);
   const prefersReducedMotion = getReducedMotion();
 
   useEffect(() => {
@@ -223,9 +191,9 @@ const FeatureCard = memo(function FeatureCard({ feature, index, isVisible, isMob
         progress.value = 1;
       } else {
         progress.value = withDelay(
-          index * 150,
+          index * 100,
           withTiming(1, {
-            duration: 600,
+            duration: 500,
             easing: Easing.out(Easing.cubic),
           })
         );
@@ -237,18 +205,18 @@ const FeatureCard = memo(function FeatureCard({ feature, index, isVisible, isMob
     return {
       opacity: progress.value,
       transform: [
-        { translateY: interpolate(progress.value, [0, 1], [40, 0]) },
+        { translateY: interpolate(progress.value, [0, 1], [30, 0]) },
         { scale: hoverScale.value },
       ],
     };
   });
 
   const animatedShadowStyle = useAnimatedStyle(() => {
-    const elevation = interpolate(hoverElevation.value, [0, 1], [2, 16]);
+    const elevation = interpolate(hoverElevation.value, [0, 1], [2, 12]);
     return {
-      shadowOpacity: interpolate(hoverElevation.value, [0, 1], [0.08, 0.2]),
+      shadowOpacity: interpolate(hoverElevation.value, [0, 1], [0.08, 0.18]),
       shadowRadius: elevation,
-      shadowOffset: { width: 0, height: interpolate(hoverElevation.value, [0, 1], [2, 12]) },
+      shadowOffset: { width: 0, height: interpolate(hoverElevation.value, [0, 1], [2, 8]) },
     };
   });
 
@@ -263,123 +231,78 @@ const FeatureCard = memo(function FeatureCard({ feature, index, isVisible, isMob
     };
   });
 
-  const animatedIconContainer = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: interpolate(iconGlow.value, [0, 1], [1, 1.05]) }],
-      shadowOpacity: interpolate(iconGlow.value, [0, 1], [0.2, 0.4]),
-      shadowRadius: interpolate(iconGlow.value, [0, 1], [8, 16]),
-    };
-  });
-
-  const animatedAccentLine = useAnimatedStyle(() => {
-    return {
-      width: interpolate(borderGlow.value, [0, 1], [40, 60]),
-      opacity: interpolate(borderGlow.value, [0, 1], [0.6, 1]),
-    };
-  });
-
   const handleHoverIn = () => {
     if (Platform.OS === "web" && !prefersReducedMotion) {
-      hoverScale.value = withSpring(1.03, { damping: 18, stiffness: 350 });
-      hoverElevation.value = withTiming(1, { duration: 250, easing: Easing.out(Easing.ease) });
-      borderGlow.value = withTiming(1, { duration: 300, easing: Easing.out(Easing.ease) });
-      iconGlow.value = withSpring(1, { damping: 15, stiffness: 300 });
+      hoverScale.value = withSpring(1.02, { damping: 18, stiffness: 350 });
+      hoverElevation.value = withTiming(1, { duration: 200, easing: Easing.out(Easing.ease) });
+      borderGlow.value = withTiming(1, { duration: 250, easing: Easing.out(Easing.ease) });
     }
   };
 
   const handleHoverOut = () => {
     if (Platform.OS === "web") {
       hoverScale.value = withSpring(1, { damping: 18, stiffness: 350 });
-      hoverElevation.value = withTiming(0, { duration: 250, easing: Easing.out(Easing.ease) });
-      borderGlow.value = withTiming(0, { duration: 300, easing: Easing.out(Easing.ease) });
-      iconGlow.value = withSpring(0, { damping: 15, stiffness: 300 });
+      hoverElevation.value = withTiming(0, { duration: 200, easing: Easing.out(Easing.ease) });
+      borderGlow.value = withTiming(0, { duration: 250, easing: Easing.out(Easing.ease) });
     }
   };
+
+  // Responsive sizing
+  const cardWidth = isMobile ? "100%" : isTablet ? "48%" : "23%";
+  const cardMinWidth = isMobile ? undefined : isTablet ? 280 : 240;
+  const cardMaxWidth = isMobile ? undefined : isTablet ? 340 : 280;
 
   return (
     <Pressable
       onHoverIn={handleHoverIn}
       onHoverOut={handleHoverOut}
-      style={isMobile ? { width: "100%" } : isTablet ? { width: "47%" as const, minWidth: 260, maxWidth: 340 } : { flex: 1, minWidth: 280, maxWidth: 320 }}
+      style={{
+        width: cardWidth as any,
+        minWidth: cardMinWidth,
+        maxWidth: cardMaxWidth,
+      }}
       accessibilityLabel={`${feature.title}: ${feature.description}`}
     >
       <Animated.View
         style={[
           {
             backgroundColor: COLORS.bgSurface,
-            borderRadius: 20,
-            padding: isMobile ? 20 : isTablet ? 24 : 28,
+            borderRadius: 16,
+            padding: isMobile ? 20 : 24,
             shadowColor: COLORS.shadowColor,
             shadowOpacity: 0.08,
             shadowRadius: 2,
             shadowOffset: { width: 0, height: 2 },
             elevation: 2,
+            height: "100%",
           },
           animatedCardStyle,
           animatedShadowStyle,
           animatedBorderStyle,
         ]}
       >
-        {/* Subtle gradient background overlay */}
+        {/* Icon Container */}
         <View
           style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: "40%",
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
-            backgroundColor: feature.gradientStart,
-            opacity: 0.3,
+            width: 52,
+            height: 52,
+            borderRadius: 12,
+            backgroundColor: feature.iconBg,
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: 16,
           }}
-        />
-
-        {/* Icon Container with enhanced glow */}
-        <Animated.View
-          style={[
-            {
-              width: isMobile ? 56 : 64,
-              height: isMobile ? 56 : 64,
-              borderRadius: 16,
-              backgroundColor: feature.iconBg,
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: isMobile ? 16 : 24,
-              shadowColor: feature.iconColor,
-              shadowOpacity: 0.2,
-              shadowRadius: 8,
-              shadowOffset: { width: 0, height: 4 },
-              elevation: 4,
-              borderWidth: 1,
-              borderColor: feature.accentColor + "10",
-            },
-            animatedIconContainer,
-          ]}
         >
           <FeatureIcon type={feature.icon} color={feature.iconColor} />
-        </Animated.View>
-
-        {/* Animated accent line with gradient */}
-        <Animated.View
-          style={[
-            {
-              height: 3,
-              backgroundColor: feature.accentColor,
-              borderRadius: 2,
-              marginBottom: isMobile ? 12 : 16,
-            },
-            animatedAccentLine,
-          ]}
-        />
+        </View>
 
         {/* Title */}
         <Text
           style={{
             color: COLORS.textWhite,
-            fontSize: isMobile ? 20 : 22,
+            fontSize: isMobile ? 18 : 19,
             fontWeight: "700",
-            marginBottom: isMobile ? 8 : 12,
+            marginBottom: 10,
             letterSpacing: -0.3,
           }}
         >
@@ -391,7 +314,7 @@ const FeatureCard = memo(function FeatureCard({ feature, index, isVisible, isMob
           style={{
             color: COLORS.textMuted,
             fontSize: isMobile ? 14 : 15,
-            lineHeight: isMobile ? 22 : 24,
+            lineHeight: isMobile ? 21 : 23,
             letterSpacing: 0.1,
           }}
         >
@@ -404,7 +327,6 @@ const FeatureCard = memo(function FeatureCard({ feature, index, isVisible, isMob
 
 export const FeaturesSection = memo(function FeaturesSection() {
   const { width } = useWindowDimensions();
-  // Three-tier responsive breakpoints
   const isMobile = width < 640;
   const isTablet = width >= 640 && width < 1024;
 
@@ -426,7 +348,7 @@ export const FeaturesSection = memo(function FeaturesSection() {
             }
           });
         },
-        { threshold: 0.2 }
+        { threshold: 0.15 }
       );
 
       const timer = setTimeout(() => {
@@ -449,7 +371,7 @@ export const FeaturesSection = memo(function FeaturesSection() {
   const animatedHeaderStyle = useAnimatedStyle(() => {
     return {
       opacity: headerProgress.value,
-      transform: [{ translateY: interpolate(headerProgress.value, [0, 1], [20, 0]) }],
+      transform: [{ translateY: interpolate(headerProgress.value, [0, 1], [15, 0]) }],
     };
   });
 
@@ -465,90 +387,47 @@ export const FeaturesSection = memo(function FeaturesSection() {
       <View
         style={{
           paddingHorizontal: isMobile ? 16 : isTablet ? 24 : 32,
-          maxWidth: 1100,
+          maxWidth: 1200,
           alignSelf: "center",
           width: "100%",
         }}
       >
-        {/* Section Badge */}
-        <Animated.View
-          style={[
-            {
-              alignSelf: "center",
-              marginBottom: isMobile ? 12 : 16,
-            },
-            animatedHeaderStyle,
-          ]}
-        >
-          <View
+        {/* Section Header */}
+        <Animated.View style={animatedHeaderStyle}>
+          <Text
             style={{
-              backgroundColor: COLORS.bgAccentRed,
-              paddingHorizontal: 16,
-              paddingVertical: 6,
-              borderRadius: 20,
-              borderWidth: 1,
-              borderColor: COLORS.primaryRed + "20",
-              shadowColor: COLORS.primaryRed,
-              shadowOpacity: 0.1,
-              shadowRadius: 4,
-              shadowOffset: { width: 0, height: 2 },
-            }}
-          >
-            <Text
-              style={{
-                color: COLORS.primaryRed,
-                fontSize: 12,
-                fontWeight: "700",
-                textTransform: "uppercase",
-                letterSpacing: 1.5,
-              }}
-            >
-              Key Features
-            </Text>
-          </View>
-        </Animated.View>
-
-        {/* Section Title - Responsive */}
-        <Animated.Text
-          style={[
-            {
               color: COLORS.textWhite,
               fontSize: isMobile ? 28 : isTablet ? 32 : 36,
               fontWeight: "800",
               textAlign: "center",
-              marginBottom: isMobile ? 12 : isTablet ? 14 : 16,
+              marginBottom: isMobile ? 10 : 12,
               letterSpacing: -0.5,
-            },
-            animatedHeaderStyle,
-          ]}
-          accessibilityRole="header"
-        >
-          Engineered for the Field
-        </Animated.Text>
-
-        {/* Subtitle - Responsive */}
-        <Animated.Text
-          style={[
-            {
+            }}
+            accessibilityRole="header"
+          >
+            Built for the back of the rig.
+          </Text>
+          <Text
+            style={{
               color: COLORS.textMuted,
               fontSize: isMobile ? 16 : isTablet ? 17 : 18,
               textAlign: "center",
-              marginBottom: isMobile ? 32 : isTablet ? 44 : 56,
+              marginBottom: isMobile ? 36 : isTablet ? 44 : 56,
               lineHeight: isMobile ? 24 : isTablet ? 26 : 28,
-              maxWidth: isMobile ? "100%" : 500,
+              maxWidth: isMobile ? "100%" : 520,
               alignSelf: "center",
-            },
-            animatedHeaderStyle,
-          ]}
-        >
-          We removed the bloat. You get exactly what you need when the tones drop.
-        </Animated.Text>
+            }}
+          >
+            Not another app built by devs who've never run a call.{"\n"}
+            This one's different.
+          </Text>
+        </Animated.View>
 
-        {/* Feature Cards - Stack on mobile, 2-col on tablet, 3-col on desktop */}
+        {/* Feature Cards - 1 col mobile, 2 col tablet, 4 col desktop */}
         <View
           style={{
             flexDirection: isMobile ? "column" : "row",
-            gap: isMobile ? 16 : isTablet ? 20 : 28,
+            gap: isMobile ? 16 : isTablet ? 20 : 24,
             flexWrap: "wrap",
             justifyContent: "center",
           }}

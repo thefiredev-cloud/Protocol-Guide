@@ -1,25 +1,20 @@
 /**
- * Hero Section - "Seconds Save Lives." headline with navigation and CTA
+ * Hero Section - "The protocol you need. Now."
  *
- * Features:
- * - Subtle animated gradient background
- * - Improved typography hierarchy with letter-spacing
- * - Hover states on nav links and CTA
- * - Enhanced CTA button with glow effect
- * - Staggered entry animations
- * - Three-tier responsive design (mobile < 640, tablet 640-1024, desktop >= 1024)
- *
- * Accessibility: Full ARIA support, keyboard navigation, focus indicators
- * Performance: 60fps animations using native driver, minimal re-renders
+ * Redesigned for LA County firefighter/paramedics:
+ * - No tech jargon, speak their language
+ * - CTA goes straight to search (no signup friction)
+ * - Dark mode default (night calls are real)
+ * - Mobile-first design
+ * - "Built by firefighters, for firefighters" vibe
  */
 
 import { useState, useRef, useEffect } from "react";
 import { View, Text, Animated, useWindowDimensions, Platform } from "react-native";
+import { router } from "expo-router";
 import { ProtocolGuideLogo } from "@/components/icons/protocol-guide-logo";
 import { AnimatedPressable, AnimatedNavLink } from "./animated-pressable";
 import { injectSmoothScrollCSS, scrollToElement } from "./animation-utils";
-// Social proof components available: StarRating, TrustedBadge, TestimonialQuote, DepartmentUsage
-// import { StarRating, TrustedBadge, TestimonialQuote, DepartmentUsage } from "./social-proof";
 
 const COLORS = {
   primaryRed: "#EF4444",
@@ -31,6 +26,8 @@ const COLORS = {
   focusRing: "#3B82F6",
   border: "#334155",
   green: "#22C55E",
+  // LA County colors (subtle nod)
+  laCountyGold: "#FFD700",
 };
 
 /** Inject CSS keyframes for subtle gradient animation (web only) */
@@ -112,7 +109,7 @@ function CloseIcon({ color }: { color: string }) {
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
-      <Text style={{ color, fontSize: 24, fontWeight: "300", lineHeight: 24 }}>x</Text>
+      <Text style={{ color, fontSize: 24, fontWeight: "300", lineHeight: 24 }}>×</Text>
     </View>
   );
 }
@@ -124,20 +121,16 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
   // Three-tier responsive breakpoints
   const isMobile = width < 640;
   const isTablet = width >= 640 && width < 1024;
-  const showMobileMenu = width < 768; // Keep hamburger menu threshold for nav
+  const showMobileMenu = width < 768;
 
   // Animation values for staggered entrance
   const navOpacity = useRef(new Animated.Value(0)).current;
-  const socialProofOpacity = useRef(new Animated.Value(0)).current;
-  const socialProofTranslateY = useRef(new Animated.Value(10)).current;
   const headlineOpacity = useRef(new Animated.Value(0)).current;
   const headlineTranslateY = useRef(new Animated.Value(20)).current;
   const subheadOpacity = useRef(new Animated.Value(0)).current;
   const subheadTranslateY = useRef(new Animated.Value(20)).current;
   const ctaOpacity = useRef(new Animated.Value(0)).current;
   const ctaScale = useRef(new Animated.Value(0.95)).current;
-  const testimonialOpacity = useRef(new Animated.Value(0)).current;
-  const testimonialTranslateY = useRef(new Animated.Value(10)).current;
   const badgesOpacity = useRef(new Animated.Value(0)).current;
   const badgesTranslateY = useRef(new Animated.Value(15)).current;
   const menuHeight = useRef(new Animated.Value(0)).current;
@@ -146,25 +139,12 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
   useEffect(() => {
     injectGradientStyles();
     injectSmoothScrollCSS();
-    const animations = Animated.stagger(120, [
+    const animations = Animated.stagger(100, [
       Animated.timing(navOpacity, {
         toValue: 1,
         duration: 400,
         useNativeDriver: true,
       }),
-      Animated.parallel([
-        Animated.timing(socialProofOpacity, {
-          toValue: 1,
-          duration: 400,
-          useNativeDriver: true,
-        }),
-        Animated.spring(socialProofTranslateY, {
-          toValue: 0,
-          friction: 8,
-          tension: 50,
-          useNativeDriver: true,
-        }),
-      ]),
       Animated.parallel([
         Animated.timing(headlineOpacity, {
           toValue: 1,
@@ -205,19 +185,6 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
         }),
       ]),
       Animated.parallel([
-        Animated.timing(testimonialOpacity, {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-        Animated.spring(testimonialTranslateY, {
-          toValue: 0,
-          friction: 8,
-          tension: 40,
-          useNativeDriver: true,
-        }),
-      ]),
-      Animated.parallel([
         Animated.timing(badgesOpacity, {
           toValue: 1,
           duration: 500,
@@ -232,7 +199,7 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
       ]),
     ]);
     animations.start();
-  }, [navOpacity, socialProofOpacity, socialProofTranslateY, headlineOpacity, headlineTranslateY, subheadOpacity, subheadTranslateY, ctaOpacity, ctaScale, testimonialOpacity, testimonialTranslateY, badgesOpacity, badgesTranslateY]);
+  }, [navOpacity, headlineOpacity, headlineTranslateY, subheadOpacity, subheadTranslateY, ctaOpacity, ctaScale, badgesOpacity, badgesTranslateY]);
 
   // Mobile menu slide animation
   useEffect(() => {
@@ -245,8 +212,13 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
   }, [menuOpen, menuHeight]);
 
   const scrollToSection = (sectionId: string) => {
-    scrollToElement(sectionId, 80); // 80px offset for nav bar
+    scrollToElement(sectionId, 80);
     setMenuOpen(false);
+  };
+
+  const handleTryNow = () => {
+    // Go straight to search - no signup friction
+    router.push("/(tabs)");
   };
 
   const handleSignIn = () => {
@@ -256,34 +228,26 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
 
   // Responsive typography helpers
   const getHeadlineFontSize = () => {
-    if (isMobile) return 40;
-    if (isTablet) return 56;
-    return 72;
+    if (isMobile) return 36;
+    if (isTablet) return 48;
+    return 60;
   };
 
   const getHeadlineLineHeight = () => {
-    if (isMobile) return 48;
-    if (isTablet) return 64;
-    return 84;
-  };
-
-  const getSubheadlineFontSize = () => {
-    if (isMobile) return 16;
-    if (isTablet) return 18;
-    return 20;
+    if (isMobile) return 42;
+    if (isTablet) return 56;
+    return 68;
   };
 
   const getMinHeight = () => {
     if (isMobile) return 520;
-    if (isTablet) return 580;
-    return 640;
+    if (isTablet) return 560;
+    return 600;
   };
 
   return (
-    <View
-      style={{ backgroundColor: COLORS.bgDark, minHeight: getMinHeight() }}
-    >
-      {/* Navigation Bar with fade-in */}
+    <View style={{ backgroundColor: COLORS.bgDark, minHeight: getMinHeight() }}>
+      {/* Navigation Bar */}
       <Animated.View
         style={{
           opacity: navOpacity,
@@ -310,37 +274,37 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
             accessibilityLabel="Main navigation"
           >
             <AnimatedNavLink
-              onPress={() => scrollToSection("simulation-section")}
+              onPress={() => scrollToSection("features-section")}
               accessibilityRole="link"
-              accessibilityLabel="Speed Test section"
+              accessibilityLabel="Features section"
             >
               <Text style={{ color: COLORS.textMuted, fontSize: 14, fontWeight: "600", letterSpacing: 0.3 }}>
-                Speed Test
+                Features
               </Text>
             </AnimatedNavLink>
             <AnimatedNavLink
-              onPress={() => scrollToSection("impact-section")}
+              onPress={() => scrollToSection("simulation-section")}
               accessibilityRole="link"
-              accessibilityLabel="Impact section"
+              accessibilityLabel="See it work section"
             >
               <Text style={{ color: COLORS.textMuted, fontSize: 14, fontWeight: "600", letterSpacing: 0.3 }}>
-                Impact
+                See It Work
               </Text>
             </AnimatedNavLink>
             <AnimatedPressable
-              onPress={onSignIn}
+              onPress={handleTryNow}
               accessibilityRole="button"
-              accessibilityLabel="Request Access"
+              accessibilityLabel="Try it now"
               style={{
-                backgroundColor: COLORS.textWhite,
+                backgroundColor: COLORS.primaryRed,
                 paddingHorizontal: isTablet ? 14 : 16,
-                paddingVertical: isTablet ? 7 : 8,
+                paddingVertical: isTablet ? 8 : 10,
                 borderRadius: 6,
               }}
               pressScale={0.95}
             >
-              <Text style={{ color: COLORS.bgDark, fontSize: 14, fontWeight: "600" }}>
-                Request Access
+              <Text style={{ color: "#FFFFFF", fontSize: 14, fontWeight: "600" }}>
+                Try It Now
               </Text>
             </AnimatedPressable>
           </View>
@@ -360,7 +324,7 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
         )}
       </Animated.View>
 
-      {/* Mobile Dropdown Menu with slide animation */}
+      {/* Mobile Dropdown Menu */}
       {showMobileMenu && (
         <Animated.View
           style={{
@@ -380,25 +344,25 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
         >
           <View style={{ paddingVertical: 8 }}>
             <AnimatedNavLink
+              onPress={() => scrollToSection("features-section")}
+              style={{ minHeight: 44, justifyContent: "center" }}
+            >
+              <Text style={{ color: COLORS.textMuted, fontSize: 16, fontWeight: "500" }}>
+                Features
+              </Text>
+            </AnimatedNavLink>
+            <AnimatedNavLink
               onPress={() => scrollToSection("simulation-section")}
               style={{ minHeight: 44, justifyContent: "center" }}
             >
               <Text style={{ color: COLORS.textMuted, fontSize: 16, fontWeight: "500" }}>
-                Speed Test
-              </Text>
-            </AnimatedNavLink>
-            <AnimatedNavLink
-              onPress={() => scrollToSection("impact-section")}
-              style={{ minHeight: 44, justifyContent: "center" }}
-            >
-              <Text style={{ color: COLORS.textMuted, fontSize: 16, fontWeight: "500" }}>
-                Impact
+                See It Work
               </Text>
             </AnimatedNavLink>
             <AnimatedPressable
-              onPress={handleSignIn}
+              onPress={handleTryNow}
               style={{
-                backgroundColor: COLORS.textWhite,
+                backgroundColor: COLORS.primaryRed,
                 paddingHorizontal: 16,
                 minHeight: 48,
                 borderRadius: 6,
@@ -408,8 +372,8 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
               }}
               pressScale={0.97}
             >
-              <Text style={{ color: COLORS.bgDark, fontSize: 16, fontWeight: "600" }}>
-                Request Access
+              <Text style={{ color: "#FFFFFF", fontSize: 16, fontWeight: "600" }}>
+                Try It Now
               </Text>
             </AnimatedPressable>
           </View>
@@ -422,80 +386,71 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          paddingHorizontal: isMobile ? 16 : isTablet ? 32 : 24,
+          paddingHorizontal: isMobile ? 20 : isTablet ? 32 : 24,
           paddingVertical: isMobile ? 48 : isTablet ? 64 : 80,
         }}
       >
-        {/* Main Headline with fade-in + slide-up and enhanced typography */}
+        {/* Main Headline */}
         <Animated.Text
           style={{
             fontSize: getHeadlineFontSize(),
             fontWeight: "900",
             textAlign: "center",
-            marginBottom: isMobile ? 24 : isTablet ? 28 : 32,
+            marginBottom: isMobile ? 16 : isTablet ? 20 : 24,
             lineHeight: getHeadlineLineHeight(),
-            letterSpacing: isMobile ? -1.5 : isTablet ? -2 : -2.5,
+            letterSpacing: isMobile ? -1 : isTablet ? -1.5 : -2,
             opacity: headlineOpacity,
             transform: [{ translateY: headlineTranslateY }],
+            color: COLORS.textWhite,
           }}
           accessibilityRole="header"
         >
-          <Text style={{ color: COLORS.textWhite }}>Seconds Save </Text>
-          <Text
-            style={{
-              color: COLORS.primaryRed,
-              textShadowColor: "rgba(155, 35, 53, 0.2)",
-              textShadowOffset: { width: 0, height: 3 },
-              textShadowRadius: 12,
-            }}
-          >
-            Lives.
-          </Text>
+          The protocol you need.{"\n"}
+          <Text style={{ color: COLORS.primaryRed }}>Now.</Text>
         </Animated.Text>
 
-        {/* Subheadline with staggered fade-in and improved typography */}
+        {/* Subheadline - speaks to firefighters */}
         <Animated.View
           style={{ opacity: subheadOpacity, transform: [{ translateY: subheadTranslateY }] }}
         >
           <Text
             style={{
               color: COLORS.textMuted,
-              fontSize: isMobile ? 20 : isTablet ? 26 : 30,
-              fontWeight: "700",
+              fontSize: isMobile ? 18 : isTablet ? 20 : 22,
+              fontWeight: "500",
               textAlign: "center",
-              marginBottom: isMobile ? 18 : isTablet ? 20 : 24,
-              letterSpacing: -0.5,
+              marginBottom: isMobile ? 12 : 16,
+              letterSpacing: -0.3,
             }}
           >
-            Why waste 90 of them searching?
+            LA County protocols at your fingertips.
           </Text>
           <Text
             style={{
               color: COLORS.textMuted,
-              fontSize: getSubheadlineFontSize(),
+              fontSize: isMobile ? 16 : isTablet ? 17 : 18,
               fontWeight: "400",
               textAlign: "center",
-              marginBottom: isMobile ? 40 : isTablet ? 46 : 52,
-              maxWidth: isMobile ? 320 : isTablet ? 480 : 560,
-              lineHeight: isMobile ? 26 : isTablet ? 28 : 32,
-              letterSpacing: 0.2,
+              marginBottom: isMobile ? 32 : isTablet ? 40 : 48,
+              maxWidth: isMobile ? 300 : isTablet ? 400 : 480,
+              lineHeight: isMobile ? 24 : isTablet ? 26 : 28,
             }}
           >
-            The modern protocol retrieval tool for EMS.{"\n"}
-            <Text style={{ fontWeight: "700", color: COLORS.textWhite }}>2 seconds</Text> to find what you need. Not 2 minutes.
+            Search. Find. Treat.{"\n"}
+            Faster than flipping the binder.
           </Text>
         </Animated.View>
 
-        {/* CTA Button with scale-in animation and enhanced glow */}
+        {/* Primary CTA - Goes straight to search */}
         <Animated.View style={{ opacity: ctaOpacity, transform: [{ scale: ctaScale }] }}>
           <AnimatedPressable
-            onPress={() => scrollToSection("simulation-section")}
+            onPress={handleTryNow}
             style={{
               backgroundColor: COLORS.primaryRed,
-              paddingHorizontal: isMobile ? 28 : isTablet ? 34 : 40,
-              paddingVertical: isMobile ? 14 : isTablet ? 16 : 18,
-              minHeight: isMobile ? 52 : isTablet ? 58 : 62,
-              borderRadius: 14,
+              paddingHorizontal: isMobile ? 32 : isTablet ? 40 : 48,
+              paddingVertical: isMobile ? 16 : isTablet ? 18 : 20,
+              minHeight: isMobile ? 56 : isTablet ? 60 : 64,
+              borderRadius: 12,
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
@@ -508,21 +463,65 @@ export function HeroSection({ onGetStarted, onSignIn }: HeroSectionProps) {
             }}
             pressScale={0.96}
             accessibilityRole="button"
-            accessibilityLabel="Try the Demo"
-            accessibilityHint="Scrolls to the speed comparison demo"
+            accessibilityLabel="Try it now - go to protocol search"
+            accessibilityHint="Opens the protocol search immediately"
           >
             <Text
               style={{
                 color: "#FFFFFF",
-                fontSize: isMobile ? 16 : isTablet ? 17 : 19,
+                fontSize: isMobile ? 18 : isTablet ? 19 : 20,
                 fontWeight: "700",
-                letterSpacing: 0.5,
+                letterSpacing: 0.3,
               }}
             >
-              Try the Demo
+              Try It Now
             </Text>
-            <Text style={{ color: "#FFFFFF", fontSize: isMobile ? 16 : isTablet ? 17 : 19, fontWeight: "400" }}>{"\u2192"}</Text>
+            <Text style={{ color: "#FFFFFF", fontSize: isMobile ? 18 : isTablet ? 19 : 20, fontWeight: "400" }}>→</Text>
           </AnimatedPressable>
+          
+          {/* No signup message */}
+          <Text
+            style={{
+              color: COLORS.textMuted,
+              fontSize: 13,
+              textAlign: "center",
+              marginTop: 12,
+              opacity: 0.8,
+            }}
+          >
+            No signup required. Just search.
+          </Text>
+        </Animated.View>
+
+        {/* Trust badges */}
+        <Animated.View
+          style={{
+            opacity: badgesOpacity,
+            transform: [{ translateY: badgesTranslateY }],
+            marginTop: isMobile ? 40 : isTablet ? 48 : 56,
+            flexDirection: isMobile ? "column" : "row",
+            alignItems: "center",
+            gap: isMobile ? 12 : 24,
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Text style={{ color: COLORS.green, fontSize: 14 }}>✓</Text>
+            <Text style={{ color: COLORS.textMuted, fontSize: 13, fontWeight: "500" }}>
+              Works offline
+            </Text>
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Text style={{ color: COLORS.green, fontSize: 14 }}>✓</Text>
+            <Text style={{ color: COLORS.textMuted, fontSize: 13, fontWeight: "500" }}>
+              Works at 3 AM
+            </Text>
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Text style={{ color: COLORS.green, fontSize: 14 }}>✓</Text>
+            <Text style={{ color: COLORS.textMuted, fontSize: 13, fontWeight: "500" }}>
+              Built for the rig
+            </Text>
+          </View>
         </Animated.View>
       </View>
     </View>
