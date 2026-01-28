@@ -1,5 +1,5 @@
 // Get Railway build logs
-const deployId = '422adb84-43d6-4ec2-93be-c6ddc270161f';
+const deployId = 'd8f0caa4-e64d-49de-9431-0fd7dbfa3667';
 const token = 'f2c35129-680b-4891-9400-cf157fff04cd';
 
 async function getLogs() {

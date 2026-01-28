@@ -1,9 +1,9 @@
 # Force Node.js detection (NOT Deno)
 [phases.setup]
-nixPkgs = ["nodejs_20", "pnpm"]
+nixPkgs = ["nodejs_20"]
 
 [phases.install]
-cmds = ["pnpm install --frozen-lockfile"]
+cmds = ["corepack enable", "corepack prepare pnpm@latest --activate", "pnpm install --frozen-lockfile"]
 
 [phases.build]
 cmds = ["pnpm run build"]
