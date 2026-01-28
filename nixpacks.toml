@@ -7,9 +7,8 @@ cmds = ["corepack enable", "corepack prepare pnpm@latest --activate", "pnpm inst
 
 [phases.build]
 cmds = [
-  "pnpm run build:web",
-  "pnpm exec esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/server.js"
+  "pnpm run build"
 ]
 
 [start]
-cmd = "node dist/server.js"
+cmd = "NODE_ENV=production node dist/index.js"
