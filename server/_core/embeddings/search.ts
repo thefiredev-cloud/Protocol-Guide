@@ -23,6 +23,7 @@ export type SearchResult = {
   content: string;
   image_urls: string[] | null;
   similarity: number;
+  state_code: string | null;
 };
 
 /**

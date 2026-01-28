@@ -189,6 +189,7 @@ export const searchRouter = router({
               content: r.content,
               similarity: r.similarity,
               imageUrls: r.image_urls,
+              stateCode: r.state_code ?? null,
             }));
           },
           searchOptions
@@ -212,6 +213,7 @@ export const searchRouter = router({
             protocolEffectiveDate: null,
             lastVerifiedAt: null,
             protocolYear: null,
+            stateCode: r.stateCode ?? null,
           })),
           totalFound: optimizedResult.results.length,
           query: input.query,
@@ -485,6 +487,7 @@ export const searchRouter = router({
               content: r.content,
               similarity: r.similarity,
               imageUrls: r.image_urls,
+              stateCode: r.state_code ?? null,
             }));
           },
           searchOptions
@@ -507,6 +510,7 @@ export const searchRouter = router({
             protocolEffectiveDate: null,
             lastVerifiedAt: null,
             protocolYear: null,
+            stateCode: r.stateCode ?? null,
           })),
           totalFound: optimizedResult.results.length,
           query: input.query,

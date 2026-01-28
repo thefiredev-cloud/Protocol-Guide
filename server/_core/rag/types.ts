@@ -14,6 +14,7 @@ export interface RetrievalResult {
   similarity: number;
   rerankedScore?: number;
   imageUrls?: string[] | null;
+  stateCode?: string | null;
   metadata?: Record<string, unknown>;
 }
 
