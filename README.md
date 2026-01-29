@@ -286,6 +286,14 @@ Pro complex → Sonnet 4.5 (~$0.002-0.004/query)
 
 ---
 
+## Release Notes
+
+Stay updated with the latest improvements and fixes:
+
+📋 **[CHANGELOG.md](./CHANGELOG.md)** - Complete release history with detailed fix notes
+
+---
+
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guidelines](./CONTRIBUTING.md) for:

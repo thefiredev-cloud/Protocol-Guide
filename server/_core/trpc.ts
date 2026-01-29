@@ -424,16 +424,16 @@ const enforcePublicRateLimit = (options?: { maxRequests?: number; windowMs?: num
 
 /**
  * Public rate-limited procedure - for unauthenticated endpoints
- * Default: 10 requests per 15 minutes per IP
+ * Default: 100 requests per 15 minutes per IP (reasonable for normal browsing)
  */
 export const publicRateLimitedProcedure = publicProcedure.use(
-  enforcePublicRateLimit({ maxRequests: 10, windowMs: 15 * 60 * 1000 })
+  enforcePublicRateLimit({ maxRequests: 100, windowMs: 15 * 60 * 1000 })
 );
 
 /**
  * Strict public rate-limited procedure - for sensitive public endpoints
- * Stricter limits: 5 requests per 15 minutes per IP
+ * Stricter limits: 20 requests per 15 minutes per IP
  */
 export const strictPublicRateLimitedProcedure = publicProcedure.use(
-  enforcePublicRateLimit({ maxRequests: 5, windowMs: 15 * 60 * 1000 })
+  enforcePublicRateLimit({ maxRequests: 20, windowMs: 15 * 60 * 1000 })
 );

@@ -2,7 +2,7 @@
  * App Router
  * Composes all domain routers into the main tRPC router
  *
- * 15 router modules organized by domain for maintainability:
+ * 17 router modules organized by domain for maintainability:
  * - system: Health checks and system status
  * - auth: Authentication procedures
  * - counties: County listing and retrieval
@@ -18,6 +18,8 @@
  * - integration: Partner tracking
  * - referral: Viral growth referral system
  * - jobs: Background job management
+ * - comparison: Protocol comparison for differential diagnosis
+ * - quickReference: Quick reference cards for high-frequency protocols
  */
 
 import { systemRouter } from "./_core/systemRouter";
@@ -38,6 +40,8 @@ import { agencyAdminRouter } from "./routers/agency-admin/index";
 import { integrationRouter } from "./routers/integration";
 import { referralRouter } from "./routers/referral/index";
 import { jobsRouter } from "./routers/jobs";
+import { comparisonRouter } from "./routers/comparison";
+import { quickReferenceRouter } from "./routers/quick-reference";
 
 export const appRouter = router({
   system: systemRouter,
@@ -55,6 +59,8 @@ export const appRouter = router({
   integration: integrationRouter,
   referral: referralRouter,
   jobs: jobsRouter,
+  comparison: comparisonRouter,
+  quickReference: quickReferenceRouter,
 });
 
 export type AppRouter = typeof appRouter;

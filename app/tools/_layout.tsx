@@ -34,6 +34,18 @@ export default function ToolsLayout() {
           title: 'Cardiac Arrest Timer',
         }}
       />
+      <Stack.Screen 
+        name="quick-reference" 
+        options={{
+          title: 'Quick Reference Cards',
+        }}
+      />
+      <Stack.Screen 
+        name="compare" 
+        options={{
+          title: 'Protocol Comparison',
+        }}
+      />
     </Stack>
   );
 }

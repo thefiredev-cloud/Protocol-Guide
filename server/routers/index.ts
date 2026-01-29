@@ -16,3 +16,5 @@ export { subscriptionRouter, type SubscriptionRouter } from "./subscription";
 export { agencyAdminRouter } from "./agency-admin";
 export { integrationRouter } from "./integration";
 export { referralRouter, type ReferralRouter } from "./referral";
+export { comparisonRouter, type ComparisonRouter } from "./comparison";
+export { quickReferenceRouter, type QuickReferenceRouter } from "./quick-reference";
