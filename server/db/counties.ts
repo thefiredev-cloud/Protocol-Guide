@@ -52,22 +52,6 @@ export async function getProtocolCoverageByState(): Promise<StateCoverage[]> {
   try {
     const db = await getDb();
 
-    // State name to code mapping
-    const stateCodeMap: Record<string, string> = {
-      'Alabama': 'AL', 'Alaska': 'AK', 'Arizona': 'AZ', 'Arkansas': 'AR', 'California': 'CA',
-      'Colorado': 'CO', 'Connecticut': 'CT', 'Delaware': 'DE', 'Florida': 'FL', 'Georgia': 'GA',
-      'Hawaii': 'HI', 'Idaho': 'ID', 'Illinois': 'IL', 'Indiana': 'IN', 'Iowa': 'IA',
-      'Kansas': 'KS', 'Kentucky': 'KY', 'Louisiana': 'LA', 'Maine': 'ME', 'Maryland': 'MD',
-      'Massachusetts': 'MA', 'Michigan': 'MI', 'Minnesota': 'MN', 'Mississippi': 'MS', 'Missouri': 'MO',
-      'Montana': 'MT', 'Nebraska': 'NE', 'Nevada': 'NV', 'New Hampshire': 'NH', 'New Jersey': 'NJ',
-      'New Mexico': 'NM', 'New York': 'NY', 'North Carolina': 'NC', 'North Dakota': 'ND', 'Ohio': 'OH',
-      'Oklahoma': 'OK', 'Oregon': 'OR', 'Pennsylvania': 'PA', 'Rhode Island': 'RI', 'South Carolina': 'SC',
-      'South Dakota': 'SD', 'Tennessee': 'TN', 'Texas': 'TX', 'Utah': 'UT', 'Vermont': 'VT',
-      'Virginia': 'VA', 'Washington': 'WA', 'West Virginia': 'WV', 'Wisconsin': 'WI', 'Wyoming': 'WY',
-      // Handle abbreviations that might be in data
-      'CA': 'CA', 'TX': 'TX', 'FL': 'FL', 'NY': 'NY', 'PA': 'PA', 'IL': 'IL', 'OH': 'OH', 'GA': 'GA',
-    };
-
     // Query manus_protocol_chunks which has state_code/state_name directly
     const results = await db.execute(sql`
       SELECT
@@ -144,6 +128,20 @@ export interface AgencyInfo {
   protocolCount: number;
 }
 
+// State name to code mapping (shared across functions)
+const stateCodeMap: Record<string, string> = {
+  'Alabama': 'AL', 'Alaska': 'AK', 'Arizona': 'AZ', 'Arkansas': 'AR', 'California': 'CA',
+  'Colorado': 'CO', 'Connecticut': 'CT', 'Delaware': 'DE', 'Florida': 'FL', 'Georgia': 'GA',
+  'Hawaii': 'HI', 'Idaho': 'ID', 'Illinois': 'IL', 'Indiana': 'IN', 'Iowa': 'IA',
+  'Kansas': 'KS', 'Kentucky': 'KY', 'Louisiana': 'LA', 'Maine': 'ME', 'Maryland': 'MD',
+  'Massachusetts': 'MA', 'Michigan': 'MI', 'Minnesota': 'MN', 'Mississippi': 'MS', 'Missouri': 'MO',
+  'Montana': 'MT', 'Nebraska': 'NE', 'Nevada': 'NV', 'New Hampshire': 'NH', 'New Jersey': 'NJ',
+  'New Mexico': 'NM', 'New York': 'NY', 'North Carolina': 'NC', 'North Dakota': 'ND', 'Ohio': 'OH',
+  'Oklahoma': 'OK', 'Oregon': 'OR', 'Pennsylvania': 'PA', 'Rhode Island': 'RI', 'South Carolina': 'SC',
+  'South Dakota': 'SD', 'Tennessee': 'TN', 'Texas': 'TX', 'Utah': 'UT', 'Vermont': 'VT',
+  'Virginia': 'VA', 'Washington': 'WA', 'West Virginia': 'WV', 'Wisconsin': 'WI', 'Wyoming': 'WY',
+};
+
 /**
  * Get all agencies for a specific state with protocol counts
  * Uses manus_protocol_chunks which has agency_id and state_code directly
@@ -152,7 +150,11 @@ export async function getAgenciesByState(state: string): Promise<AgencyInfo[]> {
   const db = await getDb();
 
   // state can be either state code (CA) or state name (California)
-  // Note: state_code is char(2) so we need TRIM to handle padding
+  // Convert state name to code if needed to ensure we match ALL rows
+  // This fixes the bug where rows with NULL state_name wouldn't match "California"
+  const stateCode = state.length === 2 ? state.toUpperCase() : (stateCodeMap[state] || state);
+  
+  // Query using state_code primarily (more reliable), fall back to state_name
   const results = await db.execute(sql`
     SELECT
       agency_id as id,
@@ -160,7 +162,7 @@ export async function getAgenciesByState(state: string): Promise<AgencyInfo[]> {
       COALESCE(state_name, TRIM(state_code)) as state,
       COUNT(id) as protocol_count
     FROM manus_protocol_chunks
-    WHERE (TRIM(state_code) = ${state} OR state_name = ${state})
+    WHERE (TRIM(state_code) = ${stateCode} OR state_name = ${state})
       AND agency_id IS NOT NULL
     GROUP BY agency_id, agency_name, state_name, state_code
     HAVING COUNT(id) > 0
@@ -184,9 +186,11 @@ export async function getAgenciesByState(state: string): Promise<AgencyInfo[]> {
 export async function getAgenciesWithProtocols(state?: string): Promise<AgencyInfo[]> {
   const db = await getDb();
 
-  // Note: state_code is char(2) so we need TRIM to handle padding
   let query;
   if (state) {
+    // Convert state name to code if needed (same fix as getAgenciesByState)
+    const stateCode = state.length === 2 ? state.toUpperCase() : (stateCodeMap[state] || state);
+    
     query = sql`
       SELECT
         agency_id as id,
@@ -194,7 +198,7 @@ export async function getAgenciesWithProtocols(state?: string): Promise<AgencyIn
         COALESCE(state_name, TRIM(state_code)) as state,
         COUNT(id) as protocol_count
       FROM manus_protocol_chunks
-      WHERE (TRIM(state_code) = ${state} OR state_name = ${state})
+      WHERE (TRIM(state_code) = ${stateCode} OR state_name = ${state})
         AND agency_id IS NOT NULL
       GROUP BY agency_id, agency_name, state_name, state_code
       HAVING COUNT(id) > 0
