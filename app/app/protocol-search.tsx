@@ -63,11 +63,46 @@ export default function ProtocolSearchScreen() {
     setSearchError(null);
 
     try {
-      const result = await trpcUtils.search.semantic.fetch({
-        query: searchQuery,
-        limit: 15,
-        stateFilter: "California", // Default to California for ImageTrend demo
-      });
+      let result;
+
+      // If agency parameter is present, search by agency for proper county filtering
+      if (params.agency) {
+        // First, get agencies to find the matching agency ID
+        const agencies = await trpcUtils.search.agenciesWithProtocols.fetch({
+          state: "California"
+        });
+        
+        // Find matching agency by name (case-insensitive, handle URL encoding)
+        const agencyName = decodeURIComponent(params.agency.replace(/\+/g, ' '));
+        const matchingAgency = agencies.find(agency => 
+          agency.name.toLowerCase().includes(agencyName.toLowerCase()) ||
+          agencyName.toLowerCase().includes(agency.name.toLowerCase())
+        );
+
+        if (matchingAgency) {
+          // Use agency-specific search for proper county filtering
+          result = await trpcUtils.search.searchByAgency.fetch({
+            query: searchQuery,
+            agencyId: matchingAgency.id,
+            limit: 15,
+          });
+        } else {
+          // Fallback to general search if agency not found
+          console.warn(`Agency not found for "${agencyName}", falling back to state search`);
+          result = await trpcUtils.search.semantic.fetch({
+            query: searchQuery,
+            limit: 15,
+            stateFilter: "California",
+          });
+        }
+      } else {
+        // No agency specified, use general search
+        result = await trpcUtils.search.semantic.fetch({
+          query: searchQuery,
+          limit: 15,
+          stateFilter: "California", // Default to California for ImageTrend demo
+        });
+      }
 
       setSearchResults(result.results || []);
     } catch (error) {
@@ -77,7 +112,7 @@ export default function ProtocolSearchScreen() {
     } finally {
       setIsSearching(false);
     }
-  }, [searchQuery, trpcUtils.search.semantic]);
+  }, [searchQuery, params.agency, trpcUtils.search.semantic, trpcUtils.search.searchByAgency, trpcUtils.search.agenciesWithProtocols]);
 
   const handleReturnToImageTrend = () => {
     if (params.return_url) {
@@ -231,7 +266,7 @@ export default function ProtocolSearchScreen() {
           )}
           {params.agency && (
             <Text style={{ fontSize: 14, color: colors.primary, marginTop: 4 }}>
-              Agency: {params.agency}
+              Agency: {decodeURIComponent(params.agency.replace(/\+/g, ' '))} • County-filtered search
             </Text>
           )}
         </View>
