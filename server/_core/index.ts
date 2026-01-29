@@ -312,9 +312,19 @@ async function startServer() {
     }));
     
     // SPA fallback - serve index.html for all non-API routes
-    app.get('*', (_req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
+    // Only if the file exists (Railway doesn't have web build, only Netlify does)
+    const indexPath = path.join(distPath, 'index.html');
+    const fs = await import('fs');
+    if (fs.existsSync(indexPath)) {
+      app.get('*', (_req, res) => {
+        res.sendFile(indexPath);
+      });
+    } else {
+      // No web build - return 404 JSON for unknown routes
+      app.get('*', (_req, res) => {
+        res.status(404).json({ error: 'Not found', message: 'This endpoint does not exist. Use /api/trpc/* for API calls.' });
+      });
+    }
   }
 
   // Sentry error handler - MUST be registered LAST to catch all errors
