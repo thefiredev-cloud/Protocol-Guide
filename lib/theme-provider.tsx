@@ -15,7 +15,7 @@ type ThemeContextValue = {
   toggleTheme: () => void;
 };
 
-const ThemeContext = createContext<ThemeContextValue | null>(null);
+export const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 // Get stored theme preference from localStorage (web only)
 function getStoredTheme(): ThemePreference | null {
