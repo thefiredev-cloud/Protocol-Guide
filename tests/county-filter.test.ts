@@ -61,10 +61,10 @@ test.describe('County Filter Fix', () => {
   });
 
   test('should work without agency parameter (general search)', async ({ page }) => {
-    // Test general search without agency parameter
+    // Test general search without agency parameter AND without ImageTrend source
     await page.goto('/app/protocol-search?query=anaphylaxis');
 
-    // Should not show agency info
+    // Should not show agency info when NOT from ImageTrend
     await expect(page.locator('text=Agency:')).not.toBeVisible();
     await expect(page.locator('text=County-filtered search')).not.toBeVisible();
 
@@ -72,6 +72,28 @@ test.describe('County Filter Fix', () => {
     await page.waitForLoadState('networkidle');
     const searchInput = page.locator('input[placeholder*="Search protocols"]');
     await expect(searchInput).toHaveValue('anaphylaxis');
+  });
+
+  test('should default to LA County when source=imagetrend without agency', async ({ page }) => {
+    // Test ImageTrend integration WITHOUT agency parameter - should default to LA County
+    // This is the key fix for the ImageTrend demo blocker
+    await page.goto('/app/protocol-search?query=pediatric+cardiac+arrest&source=imagetrend');
+
+    // Should show LA County as the default agency
+    await expect(page.locator('text=Los Angeles County')).toBeVisible();
+    await expect(page.locator('text=County-filtered search')).toBeVisible();
+    await expect(page.locator('text=(default)')).toBeVisible();
+    
+    // Wait for the search to complete automatically
+    await page.waitForLoadState('networkidle');
+
+    // Search should have the correct query
+    const searchInput = page.locator('input[placeholder*="Search protocols"]');
+    await expect(searchInput).toHaveValue('pediatric cardiac arrest');
+    
+    // Results should be present (LA County protocols)
+    const results = page.locator('[data-testid="protocol-result"]');
+    // Allow for no results in test env, but verify search completed
   });
 
   test('ImageTrend launch endpoint should redirect with agency parameter', async ({ page }) => {

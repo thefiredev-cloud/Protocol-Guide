@@ -95,12 +95,23 @@ export default function ProtocolSearchScreen() {
             stateFilter: "California",
           });
         }
+      } else if (params.source === 'imagetrend') {
+        // ImageTrend integration WITHOUT agency specified -> default to LA County
+        // This fixes the demo blocker where generic queries returned other CA counties
+        const LA_COUNTY_ID = 2701; // Los Angeles County EMS Agency
+        console.log('[ImageTrend] No agency specified, defaulting to LA County');
+        
+        result = await trpcUtils.search.searchByAgency.fetch({
+          query: searchQuery,
+          agencyId: LA_COUNTY_ID,
+          limit: 15,
+        });
       } else {
-        // No agency specified, use general search
+        // No agency specified and not ImageTrend, use general California search
         result = await trpcUtils.search.semantic.fetch({
           query: searchQuery,
           limit: 15,
-          stateFilter: "California", // Default to California for ImageTrend demo
+          stateFilter: "California",
         });
       }
 
@@ -264,11 +275,15 @@ export default function ProtocolSearchScreen() {
               Powered by ImageTrend Integration
             </Text>
           )}
-          {params.agency && (
+          {params.agency ? (
             <Text style={{ fontSize: 14, color: colors.primary, marginTop: 4 }}>
               Agency: {decodeURIComponent(params.agency.replace(/\+/g, ' '))} • County-filtered search
             </Text>
-          )}
+          ) : params.source === "imagetrend" ? (
+            <Text style={{ fontSize: 14, color: colors.primary, marginTop: 4 }}>
+              Agency: Los Angeles County • County-filtered search (default)
+            </Text>
+          ) : null}
         </View>
 
         {/* Search Input */}
