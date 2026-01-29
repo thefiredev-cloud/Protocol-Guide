@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, Page } from "@playwright/test";
 import {
   takeVisualSnapshot,
   takeElementSnapshot,
@@ -8,7 +8,17 @@ import {
 /**
  * Visual Regression Tests for Search Screen
  * Tests the visual appearance of the search interface and results
+ * 
+ * OPTIMIZED: Reduced wait times from 2000ms to 500ms
  */
+
+// Helper to get search input
+function getSearchInput(page: Page) {
+  return page
+    .locator('[data-testid="search-input"]')
+    .or(page.locator('input[placeholder*="protocol"]'))
+    .first();
+}
 
 test.describe("Search Screen Visual Tests", () => {
   test.beforeEach(async ({ page }) => {
@@ -17,7 +27,6 @@ test.describe("Search Screen Visual Tests", () => {
   });
 
   test("renders search screen initial state", async ({ page }) => {
-    // Take full page screenshot of search screen
     await takeVisualSnapshot(page, "search-initial-state", {
       fullPage: true,
       maskDynamicContent: true,
@@ -25,33 +34,22 @@ test.describe("Search Screen Visual Tests", () => {
   });
 
   test("renders search input focused state", async ({ page }) => {
-    // Focus on search input
-    const searchInput = page
-      .locator('[data-testid="search-input"]')
-      .or(page.locator('input[placeholder*="protocol"]'))
-      .first();
-
+    const searchInput = getSearchInput(page);
     await searchInput.focus();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300); // Short wait for focus animation
 
-    // Take screenshot of focused state
     await takeVisualSnapshot(page, "search-input-focused", {
       maskDynamicContent: true,
     });
   });
 
   test("renders search results for cardiac arrest", async ({ page }) => {
-    const searchInput = page
-      .locator('[data-testid="search-input"]')
-      .or(page.locator('input[placeholder*="protocol"]'))
-      .first();
-
+    const searchInput = getSearchInput(page);
     await searchInput.fill("cardiac arrest");
     await searchInput.press("Enter");
     await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(500); // Wait for results to render
 
-    // Take screenshot of results page
     await takeVisualSnapshot(page, "search-results-cardiac", {
       fullPage: true,
       maskDynamicContent: true,
@@ -59,15 +57,11 @@ test.describe("Search Screen Visual Tests", () => {
   });
 
   test("renders search results for chest pain", async ({ page }) => {
-    const searchInput = page
-      .locator('[data-testid="search-input"]')
-      .or(page.locator('input[placeholder*="protocol"]'))
-      .first();
-
+    const searchInput = getSearchInput(page);
     await searchInput.fill("chest pain");
     await searchInput.press("Enter");
     await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(500);
 
     await takeVisualSnapshot(page, "search-results-chest-pain", {
       fullPage: true,
@@ -76,15 +70,11 @@ test.describe("Search Screen Visual Tests", () => {
   });
 
   test("renders empty search results state", async ({ page }) => {
-    const searchInput = page
-      .locator('[data-testid="search-input"]')
-      .or(page.locator('input[placeholder*="protocol"]'))
-      .first();
-
+    const searchInput = getSearchInput(page);
     await searchInput.fill("xyzzy12345nonsensequery");
     await searchInput.press("Enter");
     await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(500);
 
     await takeVisualSnapshot(page, "search-results-empty", {
       fullPage: true,
@@ -93,17 +83,12 @@ test.describe("Search Screen Visual Tests", () => {
   });
 
   test("renders search result card component", async ({ page }) => {
-    const searchInput = page
-      .locator('[data-testid="search-input"]')
-      .or(page.locator('input[placeholder*="protocol"]'))
-      .first();
-
+    const searchInput = getSearchInput(page);
     await searchInput.fill("stroke");
     await searchInput.press("Enter");
     await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(500);
 
-    // Try to find and snapshot first result card
     const resultCard = page
       .locator('[data-testid="protocol-result"]')
       .or(page.locator(".protocol-card, .result-card, .search-result"))
@@ -115,9 +100,7 @@ test.describe("Search Screen Visual Tests", () => {
         page,
         '[data-testid="protocol-result"], .protocol-card, .result-card',
         "search-result-card",
-        {
-          maskDynamicContent: true,
-        }
+        { maskDynamicContent: true }
       );
     }
   });
@@ -162,15 +145,11 @@ test.describe("Search Screen Responsive Visual Tests", () => {
     await page.goto("/(tabs)/?e2e=true");
     await setupVisualTest(page);
 
-    const searchInput = page
-      .locator('[data-testid="search-input"]')
-      .or(page.locator('input[placeholder*="protocol"]'))
-      .first();
-
+    const searchInput = getSearchInput(page);
     await searchInput.fill("trauma");
     await searchInput.press("Enter");
     await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(500);
 
     await takeVisualSnapshot(page, "search-results-mobile", {
       fullPage: true,
