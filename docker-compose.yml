@@ -1,6 +1,41 @@
 version: '3.8'
 
 services:
+  # PostgreSQL Database (Supabase-compatible)
+  postgres:
+    image: postgres:15-alpine
+    container_name: protocol-guide-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: protocol_guide
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Redis Cache (Upstash-compatible)
+  redis:
+    image: redis:7-alpine
+    container_name: protocol-guide-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   # API Server (Express + tRPC)
   api:
     build:
@@ -8,25 +43,33 @@ services:
       dockerfile: Dockerfile.server
     container_name: protocol-guide-api
     ports:
-      - "3000:3000"
+      - "3001:3001"
     env_file:
-      - .env
+      - .env.docker
     environment:
       - NODE_ENV=development
-      - PORT=3000
+      - PORT=3001
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/protocol_guide
+      - REDIS_URL=redis://redis:6379
     volumes:
       # Mount source for hot reload in dev
       - ./server:/app/server:ro
       - ./drizzle:/app/drizzle:ro
+      - ./shared:/app/shared:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 15s
 
-  # Expo Web Frontend
+  # Expo Web Frontend (optional - can run outside Docker)
   web:
     build:
       context: .
@@ -35,12 +78,12 @@ services:
     ports:
       - "8081:8081"
     env_file:
-      - .env
+      - .env.docker
     environment:
       - EXPO_USE_METRO_WORKSPACE_ROOT=1
       - EXPO_PORT=8081
+      - EXPO_PUBLIC_API_URL=http://localhost:3001
     volumes:
-      # Mount source for hot reload
       - ./app:/app/app:ro
       - ./components:/app/components:ro
       - ./lib:/app/lib:ro
@@ -50,27 +93,41 @@ services:
       api:
         condition: service_healthy
     restart: unless-stopped
+    profiles:
+      - full
 
-  # Development mode with hot reload (alternative)
+  # Full dev mode with hot reload
   dev:
     build:
       context: .
-      dockerfile: Dockerfile.web
+      dockerfile: Dockerfile.server
     container_name: protocol-guide-dev
     ports:
-      - "3000:3000"
-      - "8081:8081"
+      - "3001:3001"
     env_file:
-      - .env
+      - .env.docker
     environment:
       - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/protocol_guide
+      - REDIS_URL=redis://redis:6379
     volumes:
       - .:/app
       - /app/node_modules
-    command: pnpm dev
+    command: pnpm dev:server
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     profiles:
       - dev
+
+volumes:
+  pg_data:
+    name: protocol-guide-pg-data
+  redis_data:
+    name: protocol-guide-redis-data
 
 networks:
   default:

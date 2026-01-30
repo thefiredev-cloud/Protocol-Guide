@@ -1,12 +1,13 @@
-# API Server Dockerfile
+# Protocol Guide API Server
 FROM node:20-alpine
 
-# Install pnpm
+# Install pnpm and build tools
 RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
+RUN apk add --no-cache wget
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files first (better layer caching)
 COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
@@ -18,12 +19,12 @@ COPY . .
 # Build the server
 RUN pnpm build
 
-# Expose port
-EXPOSE 3000
+# Expose port (matches Railway)
+EXPOSE 3001
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3001/api/health || exit 1
 
 # Start the server
 CMD ["node", "dist/index.js"]
