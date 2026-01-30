@@ -1,125 +1,370 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title>Protocol Guide - Offline</title>
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        padding: 20px;
-      }
-      .container {
-        text-align: center;
-        max-width: 500px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
-        padding: 40px;
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-      }
-      .icon {
-        font-size: 80px;
-        margin-bottom: 20px;
-        opacity: 0.9;
-      }
-      h1 {
-        font-size: 32px;
-        font-weight: 700;
-        margin-bottom: 16px;
-        letter-spacing: -0.5px;
-      }
-      p {
-        font-size: 18px;
-        line-height: 1.6;
-        opacity: 0.9;
-        margin-bottom: 30px;
-      }
-      .retry-btn {
-        background: #fff;
-        color: #667eea;
-        border: none;
-        padding: 14px 32px;
-        font-size: 16px;
-        font-weight: 600;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px 0 rgba(255, 255, 255, 0.2);
-      }
-      .retry-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px 0 rgba(255, 255, 255, 0.3);
-      }
-      .retry-btn:active {
-        transform: translateY(0);
-      }
-      .status {
-        margin-top: 20px;
-        font-size: 14px;
-        opacity: 0.7;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="icon">📡</div>
-      <h1>You're Offline</h1>
-      <p>
-        Protocol Guide requires an internet connection to function. Please check your connection and try again.
-      </p>
-      <button class="retry-btn" onclick="window.location.reload()">
-        Retry Connection
-      </button>
-      <div class="status" id="status"></div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#C41E3A">
+  <title>Protocol Guide - Offline</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <style>
+    :root {
+      --primary: #C41E3A;
+      --background: #ffffff;
+      --foreground: #1a1a1a;
+      --muted: #6b7280;
+      --surface: #f9fafb;
+      --border: #e5e7eb;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--background);
+      color: var(--foreground);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 400px;
+      margin: 0 auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      text-align: center;
+      padding: 40px 0 30px;
+    }
+
+    .logo {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 20px;
+      background: var(--primary);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo svg {
+      width: 36px;
+      height: 36px;
+      fill: white;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .status-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .status-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ef4444;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .status-indicator.online {
+      background: #22c55e;
+    }
+
+    .status-text {
+      font-weight: 600;
+    }
+
+    .status-description {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .action-button {
+      width: 100%;
+      padding: 16px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .action-button:hover {
+      opacity: 0.9;
+    }
+
+    .action-button:active {
+      transform: scale(0.98);
+    }
+
+    .action-button.secondary {
+      background: var(--surface);
+      color: var(--foreground);
+      border: 1px solid var(--border);
+    }
+
+    .tips-section {
+      margin-top: auto;
+      padding-top: 30px;
+    }
+
+    .tips-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .tips-list {
+      list-style: none;
+    }
+
+    .tips-list li {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .tips-list li:last-child {
+      border-bottom: none;
+    }
+
+    .tip-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .emergency-banner {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .emergency-banner h3 {
+      color: #dc2626;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .emergency-banner p {
+      color: #991b1b;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    /* Online state */
+    body.online .offline-content {
+      display: none;
+    }
+
+    body.online .online-content {
+      display: block;
+    }
+
+    .online-content {
+      display: none;
+      text-align: center;
+      padding: 40px 0;
+    }
+
+    .online-content svg {
+      width: 48px;
+      height: 48px;
+      fill: #22c55e;
+      margin-bottom: 16px;
+    }
+
+    .online-content h2 {
+      color: #22c55e;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/>
+        </svg>
+      </div>
+      <h1>Protocol Guide</h1>
+      <p class="subtitle">EMS Protocol Retrieval</p>
     </div>
 
-    <script>
-      // Check connection status
-      function updateStatus() {
-        const status = document.getElementById('status');
-        if (navigator.onLine) {
-          status.textContent = '✓ Connection restored';
-          setTimeout(() => {
-            window.location.reload();
-          }, 1000);
-        } else {
-          status.textContent = '⚠ No internet connection';
-        }
+    <!-- Offline content -->
+    <div class="offline-content">
+      <div class="emergency-banner">
+        <h3>⚠️ Medical Emergency?</h3>
+        <p>If this is a medical emergency, contact medical control or follow your agency's standing orders. Do not delay patient care.</p>
+      </div>
+
+      <div class="status-card">
+        <div class="status-header">
+          <div class="status-indicator" id="statusIndicator"></div>
+          <span class="status-text" id="statusText">No Network Connection</span>
+        </div>
+        <p class="status-description">
+          Protocol Guide requires an internet connection to search protocols. 
+          Your previously viewed protocols may be available in your browser cache.
+        </p>
+      </div>
+
+      <button class="action-button" onclick="retry()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+        </svg>
+        Try Again
+      </button>
+
+      <button class="action-button secondary" onclick="viewCached()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>
+        </svg>
+        View Cached Protocols
+      </button>
+
+      <div class="tips-section">
+        <h3 class="tips-title">While Offline</h3>
+        <ul class="tips-list">
+          <li>
+            <span class="tip-icon">📱</span>
+            <span>Check if airplane mode is enabled</span>
+          </li>
+          <li>
+            <span class="tip-icon">📶</span>
+            <span>Move to an area with better signal</span>
+          </li>
+          <li>
+            <span class="tip-icon">📋</span>
+            <span>Use your agency's printed protocol book</span>
+          </li>
+          <li>
+            <span class="tip-icon">📞</span>
+            <span>Contact medical control for guidance</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Online content -->
+    <div class="online-content">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+      </svg>
+      <h2>You're Back Online!</h2>
+      <p class="subtitle">Redirecting to Protocol Guide...</p>
+    </div>
+  </div>
+
+  <script>
+    // Check network status
+    function updateStatus() {
+      const isOnline = navigator.onLine;
+      document.body.classList.toggle('online', isOnline);
+
+      const indicator = document.getElementById('statusIndicator');
+      const text = document.getElementById('statusText');
+
+      if (isOnline) {
+        indicator.classList.add('online');
+        text.textContent = 'Connection Restored';
+        // Redirect after a brief delay
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1500);
+      } else {
+        indicator.classList.remove('online');
+        text.textContent = 'No Network Connection';
       }
+    }
 
-      // Listen for online/offline events
-      window.addEventListener('online', updateStatus);
-      window.addEventListener('offline', updateStatus);
+    // Retry connection
+    function retry() {
+      const button = event.target.closest('button');
+      button.disabled = true;
+      button.textContent = 'Checking...';
 
-      // Initial status check
-      updateStatus();
+      fetch('/', { method: 'HEAD', cache: 'no-store' })
+        .then(() => {
+          window.location.href = '/';
+        })
+        .catch(() => {
+          button.disabled = false;
+          button.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+            </svg>
+            Try Again
+          `;
+          alert('Still offline. Please check your connection.');
+        });
+    }
 
-      // Periodic connection check
-      setInterval(() => {
-        fetch('/manifest.json', { method: 'HEAD', cache: 'no-cache' })
-          .then(() => {
-            if (!navigator.onLine) {
-              // Browser thinks we're offline but we can reach the server
-              window.location.reload();
-            }
-          })
-          .catch(() => {
-            // Still offline
-          });
-      }, 5000);
-    </script>
-  </body>
+    // View cached protocols
+    function viewCached() {
+      // Try to access the app with cached data
+      window.location.href = '/(tabs)/history';
+    }
+
+    // Listen for online/offline events
+    window.addEventListener('online', updateStatus);
+    window.addEventListener('offline', updateStatus);
+
+    // Initial check
+    updateStatus();
+  </script>
+</body>
 </html>

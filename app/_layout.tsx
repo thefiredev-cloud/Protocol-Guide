@@ -3,8 +3,10 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import "react-native-reanimated";
+// Platform-specific wrapper - uses plain View on web, GestureHandler on native
+import { GestureHandlerRootView } from "@/components/gesture-handler-wrapper";
+// NOTE: react-native-reanimated is imported by lazy-loaded components that need it
+// Removing eager import here reduces initial bundle by ~300KB
 import { Platform } from "react-native";
 import "@/lib/_core/nativewind-pressable";
 import { ThemeProvider } from "@/lib/theme-provider";

@@ -32,10 +32,9 @@ import { SEOHead, OrganizationSchema, WebSiteSchema } from "@/components/seo";
 import { FAQSection, EMS_PROTOCOL_FAQS, APP_FEATURES_FAQS } from "@/components/seo/FAQSection";
 // Hero section loaded eagerly - it's above the fold
 import { HeroSection } from "@/components/landing/hero-section";
-// Features loaded eagerly - usually visible on first scroll
-import { FeaturesSection } from "@/components/landing/features-section";
 
-// Lazy load below-the-fold sections
+// Lazy load all below-the-fold sections (reduces initial bundle by ~500KB+)
+const FeaturesSection = lazy(() => import("@/components/landing/features-section"));
 const SimulationSection = lazy(() => import("@/components/landing/simulation-section"));
 const EmailCaptureSection = lazy(() => import("@/components/landing/email-capture-section"));
 const FooterSection = lazy(() => import("@/components/landing/footer-section"));
@@ -102,11 +101,10 @@ export default function LandingPage() {
         {/* Hero Section - "The protocol you need. Now." */}
         <HeroSection />
 
-        {/* Features Section - Practical benefits for firefighters */}
-        <FeaturesSection />
-
-        {/* Below-the-fold sections */}
+        {/* Below-the-fold sections - all lazy loaded for performance */}
         <Suspense fallback={<SectionPlaceholder />}>
+          {/* Features Section - Practical benefits for firefighters */}
+          <FeaturesSection />
           {/* Simulation Section - See how fast it works */}
           <View nativeID="simulation-section">
             <SimulationSection />

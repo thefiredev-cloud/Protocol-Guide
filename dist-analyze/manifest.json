@@ -1,25 +1,67 @@
 {
   "name": "Protocol Guide",
   "short_name": "ProtocolGuide",
-  "description": "EMS Protocol Retrieval - AI-powered protocol search for EMS professionals",
+  "description": "EMS Protocol Retrieval - AI-powered protocol search for paramedics and EMTs. Access critical medical protocols instantly, even offline.",
   "start_url": "/",
+  "id": "/",
+  "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
   "theme_color": "#C41E3A",
   "background_color": "#ffffff",
-  "categories": ["medical", "health", "productivity"],
+  "categories": ["medical", "health", "productivity", "utilities"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Search Protocols",
+      "short_name": "Search",
+      "description": "Search for EMS protocols",
+      "url": "/?utm_source=pwa&utm_medium=shortcut",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "History",
+      "short_name": "History",
+      "description": "View your search history",
+      "url": "/history?utm_source=pwa&utm_medium=shortcut",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "related_applications": [],
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": ["focus-existing", "auto"]
+  },
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
 }

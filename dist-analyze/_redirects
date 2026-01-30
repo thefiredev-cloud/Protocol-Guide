@@ -1,4 +1,8 @@
-# Netlify SPA redirect rules
-# All routes should serve index.html for client-side routing
+# Netlify redirect rules
+# Order matters - first match wins
 
+# API routes proxy to Railway backend (must come BEFORE SPA catch-all)
+/api/*  https://protocol-guide-production.up.railway.app/api/:splat  200!
+
+# SPA routing - all routes should serve index.html for client-side routing
 /*    /index.html   200
