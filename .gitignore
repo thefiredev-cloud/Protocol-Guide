@@ -112,6 +112,9 @@ rust-server/
 .github/skills/
 .opencode/skills/
 
+# Test coverage reports
+coverage/
+
 # Playwright Test Results
 test-results/
 playwright-report/
