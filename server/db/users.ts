@@ -91,23 +91,55 @@ export async function getUserById(userId: number) {
 
 /**
  * P0 CRITICAL: Medical Disclaimer Acknowledgment
- * TODO: Add disclaimer_acknowledged_at column to manus_users table
- * For now, returns success to unblock users
+ * Records timestamp when user acknowledges medical disclaimer
+ * Required for legal compliance before accessing protocol search
  */
 export async function acknowledgeDisclaimer(userId: number): Promise<{ success: boolean; error?: string }> {
-  // TODO: Implement when disclaimer column is added to production
-  console.log(`[Database] Disclaimer acknowledged for user ${userId} (column pending)`);
-  return { success: true };
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot acknowledge disclaimer: database not available");
+    return { success: false, error: "Database unavailable" };
+  }
+
+  try {
+    await db
+      .update(users)
+      .set({ disclaimerAcknowledgedAt: new Date().toISOString() })
+      .where(eq(users.id, userId));
+    
+    console.log(`[Database] Disclaimer acknowledged for user ${userId}`);
+    return { success: true };
+  } catch (error) {
+    console.error(`[Database] Failed to acknowledge disclaimer for user ${userId}:`, error);
+    return { success: false, error: "Failed to save disclaimer acknowledgment" };
+  }
 }
 
 /**
  * Check if user has acknowledged the medical disclaimer
- * TODO: Add disclaimer_acknowledged_at column to manus_users table
- * For now, returns true to unblock users
+ * Returns true if disclaimerAcknowledgedAt is set
  */
 export async function hasAcknowledgedDisclaimer(userId: number): Promise<boolean> {
-  // TODO: Implement when disclaimer column is added to production
-  return true;
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot check disclaimer: database not available");
+    // Fail open to not block users if DB is down
+    return true;
+  }
+
+  try {
+    const [user] = await db
+      .select({ disclaimerAcknowledgedAt: users.disclaimerAcknowledgedAt })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+    
+    return user?.disclaimerAcknowledgedAt != null;
+  } catch (error) {
+    console.error(`[Database] Failed to check disclaimer for user ${userId}:`, error);
+    // Fail open to not block users
+    return true;
+  }
 }
 
 export async function findOrCreateUserBySupabaseId(

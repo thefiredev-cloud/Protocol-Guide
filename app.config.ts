@@ -190,7 +190,7 @@ const config: ExpoConfig = {
 
   web: {
     bundler: "metro",
-    output: "single",  // Changed from "static" to fix JSX runtime error
+    output: "single",  // Static export has route discovery issues; using component-level lazy loading instead
     favicon: "./public/favicon.ico",
     // PWA Configuration
     template: "./web/index.html",

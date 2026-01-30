@@ -131,6 +131,22 @@ export function SEOHead({
       {/* Geographic targeting for California/LA County */}
       <meta name="geo.region" content="US-CA" />
       <meta name="geo.placename" content="Los Angeles County" />
+      
+      {/* Google Search Console Verification - Set GOOGLE_SITE_VERIFICATION env var */}
+      {process.env.EXPO_PUBLIC_GOOGLE_SITE_VERIFICATION && (
+        <meta 
+          name="google-site-verification" 
+          content={process.env.EXPO_PUBLIC_GOOGLE_SITE_VERIFICATION} 
+        />
+      )}
+      
+      {/* Bing Webmaster Tools - Set BING_SITE_VERIFICATION env var */}
+      {process.env.EXPO_PUBLIC_BING_SITE_VERIFICATION && (
+        <meta 
+          name="msvalidate.01" 
+          content={process.env.EXPO_PUBLIC_BING_SITE_VERIFICATION} 
+        />
+      )}
     </Head>
   );
 }

@@ -163,6 +163,8 @@ export const users = pgTable("manus_users", {
 	subscriptionId: text("subscription_id"),
 	subscriptionStatus: text("subscription_status"),
 	subscriptionEndDate: timestamp("subscription_end_date", { mode: 'string', withTimezone: true }),
+	// Legal: Track when user acknowledged medical disclaimer (required for compliance)
+	disclaimerAcknowledgedAt: timestamp("disclaimer_acknowledged_at", { mode: 'string', withTimezone: true }),
 });
 
 // ========================================
