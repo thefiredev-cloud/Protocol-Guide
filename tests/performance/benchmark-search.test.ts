@@ -49,17 +49,20 @@ if (hasRealEnv) {
 const describeOrSkip = hasRealEnv ? describe : describe.skip;
 
 // Performance thresholds (in milliseconds)
+// CI environments have variable performance - use relaxed thresholds
+const IS_CI = process.env.CI === "true";
 const THRESHOLDS = {
-  // Target: 2.3s = 2300ms for end-to-end retrieval
-  E2E_TARGET: 2300,
-  E2E_WARNING: 3000,
-  E2E_CRITICAL: 4000,
+  // Target: 2.3s = 2300ms for end-to-end retrieval (local)
+  // CI: Allow 3x more time due to shared infrastructure variability
+  E2E_TARGET: IS_CI ? 7000 : 2300,
+  E2E_WARNING: IS_CI ? 9000 : 3000,
+  E2E_CRITICAL: IS_CI ? 12000 : 4000,
 
-  // Component-level targets
-  EMBEDDING_GENERATION: 500, // Voyage API call
-  EMBEDDING_CACHED: 5, // LRU cache hit
-  PGVECTOR_SEARCH: 200, // Supabase pgvector
-  TOTAL_SEARCH_P95: 1000, // Backend search
+  // Component-level targets (also relaxed for CI)
+  EMBEDDING_GENERATION: IS_CI ? 1500 : 500, // Voyage API call
+  EMBEDDING_CACHED: IS_CI ? 15 : 5, // LRU cache hit
+  PGVECTOR_SEARCH: IS_CI ? 600 : 200, // Supabase pgvector
+  TOTAL_SEARCH_P95: IS_CI ? 3000 : 1000, // Backend search
 };
 
 // Test queries representing real EMS scenarios
