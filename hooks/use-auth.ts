@@ -32,6 +32,33 @@ import { getSession as getCachedSession, clearTokenCache, tokenCache } from "@/l
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
 
+/**
+ * Auth timeout in milliseconds.
+ * If auth state doesn't resolve within this time, default to unauthenticated.
+ * Prevents E2E test hangs in CI when Supabase can't connect.
+ */
+const AUTH_TIMEOUT_MS = 5000;
+
+/**
+ * Helper to wrap a promise with a timeout.
+ * Returns null if the timeout is reached.
+ */
+function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  fallback: T
+): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) =>
+      setTimeout(() => {
+        console.warn(`[useAuth] Auth check timed out after ${timeoutMs}ms, defaulting to unauthenticated`);
+        resolve(fallback);
+      }, timeoutMs)
+    ),
+  ]);
+}
+
 export type User = {
   id: string;
   email: string | null;
@@ -161,7 +188,12 @@ export function useAuth(options?: UseAuthOptions) {
       }
 
       // Use cached session to prevent race conditions
-      const cachedSession = await getCachedSession();
+      // Add timeout to prevent hanging in CI when Supabase can't connect
+      const cachedSession = await withTimeout(
+        getCachedSession(),
+        AUTH_TIMEOUT_MS,
+        null
+      );
 
       if (cachedSession) {
         setSession(cachedSession);
