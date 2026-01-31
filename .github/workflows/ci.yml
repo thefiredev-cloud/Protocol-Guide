@@ -101,6 +101,8 @@ jobs:
       - name: Build web export
         run: npx expo export --platform web --clear
         env:
+          # Required for expo-router file-based routing
+          EXPO_ROUTER_APP_ROOT: "./app"
           # Provide dummy env vars for build (actual secrets in Netlify)
           EXPO_PUBLIC_APP_ID: "build-test"
           EXPO_PUBLIC_OAUTH_PORTAL_URL: "https://example.com"
