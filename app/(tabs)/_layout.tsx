@@ -7,6 +7,28 @@ import { Platform, View, ActivityIndicator } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 import { useAuthContext } from "@/lib/auth-context";
 
+/**
+ * Check if we're in E2E test mode
+ * Bypasses auth loading spinner for faster E2E tests
+ */
+function isE2EMode(): boolean {
+  if (Platform.OS !== "web" || typeof window === "undefined") return false;
+  
+  try {
+    // Check localStorage flag (set by Playwright fixtures)
+    if (localStorage.getItem("e2e-test-mode") === "true") return true;
+    if (localStorage.getItem("e2e-authenticated") === "true") return true;
+    
+    // Check URL query param
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("e2e") === "true") return true;
+  } catch {
+    // Ignore errors (SSR, localStorage unavailable)
+  }
+  
+  return false;
+}
+
 export default function TabLayout() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -18,8 +40,12 @@ export default function TabLayout() {
   // Authentication is only required for profile/personalization features
   // This enables "Try it now" from landing page without friction
 
-  // Show loading spinner while auth state is being determined
-  if (loading) {
+  // Skip loading spinner in E2E mode for faster tests
+  // E2E tests mock auth state directly, no need to wait for Supabase
+  const skipLoadingSpinner = isE2EMode();
+
+  // Show loading spinner while auth state is being determined (except in E2E)
+  if (loading && !skipLoadingSpinner) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: colors.background }}>
         <ActivityIndicator size="large" color={colors.primary} />

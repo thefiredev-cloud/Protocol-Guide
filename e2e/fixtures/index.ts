@@ -12,6 +12,7 @@ export {
   injectAuthSession,
   clearAuthSession,
   createMockSession,
+  setE2ETestMode,
   type TestUser,
   type TestSession,
 } from "./auth";

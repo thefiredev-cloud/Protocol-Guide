@@ -109,6 +109,17 @@ export function getSupabaseStorageKey(): string {
 }
 
 /**
+ * Set E2E test mode flag (call before first navigation)
+ * This enables fast auth bypass in the app
+ */
+export async function setE2ETestMode(page: Page): Promise<void> {
+  // Add to localStorage via addInitScript (runs before page JS)
+  await page.addInitScript(() => {
+    localStorage.setItem("e2e-test-mode", "true");
+  });
+}
+
+/**
  * Inject authenticated session into browser storage
  * This simulates a logged-in user without requiring OAuth flow
  */
@@ -120,14 +131,14 @@ export async function injectAuthSession(
   const session = createMockSession(user, tier);
   const storageKey = getSupabaseStorageKey();
 
-  // Navigate to app first to set localStorage on correct origin
-  await page.goto("/", { waitUntil: "domcontentloaded" });
-
-  // Inject the session into localStorage
-  await page.evaluate(
+  // Set up init script to inject auth BEFORE page loads
+  // This prevents any loading spinners or auth checks
+  await page.addInitScript(
     ({ storageKey, session, user, tier }) => {
+      // Set E2E test mode flag
+      localStorage.setItem("e2e-test-mode", "true");
+      
       // Set Supabase session in localStorage
-      // The key format is: supabase.auth.token
       localStorage.setItem(
         storageKey,
         JSON.stringify({
@@ -168,11 +179,11 @@ export async function injectAuthSession(
     { storageKey, session, user, tier }
   );
 
-  // Reload to pick up the session
-  await page.reload({ waitUntil: "networkidle" });
-
-  // Wait for auth state to be processed
-  await page.waitForTimeout(1000);
+  // Navigate to app - auth is already injected via init script
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  
+  // Brief wait for React hydration (much shorter than before)
+  await page.waitForTimeout(300);
 }
 
 /**
@@ -186,6 +197,7 @@ export async function clearAuthSession(page: Page): Promise<void> {
     localStorage.removeItem("protocol-guide-user");
     localStorage.removeItem("e2e-authenticated");
     localStorage.removeItem("e2e-user-tier");
+    localStorage.removeItem("e2e-test-mode");
 
     // Clear any project-specific keys
     const keys = Object.keys(localStorage);

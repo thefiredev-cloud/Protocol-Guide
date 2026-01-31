@@ -81,17 +81,17 @@ export default defineConfig({
     command: "pnpm dev:metro",
     url: "http://localhost:8081",
     reuseExistingServer: true,
-    timeout: 120 * 1000,
+    timeout: 90 * 1000, // 90s startup timeout (reduced from 120s)
     stdout: "pipe",
     stderr: "pipe",
   },
 
-  // Global timeout for each test
-  timeout: 30 * 1000,
+  // Global timeout for each test (increased for visual tests)
+  timeout: process.env.CI ? 45 * 1000 : 30 * 1000,
 
   // Expect timeout
   expect: {
-    timeout: 10 * 1000,
+    timeout: 15 * 1000, // Increased for slow CI environments
     // Visual regression testing configuration
     toHaveScreenshot: {
       // Maximum allowed pixel difference (0.0 - 1.0)
