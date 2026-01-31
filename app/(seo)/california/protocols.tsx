@@ -14,7 +14,6 @@ import { SEOHead, MedicalWebPageSchema, BreadcrumbSchema } from "@/components/se
 // Top California counties by population
 const CA_COUNTIES = [
   { slug: "los-angeles", name: "Los Angeles County", population: "10M+" },
-  { slug: "san-diego", name: "San Diego County", population: "3.3M" },
   { slug: "orange", name: "Orange County", population: "3.2M" },
   { slug: "riverside", name: "Riverside County", population: "2.5M" },
   { slug: "san-bernardino", name: "San Bernardino County", population: "2.2M" },
