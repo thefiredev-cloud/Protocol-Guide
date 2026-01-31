@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import Animated, { FadeIn, FadeOut, SlideInRight } from "react-native-reanimated";
+import Animated, { FadeIn, SlideInRight } from "react-native-reanimated";
 import { useColors } from "@/hooks/use-colors";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 
