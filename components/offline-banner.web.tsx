@@ -48,7 +48,7 @@ export function OfflineBanner({ showPendingCount = true, onPress }: OfflineBanne
 
   const content = (
     <View style={styles.inner}>
-      <View style={{ animation: 'pulse 2s ease-in-out infinite' }}>
+      <View style={{ animation: 'pulse 2s ease-in-out infinite' } as any}>
         <IconSymbol name="wifi.slash" size={16} color="#1F2937" />
       </View>
       <Text style={styles.text}>
@@ -63,7 +63,7 @@ export function OfflineBanner({ showPendingCount = true, onPress }: OfflineBanne
     <View
       style={[
         styles.container, 
-        { backgroundColor: colors.warning, animation: 'slideInDown 0.3s ease-out' }
+        { backgroundColor: colors.warning, animation: 'slideInDown 0.3s ease-out' } as any
       ]}
     >
       {onPress ? (
@@ -100,7 +100,7 @@ export function OfflineDot() {
     <View
       style={[
         styles.dot, 
-        { backgroundColor: colors.warning, animation: 'fadeIn 0.2s ease-out' }
+        { backgroundColor: colors.warning, animation: 'fadeIn 0.2s ease-out' } as any
       ]}
     />
   );

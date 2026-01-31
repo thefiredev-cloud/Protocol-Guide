@@ -23,18 +23,18 @@ const QUICK_SEARCHES = [
   { text: "STEMI protocol", icon: "waveform.path.ecg" as const },
 ];
 
-// CSS animation classes
+// CSS animation classes (web-only, cast as any for RN type compat)
 const animateStyles = {
-  fadeIn: { animation: 'fadeIn 0.3s ease-out forwards' },
+  fadeIn: { animation: 'fadeIn 0.3s ease-out forwards' } as any,
   fadeInDelayed: (delay: number) => ({ 
     animation: `fadeIn 0.3s ease-out ${delay}ms forwards`,
     opacity: 0 
-  }),
-  fadeInDown: { animation: 'fadeInUp 0.4s ease-out forwards' },
+  } as any),
+  fadeInDown: { animation: 'fadeInUp 0.4s ease-out forwards' } as any,
   fadeInDownDelayed: (delay: number) => ({
     animation: `fadeInUp 0.4s ease-out ${delay}ms forwards`,
     opacity: 0
-  }),
+  } as any),
 };
 
 export function EmptySearchState({ onSelectSearch }: EmptySearchStateProps) {
