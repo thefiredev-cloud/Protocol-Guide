@@ -101,9 +101,7 @@ jobs:
       - name: Build web export
         run: npx expo export --platform web --clear
         env:
-          # Required for expo-router file-based routing
           EXPO_ROUTER_APP_ROOT: "./app"
-          # Provide dummy env vars for build (actual secrets in Netlify)
           EXPO_PUBLIC_APP_ID: "build-test"
           EXPO_PUBLIC_OAUTH_PORTAL_URL: "https://example.com"
           EXPO_PUBLIC_OAUTH_SERVER_URL: "https://example.com"
@@ -120,8 +118,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: [build]
-    # E2E tests are non-blocking - deployments proceed even if these fail
-    # This allows faster iteration while E2E timeouts are being resolved
     continue-on-error: true
 
     steps:
@@ -160,7 +156,6 @@ jobs:
           mkdir -p node_modules/react-native-css-interop/.cache
           touch node_modules/react-native-css-interop/.cache/web.css
 
-      # Extract Playwright version for precise cache invalidation
       - name: Get Playwright version
         id: playwright-version
         run: |
@@ -168,8 +163,6 @@ jobs:
           echo "version=$PLAYWRIGHT_VERSION" >> $GITHUB_OUTPUT
           echo "Playwright version: $PLAYWRIGHT_VERSION"
 
-      # Cache Playwright browsers with version-specific key
-      # This ensures cache invalidation only when Playwright version changes
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         id: playwright-cache
@@ -179,12 +172,10 @@ jobs:
           restore-keys: |
             playwright-browsers-${{ runner.os }}-
 
-      # Install browsers only if cache miss (saves ~30-60 seconds)
       - name: Install Playwright browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install --with-deps chromium
 
-      # Always install system dependencies (they are not cached, but fast to install)
       - name: Install Playwright system dependencies
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: pnpm exec playwright install-deps chromium
@@ -195,7 +186,6 @@ jobs:
           CI: true
           E2E_BASE_URL: http://localhost:8081
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          # Provide dummy env vars for E2E (actual secrets in test environment)
           EXPO_PUBLIC_APP_ID: "e2e-test"
           EXPO_PUBLIC_OAUTH_PORTAL_URL: "https://example.com"
           EXPO_PUBLIC_OAUTH_SERVER_URL: "https://example.com"
@@ -221,7 +211,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: [build]
-    # Visual regression tests are non-blocking for deployment
     continue-on-error: true
 
     steps:
@@ -342,20 +331,18 @@ jobs:
       - name: Copy public assets to dist
         run: cp -r public/* dist/ 2>/dev/null || true
 
-      - name: Deploy to Netlify (Staging Preview)
-        id: netlify-deploy
-        uses: netlify/actions/cli@v1
+      - name: Deploy to Netlify (Staging)
+        uses: nwtgck/actions-netlify@v3.0
         with:
-          args: deploy --dir=dist --alias=staging
+          publish-dir: './dist'
+          production-deploy: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Staging deploy from GitHub Actions"
+          alias: staging
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-
-      - name: Post staging deployment notification
-        if: success()
-        run: |
-          echo "Staging deployment completed successfully"
-          echo "Preview URL: https://staging--${{ vars.NETLIFY_SITE_NAME }}.netlify.app"
+        timeout-minutes: 5
 
   # =========================================================================
   # PRODUCTION DEPLOYMENTS (main branch)
@@ -382,16 +369,20 @@ jobs:
         run: cp -r public/* dist/ 2>/dev/null || true
 
       - name: Deploy to Netlify
-        uses: netlify/actions/cli@v1
+        uses: nwtgck/actions-netlify@v3.0
         with:
-          args: deploy --prod --dir=dist
+          publish-dir: './dist'
+          production-deploy: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Production deploy from GitHub Actions"
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        timeout-minutes: 5
 
       - name: Post deployment notification
         if: success()
-        run: echo "Production deployment completed successfully"
+        run: echo "Production Netlify deployment completed successfully"
 
   deploy-railway:
     name: Deploy to Railway (Production)
@@ -404,8 +395,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Install Railway CLI
-        run: curl -fsSL https://railway.app/install.sh | sh
+        run: npm install -g @railway/cli
 
       - name: Deploy to Railway
         run: railway up --detach
