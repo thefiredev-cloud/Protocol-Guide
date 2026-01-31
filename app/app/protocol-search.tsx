@@ -123,7 +123,7 @@ export default function ProtocolSearchScreen() {
     } finally {
       setIsSearching(false);
     }
-  }, [searchQuery, params.agency, trpcUtils.search.semantic, trpcUtils.search.searchByAgency, trpcUtils.search.agenciesWithProtocols]);
+  }, [searchQuery, params.agency, params.source, trpcUtils.search.semantic, trpcUtils.search.searchByAgency, trpcUtils.search.agenciesWithProtocols]);
 
   const handleReturnToImageTrend = () => {
     if (params.return_url) {
