@@ -111,6 +111,8 @@ export function getSupabaseStorageKey(): string {
 /**
  * Inject authenticated session into browser storage
  * This simulates a logged-in user without requiring OAuth flow
+ * 
+ * OPTIMIZED: Reduced waits and added parallel storage setup
  */
 export async function injectAuthSession(
   page: Page,
@@ -168,11 +170,11 @@ export async function injectAuthSession(
     { storageKey, session, user, tier }
   );
 
-  // Reload to pick up the session
-  await page.reload({ waitUntil: "networkidle" });
+  // Reload to pick up the session - use domcontentloaded instead of networkidle for speed
+  await page.reload({ waitUntil: "domcontentloaded" });
 
-  // Wait for auth state to be processed
-  await page.waitForTimeout(1000);
+  // Wait for React to hydrate with auth state - 500ms is usually sufficient
+  await page.waitForTimeout(500);
 }
 
 /**

@@ -3,12 +3,14 @@ import { Page, expect } from "@playwright/test";
 /**
  * Visual Regression Test Helper
  * Provides utilities for consistent visual testing across the app
+ * 
+ * OPTIMIZED: Reduced default wait times for faster CI runs
  */
 
 export interface VisualTestOptions {
   /**
    * Wait time in ms before taking screenshot (allows animations to complete)
-   * @default 1000
+   * @default 500 (reduced from 1000)
    */
   waitBeforeScreenshot?: number;
 
@@ -52,7 +54,7 @@ export async function takeVisualSnapshot(
   options: VisualTestOptions = {}
 ) {
   const {
-    waitBeforeScreenshot = 1000,
+    waitBeforeScreenshot = 500, // Reduced from 1000
     maskDynamicContent = false,
     maskSelectors = [],
     fullPage = false,
@@ -60,26 +62,22 @@ export async function takeVisualSnapshot(
     maxDiffPixelRatio,
   } = options;
 
-  // Wait for page to stabilize
-  await page.waitForLoadState("networkidle");
+  // Wait for page to stabilize - use domcontentloaded for speed
+  await page.waitForLoadState("domcontentloaded");
   await page.waitForTimeout(waitBeforeScreenshot);
 
   // Common dynamic content selectors to mask
   const defaultMaskSelectors = maskDynamicContent
     ? [
-        // Timestamps
         '[data-testid*="timestamp"]',
         '[data-testid*="time"]',
         ".timestamp",
         "time",
-        // User-specific content
         '[data-testid*="user-id"]',
         '[data-testid*="session"]',
-        // Loading indicators
         '[data-testid*="loading"]',
         ".loading",
         ".spinner",
-        // Animation containers (may have mid-animation states)
         '[data-testid*="animation"]',
       ]
     : [];
@@ -119,15 +117,15 @@ export async function takeElementSnapshot(
   options: VisualTestOptions = {}
 ) {
   const {
-    waitBeforeScreenshot = 1000,
+    waitBeforeScreenshot = 500, // Reduced from 1000
     maskSelectors = [],
     threshold,
     maxDiffPixelRatio,
   } = options;
 
   // Wait for element and page stability
-  await page.waitForSelector(selector, { state: "visible" });
-  await page.waitForLoadState("networkidle");
+  await page.waitForSelector(selector, { state: "visible", timeout: 10000 });
+  await page.waitForLoadState("domcontentloaded");
   await page.waitForTimeout(waitBeforeScreenshot);
 
   const element = page.locator(selector).first();
@@ -159,11 +157,11 @@ export async function waitForReactNativeWeb(page: Page, timeout = 5000) {
   // Wait for React Native root to be rendered
   await page.waitForSelector('[data-reactroot], #root', { timeout });
 
-  // Wait for network idle
-  await page.waitForLoadState("networkidle");
+  // Wait for DOM content loaded (faster than networkidle)
+  await page.waitForLoadState("domcontentloaded");
 
-  // Additional wait for React Native Web hydration
-  await page.waitForTimeout(1000);
+  // Minimal wait for React Native Web hydration
+  await page.waitForTimeout(300);
 }
 
 /**
@@ -188,7 +186,7 @@ export async function hideScrollbars(page: Page) {
  * @param page - Playwright Page object
  */
 export async function waitForFonts(page: Page) {
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("domcontentloaded");
   await page.evaluate(() => document.fonts.ready);
 }
 
