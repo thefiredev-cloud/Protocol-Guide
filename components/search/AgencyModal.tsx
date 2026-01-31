@@ -11,8 +11,10 @@ interface AgencyModalProps {
   loading: boolean;
   selectedAgency: Agency | null;
   onSelectAgency: (agency: Agency | null) => void;
-  onCheckCountyRestriction: () => boolean;
-  onIncrementCounty: () => void;
+  /** Optional: Check if user can add another county (monetization) */
+  onCheckCountyRestriction?: () => boolean;
+  /** Optional: Track when user selects a county (monetization) */
+  onIncrementCounty?: () => void;
 }
 
 export function AgencyModal({
@@ -28,17 +30,17 @@ export function AgencyModal({
   const colors = useColors();
 
   const handleSelectAgency = (agency: Agency) => {
-    // Check county restriction before allowing selection
+    // Check county restriction before allowing selection (if monetization enabled)
     // If user already has an agency selected, they can switch freely
     // If they don't have one, check if they can add
-    if (!selectedAgency && !onCheckCountyRestriction()) {
+    if (onCheckCountyRestriction && !selectedAgency && !onCheckCountyRestriction()) {
       onClose();
       return; // Modal will be shown by the hook
     }
     onSelectAgency(agency);
     onClose();
-    // Track that user has selected a county
-    if (!selectedAgency) {
+    // Track that user has selected a county (if monetization enabled)
+    if (onIncrementCounty && !selectedAgency) {
       onIncrementCounty();
     }
   };

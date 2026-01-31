@@ -1,4 +1,13 @@
-import { useState, useCallback, useRef, useMemo, useEffect } from "react";
+/**
+ * Search Screen with County Filter Support
+ * 
+ * This screen provides protocol search with proper county-level filtering.
+ * When a county (agency) is selected, searches are filtered to only that county.
+ * 
+ * FIX: County filter - ensures searches respect county selection and don't leak to other CA counties
+ */
+
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -15,7 +24,7 @@ import { trpc } from "@/lib/trpc";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { VoiceSearchModal } from "@/components/VoiceSearchModal";
 import { VoiceSearchButtonInline } from "@/components/VoiceSearchButton-inline";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { useLocalSearchParams } from "expo-router";
 import { MedicalDisclaimer } from "@/components/MedicalDisclaimer";
 import {
@@ -38,28 +47,43 @@ import {
   getCurrencyAdvice,
 } from "@/utils/search-formatters";
 import { useSearchAnnouncements } from "@/hooks/use-search-announcements";
+import { useFilterState } from "@/hooks/use-filter-state";
+import { StateModal } from "@/components/search/StateModal";
+import { AgencyModal } from "@/components/search/AgencyModal";
 
 export default function SearchScreen() {
   const colors = useColors();
-  const params = useLocalSearchParams<{ stateFilter?: string }>();
+  const params = useLocalSearchParams<{ stateFilter?: string; agencyId?: string }>();
   const { announceSearchStart, announceSearchResults, announceSearchError } = useSearchAnnouncements();
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [selectedProtocol, setSelectedProtocol] = useState<SearchResult | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
-  // Default to California for LA County focus - user can change via filter
-  const [selectedState, setSelectedState] = useState<string | null>(params.stateFilter || "CA");
-  const [showStateFilter, setShowStateFilter] = useState(false);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const inputRef = useRef<TextInput>(null);
   const voiceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Update state filter when navigation params change
-  useEffect(() => {
-    if (params.stateFilter) {
-      setSelectedState(params.stateFilter);
-    }
-  }, [params.stateFilter]);
+  // Use centralized filter state management with state AND agency (county) support
+  // This ensures county-level filtering works correctly (fixes "leak to other CA counties" bug)
+  const {
+    selectedState,
+    setSelectedState,
+    selectedAgency,
+    setSelectedAgency,
+    showStateDropdown,
+    setShowStateDropdown,
+    showAgencyDropdown,
+    setShowAgencyDropdown,
+    statesData,
+    statesLoading,
+    agenciesData,
+    agenciesLoading,
+    coverageError,
+    handleClearFilters,
+  } = useFilterState({
+    initialState: params.stateFilter || "CA",
+    initialAgencyId: params.agencyId ? parseInt(params.agencyId, 10) : null,
+  });
 
   // Cleanup voice timer on unmount
   useEffect(() => {
@@ -70,9 +94,6 @@ export default function SearchScreen() {
 
   // Get protocol stats
   const statsQuery = trpc.search.stats.useQuery();
-
-  // Get coverage data for state filter
-  const coverageQuery = trpc.search.coverageByState.useQuery();
 
   // Get tRPC utils for imperative queries
   const trpcUtils = trpc.useUtils();
@@ -95,11 +116,25 @@ export default function SearchScreen() {
     announceSearchStart(searchQuery);
 
     try {
-      const result = await trpcUtils.search.semantic.fetch({
-        query: searchQuery,
-        limit: 20,
-        stateFilter: selectedState || undefined,
-      });
+      let result;
+      
+      // COUNTY FILTER FIX: Use agency-specific search when an agency (county) is selected
+      // This ensures results are filtered to ONLY the selected county, not all CA counties
+      if (selectedAgency) {
+        console.log(`[Search] Using agency filter: ${selectedAgency.name} (ID: ${selectedAgency.id})`);
+        result = await trpcUtils.search.searchByAgency.fetch({
+          query: searchQuery,
+          agencyId: selectedAgency.id,
+          limit: 20,
+        });
+      } else {
+        // Fall back to state-level search when no specific agency is selected
+        result = await trpcUtils.search.semantic.fetch({
+          query: searchQuery,
+          limit: 20,
+          stateFilter: selectedState || undefined,
+        });
+      }
 
       if (result && result.results) {
         setSearchResults(result.results);
@@ -117,7 +152,7 @@ export default function SearchScreen() {
     } finally {
       setIsSearching(false);
     }
-  }, [query, selectedState, trpcUtils, announceSearchStart, announceSearchResults, announceSearchError]);
+  }, [query, selectedState, selectedAgency, trpcUtils, announceSearchStart, announceSearchResults, announceSearchError]);
 
   const handleClear = useCallback(() => {
     setQuery("");
@@ -139,23 +174,27 @@ export default function SearchScreen() {
     }, 100);
   }, [handleSearch]);
 
+  // Handle state selection - clears results when filter changes
   const handleStateSelect = useCallback((state: string | null) => {
     setSelectedState(state);
-    setShowStateFilter(false);
-    // Clear previous results when state changes
+    setShowStateDropdown(false);
+    // Clear previous results when filter changes
     if (hasSearched) {
       setSearchResults([]);
       setHasSearched(false);
     }
-  }, [hasSearched]);
+  }, [hasSearched, setSelectedState, setShowStateDropdown]);
 
-  // Get sorted states for dropdown
-  const sortedStates = useMemo(() => {
-    if (!coverageQuery.data) return [];
-    return coverageQuery.data
-      .filter(s => s.chunks > 0)
-      .sort((a, b) => a.state.localeCompare(b.state));
-  }, [coverageQuery.data]);
+  // Handle agency (county) selection - clears results when filter changes
+  const handleAgencySelect = useCallback((agency: typeof selectedAgency) => {
+    setSelectedAgency(agency);
+    setShowAgencyDropdown(false);
+    // Clear previous results when filter changes
+    if (hasSearched) {
+      setSearchResults([]);
+      setHasSearched(false);
+    }
+  }, [hasSearched, setSelectedAgency, setShowAgencyDropdown]);
 
   const renderSearchResult = ({ item, index }: { item: SearchResult; index: number }) => (
     <Animated.View
@@ -171,7 +210,6 @@ export default function SearchScreen() {
           marginBottom: 16,
           borderWidth: 1,
           borderColor: colors.border,
-          // Subtle shadow for depth
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.08,
@@ -468,95 +506,78 @@ export default function SearchScreen() {
         />
       </View>
 
-      {/* State Filter */}
+      {/* Location Filter - State & County */}
+      {/* This two-level filter ensures searches are scoped to the correct county */}
       <View className="mb-4">
-        <TouchableOpacity
-          onPress={() => setShowStateFilter(!showStateFilter)}
-          className="flex-row items-center justify-between rounded-xl px-4 py-3"
-          style={{ backgroundColor: colors.surface }}
-          accessible={true}
-          accessibilityRole="button"
-          accessibilityLabel={`Filter by state: ${selectedState || 'All States'}`}
-          accessibilityHint={showStateFilter ? "Collapse state filter list" : "Expand state filter list"}
-          accessibilityState={{ expanded: showStateFilter }}
-        >
-          <View className="flex-row items-center">
-            <IconSymbol name="location.fill" size={18} color={selectedState ? colors.primary : colors.muted} />
-            <Text className={`ml-2 text-base ${selectedState ? 'text-foreground font-medium' : 'text-muted'}`}>
-              {selectedState || 'All States'}
-            </Text>
-          </View>
-          <View className="flex-row items-center">
-            {selectedState && (
-              <TouchableOpacity
-                onPress={(e) => {
-                  e.stopPropagation();
-                  handleStateSelect(null);
-                }}
-                className="p-1 mr-1"
-                accessibilityLabel="Clear state filter"
-                accessibilityRole="button"
-                accessibilityHint="Remove state filter and show all states"
-              >
-                <IconSymbol name="xmark" size={16} color={colors.muted} />
-              </TouchableOpacity>
-            )}
-            <IconSymbol
-              name={showStateFilter ? "chevron.left" : "chevron.right"}
-              size={16}
-              color={colors.muted}
-            />
-          </View>
-        </TouchableOpacity>
-        
-        {/* State Dropdown */}
-        {showStateFilter && (
-          <Animated.View
-            entering={FadeIn.duration(150)}
-            exiting={FadeOut.duration(100)}
-            className="rounded-xl mt-2 overflow-hidden"
-            style={{ backgroundColor: colors.surface, maxHeight: 250 }}
+        <View className="flex-row gap-2">
+          {/* State Filter Button */}
+          <TouchableOpacity
+            onPress={() => setShowStateDropdown(true)}
+            className="flex-1 flex-row items-center justify-between rounded-xl px-4 py-3"
+            style={{ backgroundColor: colors.surface }}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel={`Filter by state: ${selectedState || 'All States'}`}
+            accessibilityHint="Opens state selection menu"
           >
-            <FlatList
-              data={sortedStates}
-              keyExtractor={(item) => item.stateCode}
-              showsVerticalScrollIndicator={true}
-              style={{ maxHeight: 250 }}
-              ListHeaderComponent={
-                <TouchableOpacity
-                  onPress={() => handleStateSelect(null)}
-                  className="flex-row items-center justify-between px-4 py-3 border-b"
-                  style={{ borderBottomColor: colors.border }}
+            <View className="flex-row items-center flex-1">
+              <IconSymbol name="location.fill" size={18} color={selectedState ? colors.primary : colors.muted} />
+              <Text 
+                className={`ml-2 text-sm ${selectedState ? 'text-foreground font-medium' : 'text-muted'}`}
+                numberOfLines={1}
+              >
+                {selectedState || 'State'}
+              </Text>
+            </View>
+            <IconSymbol name="chevron.right" size={14} color={colors.muted} />
+          </TouchableOpacity>
+
+          {/* Agency (County) Filter Button - Only shows when state is selected */}
+          {selectedState && (
+            <TouchableOpacity
+              onPress={() => setShowAgencyDropdown(true)}
+              className="flex-1 flex-row items-center justify-between rounded-xl px-4 py-3"
+              style={{ backgroundColor: colors.surface }}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel={`Filter by county: ${selectedAgency?.name || 'All Counties'}`}
+              accessibilityHint="Opens county selection menu for more specific filtering"
+            >
+              <View className="flex-row items-center flex-1">
+                <IconSymbol 
+                  name="building.2.fill" 
+                  size={18} 
+                  color={selectedAgency ? colors.primary : colors.muted} 
+                />
+                <Text 
+                  className={`ml-2 text-sm ${selectedAgency ? 'text-foreground font-medium' : 'text-muted'}`}
+                  numberOfLines={1}
                 >
-                  <Text className={`text-base ${!selectedState ? 'text-primary font-medium' : 'text-foreground'}`}>
-                    All States
-                  </Text>
-                  {!selectedState && (
-                    <IconSymbol name="checkmark" size={18} color={colors.primary} />
-                  )}
-                </TouchableOpacity>
-              }
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  onPress={() => handleStateSelect(item.state)}
-                  className="flex-row items-center justify-between px-4 py-3 border-b"
-                  style={{ borderBottomColor: colors.border }}
-                >
-                  <View className="flex-row items-center flex-1">
-                    <Text className={`text-base ${selectedState === item.state ? 'text-primary font-medium' : 'text-foreground'}`}>
-                      {item.state}
-                    </Text>
-                    <Text className="text-xs text-muted ml-2">
-                      ({item.chunks.toLocaleString()} protocols)
-                    </Text>
-                  </View>
-                  {selectedState === item.state && (
-                    <IconSymbol name="checkmark" size={18} color={colors.primary} />
-                  )}
-                </TouchableOpacity>
-              )}
-            />
-          </Animated.View>
+                  {agenciesLoading ? '...' : (selectedAgency?.name?.substring(0, 14) || 'County')}
+                </Text>
+              </View>
+              <IconSymbol name="chevron.right" size={14} color={colors.muted} />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Filter indicator when county is selected */}
+        {selectedAgency && (
+          <View className="flex-row items-center mt-2 px-1">
+            <IconSymbol name="checkmark.circle.fill" size={14} color={colors.success} />
+            <Text className="text-xs ml-1" style={{ color: colors.success }}>
+              Filtering to {selectedAgency.name} only
+            </Text>
+            <TouchableOpacity
+              onPress={handleClearFilters}
+              className="ml-2 px-2 py-1 rounded"
+              style={{ backgroundColor: `${colors.muted}20` }}
+              accessibilityLabel="Clear all filters"
+              accessibilityRole="button"
+            >
+              <Text className="text-xs text-muted">Clear</Text>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
 
@@ -570,7 +591,6 @@ export default function SearchScreen() {
           opacity: query.trim() ? 1 : 0.4,
           height: 56,
           gap: 8,
-          // Shadow for primary CTA
           shadowColor: colors.primary,
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: query.trim() ? 0.3 : 0,
@@ -688,7 +708,6 @@ export default function SearchScreen() {
                 key={example}
                 onPress={() => {
                   setQuery(example);
-                  // Pass query directly to avoid state timing issues
                   handleSearch(example);
                 }}
                 className="px-4 py-3 rounded-xl"
@@ -773,7 +792,7 @@ export default function SearchScreen() {
         </View>
       )}
 
-      {/* Voice Search Modal - wrapped with error boundary */}
+      {/* Voice Search Modal */}
       <VoiceErrorBoundary>
         <VoiceSearchModal
           visible={showVoiceModal}
@@ -781,6 +800,26 @@ export default function SearchScreen() {
           onTranscription={handleVoiceTranscription}
         />
       </VoiceErrorBoundary>
+
+      {/* State Selection Modal */}
+      <StateModal
+        visible={showStateDropdown}
+        onClose={() => setShowStateDropdown(false)}
+        states={statesData}
+        loading={statesLoading}
+        error={coverageError}
+        onSelectState={handleStateSelect}
+      />
+
+      {/* Agency (County) Selection Modal */}
+      <AgencyModal
+        visible={showAgencyDropdown}
+        onClose={() => setShowAgencyDropdown(false)}
+        agencies={agenciesData}
+        loading={agenciesLoading}
+        selectedAgency={selectedAgency}
+        onSelectAgency={handleAgencySelect}
+      />
     </ScreenContainer>
   );
 }
