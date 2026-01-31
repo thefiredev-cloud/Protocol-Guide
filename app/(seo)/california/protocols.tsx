@@ -109,7 +109,7 @@ export default function CaliforniaProtocolsPage() {
 
           <Text style={{ color: COLORS.textMuted, fontSize: 16, lineHeight: 24, marginBottom: 24 }}>
             Access EMS treatment protocols for all 58 California counties. 
-            Each county's protocols are maintained by their local EMS agency (LEMSA).
+            Each county&apos;s protocols are maintained by their local EMS agency (LEMSA).
             Protocol Guide keeps them updated and searchable.
           </Text>
 
@@ -187,13 +187,13 @@ export default function CaliforniaProtocolsPage() {
             About California EMS Protocols
           </Text>
           <Text style={{ color: COLORS.textMuted, fontSize: 14, lineHeight: 22 }}>
-            California's EMS system is organized by Local Emergency Medical Services Agencies (LEMSAs), 
+            California&apos;s EMS system is organized by Local Emergency Medical Services Agencies (LEMSAs), 
             with each of the 58 counties maintaining their own approved treatment protocols. These protocols 
             guide paramedics and EMTs in providing prehospital emergency care.
             {"\n\n"}
             Protocol Guide provides instant access to all California county protocols, updated regularly 
             to reflect the latest medical director approvals. Our AI-powered search helps you find the 
-            exact protocol you need in seconds—whether you're looking up cardiac arrest algorithms, 
+            exact protocol you need in seconds—whether you&apos;re looking up cardiac arrest algorithms, 
             pediatric dosing, or trauma assessment guidelines.
             {"\n\n"}
             All protocols are sourced from official LEMSA publications and verified for accuracy.
