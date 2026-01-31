@@ -37,7 +37,7 @@ import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
  * If auth state doesn't resolve within this time, default to unauthenticated.
  * Prevents E2E test hangs in CI when Supabase can't connect.
  */
-const AUTH_TIMEOUT_MS = 5000;
+const AUTH_TIMEOUT_MS = 3000; // Reduced from 5000ms for faster CI
 
 /**
  * Helper to wrap a promise with a timeout.
@@ -69,6 +69,28 @@ export type User = {
 type UseAuthOptions = {
   autoFetch?: boolean;
 };
+
+/**
+ * Check if we're in E2E test mode (regardless of auth state)
+ * This allows bypassing slow Supabase checks entirely in tests
+ */
+function isE2ETestMode(): boolean {
+  if (typeof window === "undefined") return false;
+  
+  try {
+    // Check explicit test mode flag
+    if (localStorage.getItem("e2e-test-mode") === "true") return true;
+    // Check auth flag (also indicates E2E)
+    if (localStorage.getItem("e2e-authenticated") === "true") return true;
+    // Check URL param
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("e2e") === "true") return true;
+  } catch {
+    // Ignore errors
+  }
+  
+  return false;
+}
 
 /**
  * Check for E2E mock session in localStorage (browser only)
@@ -183,6 +205,16 @@ export function useAuth(options?: UseAuthOptions) {
         const mockSession = createE2EMockSession();
         setSession(mockSession);
         setUser(e2eMockUser);
+        setLoading(false);
+        return;
+      }
+
+      // In E2E test mode without authenticated user, skip Supabase entirely
+      // This prevents slow network calls and timeouts in CI
+      if (isE2ETestMode()) {
+        console.log("[useAuth] E2E test mode detected, skipping Supabase auth check");
+        setSession(null);
+        setUser(null);
         setLoading(false);
         return;
       }
